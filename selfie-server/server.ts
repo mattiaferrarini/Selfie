@@ -4,12 +4,19 @@ import passport from "passport";
 import authRoutes from './routes/auth';
 import session from "express-session";
 import mongoUri from "./secret";
+import cors from 'cors'
 
 // Create Express server
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
+const corsOptions = {
+    origin: 'http://localhost:8080', // Specify the origin of your frontend
+    credentials: true,               // Allow credentials (cookies, headers)
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({extended: true}));
 
 // Database connection

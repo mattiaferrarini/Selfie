@@ -1,17 +1,22 @@
 import { Router } from 'express';
 import passport from 'passport';
-import User from '../models/User';
+import User, {IUser} from '../models/User';
 import bcrypt from "bcryptjs";
 
 const router = Router();
 
 // Registration route
-router.post('/register', async (req, res) => {
+// TODO: maybe use put?
+router.post('/register', async (req: any, res, next) => {
     const { username, realName, email, password, birthday } = req.body;
     try {
         const newUser = new User({ username, realName, email, password, birthday });
         await newUser.save();
-        res.status(201).send('User registered');
+        passport.authenticate('local', function(err: any, user: IUser) {
+            if (err) { next(err); }
+            if (!user) { return res.redirect('/login') }
+            res.json({ user: {"username": req.user.username, "real_name": req.user.realName} });
+        })(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
         console.log(err)
@@ -20,8 +25,8 @@ router.post('/register', async (req, res) => {
 });
 
 // Login route
-router.post('/login', passport.authenticate('local'), (req, res) => {
-    res.send('Logged in');
+router.post('/login', passport.authenticate('local'), (req: any, res) => {
+    res.json({ user: {"username": req.user.username, "real_name": req.user.realName} });
 });
 
 // Logout route
