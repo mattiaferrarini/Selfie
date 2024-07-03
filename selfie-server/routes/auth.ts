@@ -6,16 +6,15 @@ import bcrypt from "bcryptjs";
 const router = Router();
 
 // Registration route
-// TODO: maybe use put?
-router.post('/register', async (req: any, res, next) => {
-    const { username, realName, email, password, birthday } = req.body;
+router.put('/register', async (req: any, res, next) => {
+    const { username, real_name, email, password, birthday } = req.body;
     try {
-        const newUser = new User({ username, realName, email, password, birthday });
+        const newUser = new User({ username, real_name, email, password, birthday });
         await newUser.save();
         passport.authenticate('local', function(err: any, user: IUser) {
             if (err) { next(err); }
             if (!user) { return res.redirect('/login') }
-            res.json({ user: {"username": req.user.username, "real_name": req.user.realName} });
+            res.json({ user: {"username": user.username, "real_name": user.real_name} });
         })(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
@@ -26,7 +25,7 @@ router.post('/register', async (req: any, res, next) => {
 
 // Login route
 router.post('/login', passport.authenticate('local'), (req: any, res) => {
-    res.json({ user: {"username": req.user.username, "real_name": req.user.realName} });
+    res.json({ user: {"username": req.user.username, "real_name": req.user.real_name} });
 });
 
 // Logout route
@@ -43,17 +42,17 @@ router.post('/logout', function (req, res, next) {
 router.post('/change-password', async (req: any, res) => {
     if (!req.isAuthenticated()) return res.status(401).send('Not authenticated');
 
-    const { oldPassword, newPassword } = req.body;
+    const { old_password, new_password } = req.body;
     try {
         const user: any = await User.findById(req.user._id);
         if (!user) return res.status(400).send('User not found');
 
-        bcrypt.compare(oldPassword, user.password, async (err, isMatch) => {
+        bcrypt.compare(old_password, user.password, async (err, isMatch) => {
             if (err) throw err;
             if (isMatch) {
-                user.password = newPassword;
+                user.password = new_password;
                 await user.save();
-                res.send('Password changed');
+                res.status(200).send('Password changed');
             } else {
                 return res.status(400).send('Incorrect password');
             }

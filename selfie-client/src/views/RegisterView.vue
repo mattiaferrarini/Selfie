@@ -18,6 +18,7 @@
 import { defineComponent, ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import authService from '@/services/authService';
+import router from "@/router";
 
 export default defineComponent({
   setup() {
@@ -28,15 +29,16 @@ export default defineComponent({
     const password = ref('');
     const errorMessage = ref('');
     const authStore = useAuthStore();
-
+    //TODO: add form validation
     const register = async () => {
       try {
         const data = await authService.register(username.value, real_name.value, email.value, password.value, birthday.value);
         authStore.setUser(data.user);
+        router.push({ name: 'home' })
         // Redirect to a protected page or home
         // this.$router.push('/');
       } catch (error: any) {
-        errorMessage.value = error.message;
+        errorMessage.value = error;
       }
     };
 
