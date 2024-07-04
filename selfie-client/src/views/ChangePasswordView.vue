@@ -1,9 +1,12 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen py-2">
-    <div class="w-full max-w-xs">
-      <input type="password" v-model="old_password" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Old Password" />
-      <input type="password" v-model="new_password" class="w-full px-3 py-2 mb-3 border rounded" placeholder="New Password" />
-      <input type="password" v-model="new_password_r" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Repeat New Password" />
+  <div class="flex flex-col items-center justify-center min-h-screen p-3">
+    <div class="animate-fade-in w-full max-w-xs p-5 sm:p-10 rounded shadow-2xl shadow-emerald-600">
+      <input type="password" v-model="old_password" class="w-full px-3 py-2 mb-3 border rounded"
+             placeholder="Old Password"/>
+      <input type="password" v-model="new_password" class="w-full px-3 py-2 mb-3 border rounded"
+             placeholder="New Password"/>
+      <input type="password" v-model="new_password_r" class="w-full px-3 py-2 mb-3 border rounded"
+             placeholder="Repeat New Password"/>
       <button @click="changePassword" class="w-full px-3 py-2 text-white bg-blue-500 rounded">Cambia Password</button>
       <p v-if="errorMessage" class="mt-2 text-red-500">{{ errorMessage }}</p>
     </div>
@@ -11,10 +14,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { useAuthStore } from '@/stores/authStore';
+import {defineComponent, ref} from 'vue';
+import {useAuthStore} from '@/stores/authStore';
 import authService from '@/services/authService';
-import router from "@/router";
 
 export default defineComponent({
   setup() {
@@ -23,7 +25,7 @@ export default defineComponent({
     const new_password_r = ref('');
     const errorMessage = ref('');
     const authStore = useAuthStore();
-    //TODO: add form validation
+    //TODO: password validation?
     const changePassword = async () => {
       try {
         await authService.changePassword(old_password.value, new_password.value);

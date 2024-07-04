@@ -1,20 +1,33 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-4 fixed top-0 right-0 left-0" v-if="isAuthenticated">
-      <div class="container mx-auto flex justify-between">
-        <div>
-          <router-link to="/" class="font-bold text-gray-700 mr-4" active-class="text-green-500">
-            Home
+    <nav class="bg-white shadow p-2 fixed top-0 right-0 left-0 shadow-emerald-600" v-if="isAuthenticated">
+      <div class="container mx-auto flex justify-between text-gray-700">
+        <div class="flex items-center">
+          <router-link to="/" class="font-bold mr-3 text-xl p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+            <div class="flex items-center">
+              <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie"
+                   class="h-8 w-8 rounded-full inline-block"/>
+              Selfie
+            </div>
           </router-link>
-          <router-link to="/about" class="font-bold text-gray-700" active-class="text-green-500">
-            About
+          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+            Calendario
           </router-link>
+          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+            Note
+          </router-link>
+          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+            Pomodoro
+          </router-link>
+          <a href="/progetti.html" class="font-semibold p-1 border-2 hover:border-emerald-500 rounded-xl">
+            Progetti
+          </a>
         </div>
-        <div>
-          <router-link to="/change-password" class="font-bold text-gray-700" active-class="text-green-500">Change
-            Password
+        <div class="flex items-center">
+          <router-link to="/change-password" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+            Profilo
           </router-link>
-          <button @click="logout" class="font-bold text-red-500">Logout</button>
+          <button @click="logout" class="font-semibold p-1 border-2 hover:border-emerald-500 rounded-xl">Logout</button>
         </div>
       </div>
     </nav>
