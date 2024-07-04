@@ -1,33 +1,64 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-2 fixed top-0 right-0 left-0 shadow-emerald-600" v-if="isAuthenticated">
+    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600" v-if="isAuthenticated">
       <div class="container mx-auto flex justify-between text-gray-700">
         <div class="flex items-center">
-          <router-link to="/" class="font-bold mr-3 text-xl p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
+          <router-link to="/" class="font-bold mr-2 sm:mr-3 sm:text-xl sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
             <div class="flex items-center">
+              <div class="hidden sm:flex items-center">
               <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie"
-                   class="h-8 w-8 rounded-full inline-block"/>
+                   class="min-w-8 h-8 w-8 rounded-full inline-block"/>
               Selfie
+              </div>
+              <div class="block sm:hidden h-7 w-7">
+                <v-icon name="co-home" class="h-full w-full" />
+              </div>
             </div>
           </router-link>
-          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
-            Calendario
+          <router-link to="/about" class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Calendario</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="bi-calendar3" class="h-full w-full" />
+            </div>
           </router-link>
-          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
-            Note
+          <router-link to="/about" class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Note</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="md-stickynote2-outlined" class="h-full w-full" />
+            </div>
           </router-link>
-          <router-link to="/about" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
-            Pomodoro
+          <router-link to="/about" class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Pomodoro</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="md-timer-sharp" class="h-full w-full" />
+            </div>
           </router-link>
-          <a href="/progetti.html" class="font-semibold p-1 border-2 hover:border-emerald-500 rounded-xl">
-            Progetti
+          <a href="/progetti.html" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+            <span class="hidden sm:block">Progetti</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="bi-calendar2-range" class="h-full w-full" />
+            </div>
           </a>
         </div>
         <div class="flex items-center">
-          <router-link to="/change-password" class="font-semibold mr-3 p-1 border-2 hover:border-emerald-500 rounded-xl" active-class="border-teal-500">
-            Profilo
+          <router-link to="/change-password"
+                       class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Profilo</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="ri-user-settings-line" class="h-full w-full" />
+            </div>
           </router-link>
-          <button @click="logout" class="font-semibold p-1 border-2 hover:border-emerald-500 rounded-xl">Logout</button>
+          <button @click="logout" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+            <span class="hidden sm:block">Logout</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="ri-logout-circle-r-line"  class="h-full w-full"/>
+            </div>
+          </button>
         </div>
       </div>
     </nav>
