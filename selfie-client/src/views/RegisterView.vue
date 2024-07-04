@@ -1,15 +1,18 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen py-2">
-    <div class="w-full max-w-xs">
-      <input v-model="username" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" />
-      <input v-model="real_name" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Real Name" />
-      <input v-model="email" type="email" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Email" />
-      <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-      <input type="password" id="password" v-model="password" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Password" />
+  <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
+    <div class="animate-fade-in w-full max-w-xs p-5 sm:p-10 pt-1 sm:pt-2 rounded shadow-2xl shadow-emerald-600" style="background-color: rgb(253,254,253)">
+      <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie" />
+      <input v-model="username" aria-label="username" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" />
+      <input v-model="real_name" aria-label="real name" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Real Name" />
+      <input v-model="email" aria-label="email" type="email" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Email" />
+      <input type="password" aria-label="password" v-model="password" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Password" />
       <label for="date" class="block text-sm font-medium text-gray-700">Birthday</label>
-      <input v-model="birthday" type="date" id="date" class="w-full px-3 py-2 mb-3 border rounded" placeholder="12-03-2003" />
-      <button @click="register" class="w-full px-3 py-2 text-white bg-blue-500 rounded">Register</button>
-      <p v-if="errorMessage" class="mt-2 text-red-500">{{ errorMessage }}</p>
+      <input v-model="birthday" aria-label="birthday" type="date" id="date" class="w-full px-3 py-2 mb-3 border rounded" placeholder="12-03-2003" />
+      <button @click="register" class="w-full px-3 py-2 mb-3 text-white bg-blue-500 rounded">Register</button>
+      <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
+      <div class="text-center w-full">
+        <router-link to="/login" class="text-emerald-500">Hai già un account? Login</router-link>
+      </div>
     </div>
   </div>
 </template>

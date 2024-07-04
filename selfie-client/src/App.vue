@@ -1,27 +1,20 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-4 fixed top-0 right-0 left-0">
+    <nav class="bg-white shadow p-4 fixed top-0 right-0 left-0" v-if="isAuthenticated">
       <div class="container mx-auto flex justify-between">
         <div>
-          <router-link v-if="isAuthenticated" to="/" class="font-bold text-gray-700 mr-4" active-class="text-green-500">
+          <router-link to="/" class="font-bold text-gray-700 mr-4" active-class="text-green-500">
             Home
           </router-link>
-          <router-link v-if="isAuthenticated" to="/about" class="font-bold text-gray-700" active-class="text-green-500">
+          <router-link to="/about" class="font-bold text-gray-700" active-class="text-green-500">
             About
           </router-link>
         </div>
         <div>
-          <div v-if="isAuthenticated">
-            <router-link to="/change-password" class="font-bold text-gray-700" active-class="text-green-500">Change
-              Password
-            </router-link>
-            <button @click="logout" class="font-bold text-red-500">Logout</button>
-          </div>
-          <div v-else>
-            <router-link to="/login" class="font-bold text-gray-700" active-class="text-green-500">Login</router-link>
-            <router-link to="/register" class="font-bold text-gray-700 ml-2" active-class="text-green-500">Register
-            </router-link>
-          </div>
+          <router-link to="/change-password" class="font-bold text-gray-700" active-class="text-green-500">Change
+            Password
+          </router-link>
+          <button @click="logout" class="font-bold text-red-500">Logout</button>
         </div>
       </div>
     </nav>
