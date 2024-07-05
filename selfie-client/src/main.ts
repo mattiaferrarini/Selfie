@@ -12,10 +12,11 @@ import {
     MdStickynote2Outlined,
     RiLogoutCircleRLine,
     RiUserSettingsLine,
-    CoHome
+    CoHome,
+    GiTimeTrap
 } from "oh-vue-icons/icons";
 
-addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, RiLogoutCircleRLine);
+addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, RiLogoutCircleRLine, GiTimeTrap);
 
 const app = createApp(App);
 const pinia = createPinia();

@@ -30,7 +30,7 @@
               <v-icon name="md-stickynote2-outlined" class="h-full w-full" />
             </div>
           </router-link>
-          <router-link to="/about" class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+          <router-link to="/pomodoro" class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Pomodoro</span>
             <div class="block sm:hidden h-7 w-7">
@@ -45,6 +45,11 @@
           </a>
         </div>
         <div class="flex items-center">
+          <button @click="alert()" class="font-semibold sm:p-1 mr-2 sm:mr-3 sm:border-2 hover:border-emerald-500 rounded-xl">
+            <div class="h-7 w-7">
+              <v-icon name="gi-time-trap" class="h-full w-full"/>
+            </div>
+          </button>
           <router-link to="/change-password"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
@@ -62,7 +67,7 @@
         </div>
       </div>
     </nav>
-    <router-view/>
+    <router-view class="pt-10 sm:pt-16"/>
   </div>
 </template>
 

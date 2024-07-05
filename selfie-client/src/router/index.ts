@@ -4,6 +4,7 @@ import LoginView from "@/views/LoginView.vue";
 import {useAuthStore} from "@/stores/authStore";
 import RegisterView from "@/views/RegisterView.vue";
 import ChangePasswordView from "@/views/ChangePasswordView.vue";
+import PomodoroView from "@/views/PomodoroView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -28,6 +29,14 @@ const routes: Array<RouteRecordRaw> = [
     path: '/change-password',
     name: 'change-password',
     component: ChangePasswordView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/pomodoro',
+    name: 'pomodoro',
+    component: PomodoroView,
     meta: {
       requiresAuth: true
     }
