@@ -2,9 +2,11 @@ import express from 'express';
 import mongoose from "mongoose";
 import passport from "passport";
 import authRoutes from './routes/auth';
+import profileRoutes from './routes/profile';
 import session from "express-session";
-import mongoUri from "./secret";
 import cors from 'cors'
+import dotenv from 'dotenv';
+dotenv.config({ path: './.env.local' });
 
 // Create Express server
 const app = express();
@@ -20,7 +22,7 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({extended: true}));
 
 // Database connection
-mongoose.connect(mongoUri)
+mongoose.connect(process.env.MONGOURI || 'mongodb://localhost:27017/selfie')
     .then(() => {
         console.log('Connected to MongoDB');
     })
@@ -43,5 +45,17 @@ passport.use(strategy);
 
 // Routes
 app.use('/auth', authRoutes);
+
+// Middleware to ensure the user is authenticated
+// TODO: move to a separate file?
+function ensureAuthenticated(req: any, res: any, next: any) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    // If not authenticated, you can redirect to login or send an error message
+    res.status(401).send('User not authenticated');
+}
+
+app.use('/profile', ensureAuthenticated, profileRoutes);
 
 app.listen(PORT);

@@ -1,7 +1,6 @@
-// src/services/authService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/auth'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/auth'; // Change this URL to match your backend API
 
 const login = async (username: string, password: string) => {
     try {
@@ -21,14 +20,6 @@ const register = async (username: string, real_name: string, email: string, pass
     }
 };
 
-const changePassword = async (old_password: string, new_password: string) => {
-    try {
-        await axios.post(`${API_URL}/change-password`, { old_password, new_password }, { withCredentials: true });
-    } catch (error: any) {
-        throw error.response.data;
-    }
-};
-
 const logout = async () => {
     try {
         const response = await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
@@ -41,6 +32,5 @@ const logout = async () => {
 export default {
     login,
     register,
-    changePassword,
     logout
 };

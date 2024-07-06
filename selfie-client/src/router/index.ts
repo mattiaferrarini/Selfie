@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/login',
+    path: '/login/:message?',
     name: 'login',
     component: LoginView
   },

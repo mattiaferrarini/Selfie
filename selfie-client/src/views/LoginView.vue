@@ -32,7 +32,7 @@ export default defineComponent({
   setup() {
     const username = ref('');
     const password = ref('');
-    const errorMessage = ref('');
+    const errorMessage = ref(router.currentRoute.value.params.message);
     const authStore = useAuthStore();
 
     const login = async () => {
@@ -42,7 +42,6 @@ export default defineComponent({
         }
         const data = await authService.login(username.value, password.value);
         authStore.setUser(data.user);
-        console.log(authStore.isAuthenticated);
         // Redirect to a protected page or home
         // this.$router.push('/');
         router.push({name: 'home'})
