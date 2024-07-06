@@ -29,22 +29,25 @@ class CustomDate {
     }
 }
 
+//TODO: decide if to use class or simple date
 export const useDateStore = defineStore('date', {
     state: () => ({
-        currentDate: new CustomDate(Date()),
+        currentDate: new Date(),
     }),
     actions: {
-        addDaysToCurrentDate(days: number) {
+        /*addDaysToCurrentDate(days: number) {
             this.currentDate.addDays(days);
         },
         removeDaysFromCurrentDate(days: number) {
             this.currentDate.removeDays(days);
-        },
+        },*/
         setCurrentDate(date: Date) {
-            this.currentDate.setDate(date);
+            //this.currentDate.setDate(date);
+            this.currentDate = date;
         },
         getCurrentDate(): Date {
-            return this.currentDate.getDate();
+            //return this.currentDate.getDate();
+            return this.currentDate;
         },
     },
 });

@@ -57,8 +57,8 @@
           </button>
           <div v-if="showTooltip"
                class="absolute right-1 sm:right-10 md:right-20 top-10 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-            <input type="date" v-model="selectedDate" class="p-2 border border-gray-300 rounded-md">
-            <button @click="setCurrentDate" class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set Date
+            <input type="date" v-model="selectedDate" @change="setCurrentDate" class="p-2 border border-gray-300 rounded-md">
+            <button @click="resetDate" class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
             </button>
           </div>
           <router-link to="/change-password"
@@ -110,7 +110,11 @@ export default defineComponent({
 
     const setCurrentDate = () => {
       dateStore.setCurrentDate(new Date(selectedDate.value));
-      showTooltip.value = false; // Hide tooltip after setting the date
+    };
+
+    const resetDate = () => {
+      dateStore.setCurrentDate(new Date());
+      selectedDate.value = (new Date()).toISOString().split('T')[0];
     };
 
     return {
@@ -120,6 +124,7 @@ export default defineComponent({
       toggleTooltip,
       selectedDate,
       setCurrentDate,
+      resetDate
     };
   },
 });
