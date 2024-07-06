@@ -1,18 +1,26 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
+    <div class="animate-fade-in w-11/12 p-2 sm:p-5 rounded shadow-2xl shadow-emerald-600 bg-white">
+      <div class="flex">
+        <div>{{date.date}}</div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import {defineComponent} from "vue";
+import {useDateStore} from "@/stores/dateStore";
+import {storeToRefs} from "pinia";
 
-@Options({
-  components: {
-    HelloWorld,
+export default defineComponent({
+  setup() {
+    const dateStore = useDateStore();
+    const date = storeToRefs(dateStore).currentDate;
+
+    return {
+      date
+    };
   },
-})
-export default class HomeView extends Vue {}
+});
 </script>
