@@ -4,7 +4,7 @@ node_modules
 
 
 # local env files
-.env.local
+selfie-server/.env.local
 .env.*.local
 
 # npm lockfiles
@@ -25,5 +25,3 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
-secret.ts

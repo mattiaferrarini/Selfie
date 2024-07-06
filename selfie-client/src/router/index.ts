@@ -1,11 +1,45 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import LoginView from "@/views/LoginView.vue";
+import {useAuthStore} from "@/stores/authStore";
+import RegisterView from "@/views/RegisterView.vue";
+import ChangePasswordView from "@/views/ChangePasswordView.vue";
+import PomodoroView from "@/views/PomodoroView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/login/:message?',
+    name: 'login',
+    component: LoginView
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView
+  },
+  {
+    path: '/change-password',
+    name: 'change-password',
+    component: ChangePasswordView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/pomodoro',
+    name: 'pomodoro',
+    component: PomodoroView,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/about',
@@ -20,6 +54,15 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
 })
 
 export default router

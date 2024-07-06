@@ -1,17 +1,21 @@
 import { Router } from 'express';
 import passport from 'passport';
-import User from '../models/User';
+import User, {IUser} from '../models/User';
 import bcrypt from "bcryptjs";
 
 const router = Router();
 
 // Registration route
-router.post('/register', async (req, res) => {
-    const { username, realName, email, password, birthday } = req.body;
+router.put('/register', async (req: any, res, next) => {
+    const { username, real_name, email, password, birthday } = req.body;
     try {
-        const newUser = new User({ username, realName, email, password, birthday });
+        const newUser = new User({ username, real_name, email, password, birthday });
         await newUser.save();
-        res.status(201).send('User registered');
+        passport.authenticate('local', function(err: any, user: IUser) {
+            if (err) { next(err); }
+            if (!user) { return res.redirect('/login') }
+            res.json({ user: {"username": user.username, "real_name": user.real_name} });
+        })(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
         console.log(err)
@@ -20,8 +24,8 @@ router.post('/register', async (req, res) => {
 });
 
 // Login route
-router.post('/login', passport.authenticate('local'), (req, res) => {
-    res.send('Logged in');
+router.post('/login', passport.authenticate('local'), (req: any, res) => {
+    res.json({ user: {"username": req.user.username, "real_name": req.user.real_name} });
 });
 
 // Logout route
@@ -32,30 +36,6 @@ router.post('/logout', function (req, res, next) {
         }
         res.redirect('/');
     });
-});
-
-// Change password route
-router.post('/change-password', async (req: any, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send('Not authenticated');
-
-    const { oldPassword, newPassword } = req.body;
-    try {
-        const user: any = await User.findById(req.user._id);
-        if (!user) return res.status(400).send('User not found');
-
-        bcrypt.compare(oldPassword, user.password, async (err, isMatch) => {
-            if (err) throw err;
-            if (isMatch) {
-                user.password = newPassword;
-                await user.save();
-                res.send('Password changed');
-            } else {
-                return res.status(400).send('Incorrect password');
-            }
-        });
-    } catch (err) {
-        res.status(400).send('Error changing password');
-    }
 });
 
 // TODO: add forgot password?
