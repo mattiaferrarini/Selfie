@@ -8,15 +8,19 @@ import {addIcons, OhVueIcon} from 'oh-vue-icons';
 import {
     BiCalendar2Range,
     BiCalendar3,
-    MdTimerSharp,
-    MdStickynote2Outlined,
-    RiLogoutCircleRLine,
-    RiUserSettingsLine,
     CoHome,
-    GiTimeTrap
+    GiTimeTrap,
+    MdFlipcameraandroidOutlined, MdPauseRound, MdPlayarrowOutlined, MdQueuemusic,
+    MdRestartalt, MdSkipnext,
+    MdStickynote2Outlined,
+    MdTimerSharp,
+    RiLogoutCircleRLine,
+    RiUserSettingsLine
 } from "oh-vue-icons/icons";
 
-addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, RiLogoutCircleRLine, GiTimeTrap);
+addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
+    RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
+    MdQueuemusic );
 
 const app = createApp(App);
 const pinia = createPinia();
