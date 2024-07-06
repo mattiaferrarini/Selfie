@@ -1,5 +1,4 @@
-// src/stores/authStore.ts
-import { defineStore } from 'pinia';
+import {defineStore} from 'pinia';
 
 interface AuthState {
     user: any;
