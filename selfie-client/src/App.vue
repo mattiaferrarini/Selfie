@@ -49,17 +49,22 @@
           </a>
         </div>
         <div class="flex items-center">
-          <button @click="toggleTooltip"
-                  :class="['font-semibold sm:p-1 mr-2 sm:mr-3 sm:border-2 hover:border-emerald-500 rounded-xl', showTooltip ? ' text-emerald-700 sm:border-teal-500': '']">
-            <div class="h-7 w-7">
-              <v-icon name="gi-time-trap" class="h-full w-full"/>
-            </div>
-          </button>
-          <div v-if="showTooltip"
-               class="absolute right-1 sm:right-10 md:right-20 top-10 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-            <input type="date" v-model="selectedDate" @change="setCurrentDate" class="p-2 border border-gray-300 rounded-md">
-            <button @click="resetDate" class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+          <div v-click-outside="closeTooltip">
+            <button @click="toggleTooltip"
+                    :class="['font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl',
+                     showTooltip ? ' text-teal-100 bg-teal-700': ' text-teal-900']">
+              <div class="h-7 w-7">
+                <v-icon name="gi-time-trap" class="h-full w-full"/>
+              </div>
             </button>
+            <div v-if="showTooltip"
+                 class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
+              <input type="date" v-model="selectedDate" @change="setCurrentDate"
+                     class="p-2 border border-gray-300 rounded-md">
+              <button @click="resetDate"
+                      class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+              </button>
+            </div>
           </div>
           <router-link to="/change-password"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
@@ -108,6 +113,10 @@ export default defineComponent({
       showTooltip.value = !showTooltip.value;
     };
 
+    const closeTooltip = () => {
+      showTooltip.value = false;
+    };
+
     const setCurrentDate = () => {
       dateStore.setCurrentDate(new Date(selectedDate.value));
     };
@@ -124,7 +133,8 @@ export default defineComponent({
       toggleTooltip,
       selectedDate,
       setCurrentDate,
-      resetDate
+      resetDate,
+      closeTooltip,
     };
   },
 });

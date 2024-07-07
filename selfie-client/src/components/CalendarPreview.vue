@@ -42,12 +42,11 @@ export default defineComponent({
     };
   },
   computed: {
-    eventsToday() {
-      return this.events.filter((event) => this.isSameDay(event.date, this.date));
+    eventsToday(): any {
+      return this.events.filter((event: any) => this.isSameDay(event.date, this.date));
     },
-    eventsThisWeek() {
-      console.log(this.events.filter((event) => this.isSameWeek(event.date, this.date)))
-      return this.events.filter((event) => this.isSameWeek(event.date, this.date));
+    eventsThisWeek(): any {
+      return this.events.filter((event: any) => this.isSameWeek(event.date, this.date));
     },
   },
   methods: {
@@ -63,7 +62,6 @@ export default defineComponent({
       };
       const start1 = getStartOfWeek(new Date(date1));
       const start2 = getStartOfWeek(new Date(date2));
-      console.log(start1, start2);
       return start1.toDateString() == start2.toDateString();
     },
   },
