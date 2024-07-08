@@ -53,9 +53,9 @@
             <button @click="toggleTooltip"
                     :class="['font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl',
                      showTooltip ? ' text-teal-100 bg-teal-700': ' text-teal-900']">
-              <div class="h-7 w-7">
+              <span class="h-7 w-7">
                 <v-icon name="gi-time-trap" class="h-full w-full"/>
-              </div>
+              </span>
             </button>
             <div v-if="showTooltip"
                  class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
@@ -76,9 +76,9 @@
           </router-link>
           <button @click="logout" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
             <span class="hidden sm:block">Logout</span>
-            <div class="block sm:hidden h-7 w-7">
+            <span class="block sm:hidden h-7 w-7">
               <v-icon name="ri-logout-circle-r-line" class="h-full w-full"/>
-            </div>
+            </span>
           </button>
         </div>
       </div>
