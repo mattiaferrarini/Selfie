@@ -4,8 +4,17 @@
       <div class="aspect-square w-full sm:h-full sm:w-min">
         <img src="@/assets/sloth_timer.png"/>
         <div
-            class="absolute top-[54.4%] clock left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]">
-          <div class="text-xl sm:text-4xl font-bold w-full h-full content-center text-center">25:00</div>
+            :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', !timing ? ' animate-timer' : '']">
+          <div class="font-bold w-full h-full content-center text-center relative">
+            <span
+                :class="['absolute left-[47%] bottom-1/2 w-[6%] h-2/5 origin-[50%_100%] border border-emerald-800 rounded-xl bg-green-500 ', timing ? 'animate-spin-seconds' : 'hidden']"></span>
+            <p class="text-sm sm:text-2xl relative">{{pauseOrWork}}</p>
+            <div class="sm:text-4xl flex items-center justify-center relative">
+              {{formattedCounter}}
+              <v-icon name="md-modeeditoutline" class="ml-0.5 sm:ml-1 w-3.5 h-3.5 sm:w-7 sm:h-7 cursor-pointer"/>
+            </div>
+            <p class="text-sm sm:text-2xl relative">{{formattedCycle}}</p>
+          </div>
         </div>
         <div class="sm:flex absolute gap-[4%] justify-center bottom-[2%] w-full hidden">
           <div
@@ -18,6 +27,7 @@
             <v-icon name="md-modeeditoutline" class="w-full h-full p-0.5"/>
           </div>
           <div
+              @click="playOrPause"
               class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
             <v-icon v-if="timing" name="md-pause-round" class="w-full h-full"/>
             <v-icon v-else name="md-playarrow-outlined" class="w-full h-full"/>
@@ -57,10 +67,11 @@
         <v-icon name="md-restartalt" class="w-full h-full"/>
       </div>
     </div>
-    <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full" id="my-modal">
+    <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center"
+         id="my-modal">
       <div
           v-click-outside="() => showModal = false"
-          class="relative top-20 mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
+          class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
         <div class="mt-3 text-center">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Timer Settings</h3>
           <div class="mt-2 px-7 py-3">
@@ -80,18 +91,20 @@
             <div class="inline-flex">
               <input type="number" v-model.number="computedNumber" @change="calculateCycles" id="numberOfCycles"
                      class="my-2 px-3 w-28 py-2 border border-gray-300 rounded-md" placeholder="Number of Cycles">
-              <select v-model="selectingHours" @change="calculateCycles" class="my-2 ml-1 px-3 py-2 border border-gray-300 rounded-md">
+              <select v-model="selectingHours" @change="calculateCycles"
+                      class="my-2 ml-1 px-3 py-2 border border-gray-300 rounded-md">
                 <option value="true">Ore</option>
                 <option value="false">Minuti</option>
               </select>
             </div>
-
           </div>
           <div class="items-center px-4 py-3">
-            <button @click="saveChanges" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700">Save
+            <button @click="saveChanges"
+                    class="px-4 py-2 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700">Save
             </button>
             <button @click="toggleModal"
-                    class="ml-3 px-4 py-2 bg-gray-200 text-gray-900 rounded hover:bg-gray-300">Cancel
+                    class="ml-3 px-4 py-2 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
+              Cancel
             </button>
           </div>
         </div>
@@ -106,17 +119,45 @@ import {defineComponent} from 'vue';
 export default defineComponent({
   data() {
     return {
-      timing: true,
+      timing: false,
       showModal: false,
       workDuration: 30,
       pauseDuration: 5,
       numberOfCycles: 5,
       selectingHours: 'false',
-      computedNumber: 175
+      computedNumber: 175,
+      intervalRef: 0,
+      counter: 30.5*60, // time is counted in reverse (pause - work) as time missing from the end
     };
   },
+  computed: {
+    formattedCounter(): string {
+      let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
+      let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60 )
+      let seconds = cycle_time % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    },
+    pauseOrWork(): string {
+      let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
+      return cycle_time > this.pauseDuration * 60 ? 'Work' : 'Pause';
+    },
+    formattedCycle(): string {
+      let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
+      return `${this.numberOfCycles - cycle}/${this.numberOfCycles}`;
+    },
+  },
   methods: {
-    invertTiming() {
+    playOrPause() {
+      if (this.timing) {
+        clearInterval(this.intervalRef);
+      } else {
+        this.intervalRef = setInterval(() => {
+          this.counter--;
+          if (this.counter <= 0) {
+            clearInterval(this.intervalRef);
+          }
+        }, 1000);
+      }
       this.timing = !this.timing;
     },
     toggleModal() {
@@ -145,10 +186,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.clock {
-  overflow: hidden;
-}
-
 .clock:after {
   content: "";
   position: absolute;
@@ -157,9 +194,12 @@ export default defineComponent({
   z-index: 0;
   width: 100%;
   height: 100%;
+}
+
+.animate-timer:after {
   background-color: rgba(0, 0, 0, 0.125);
-  -webkit-animation: 25s 1s linear infinite timer_indicator;
-  animation: 25s 1s linear infinite timer_indicator;
+  -webkit-animation: 60s 1s linear infinite timer_indicator;
+  animation: 60s 1s linear infinite timer_indicator;
 }
 
 @-webkit-keyframes timer_indicator {
