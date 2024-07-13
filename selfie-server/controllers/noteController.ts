@@ -22,7 +22,6 @@ export const create = async (req: any, res: any) => {
     const new_note = new Note({
         content: req.body.content,
         title: req.body.title,
-        category: req.body.category,
         creation: req.body.creation,
         lastmodify: req.body.lastmodify
     })
@@ -42,8 +41,6 @@ export const modify = async (req: any, res: any) => {
         if (note) { // ??
             note.content = req.body.content,
             note.title = req.body.title,
-            note.category = req.body.category,
-            note.creation = req.body.creation,
             note.lastmodify = req.body.lastmodify
         } else {
             throw new Error("is null")

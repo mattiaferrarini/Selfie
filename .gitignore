@@ -5,6 +5,7 @@ node_modules
 
 # local env files
 selfie-server/.env.local
+selfie-client/.env.local
 .env.*.local
 
 # npm lockfiles

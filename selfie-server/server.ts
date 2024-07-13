@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
+import noteRoutes from './routes/note';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -50,5 +51,7 @@ passport.use(strategy);
 app.use('/auth', authRoutes);
 
 app.use('/profile', ensureAuthenticated, profileRoutes);
+
+app.use('/note', ensureAuthenticated, noteRoutes);
 
 app.listen(PORT);

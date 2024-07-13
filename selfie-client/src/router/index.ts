@@ -5,6 +5,7 @@ import {useAuthStore} from "@/stores/authStore";
 import RegisterView from "@/views/RegisterView.vue";
 import ChangePasswordView from "@/views/ChangePasswordView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
+import NoteView from "@/views/NoteView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -37,6 +38,14 @@ const routes: Array<RouteRecordRaw> = [
     path: '/pomodoro',
     name: 'pomodoro',
     component: PomodoroView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/note',
+    name: 'note',
+    component: NoteView,
     meta: {
       requiresAuth: true
     }
