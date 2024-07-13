@@ -17,6 +17,22 @@ const changePassword = async (old_password: string, new_password: string) => {
     }
 };
 
+const updatePomodoroPreferences = async (workDuration: number, pauseDuration: number, numberOfCycles: number) => {
+    try {
+        const response= await axios.post(`${API_URL}/preferences/pomodoro`, {workDuration, pauseDuration, numberOfCycles}, {withCredentials: true});
+        const authStore = useAuthStore();
+        authStore.setPreferences(response.data.preferences);
+    } catch (error: any) {
+        if (401 === error.response.status) {
+            const authStore = useAuthStore();
+            authStore.clearAuthData();
+            await router.push({name: "login", params: {message: "Your session has expired. Please login again."}});
+        }
+        throw error.response.data;
+    }
+}
+
 export default {
     changePassword,
+    updatePomodoroPreferences
 };

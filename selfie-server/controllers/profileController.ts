@@ -1,9 +1,7 @@
 import User from "../models/User";
 import bcrypt from "bcryptjs";
 
-export const changePassword = async (req: any, res: any) => {
-    if (!req.isAuthenticated()) return res.status(401).send('Not authenticated');
-
+const changePassword = async (req: any, res: any) => {
     const {old_password, new_password} = req.body;
     try {
         const user: any = await User.findById(req.user._id);
@@ -22,4 +20,25 @@ export const changePassword = async (req: any, res: any) => {
     } catch (err: any) {
         res.status(400).send('Error changing password');
     }
+}
+
+const updatePomodoroPreferences = async (req: any, res: any) => {
+    const {workDuration, pauseDuration, numberOfCycles} = req.body;
+    try {
+        const user: any = await User.findById(req.user._id);
+        if (!user) return res.status(400).send('User not found');
+
+        user.preferences.pomodoro.workDuration = workDuration;
+        user.preferences.pomodoro.pauseDuration = pauseDuration;
+        user.preferences.pomodoro.numberOfCycles = numberOfCycles;
+        await user.save();
+        res.status(200).json({"preferences": user.preferences});
+    } catch (err: any) {
+        res.status(400).send('Error updating pomodoro preferences');
+    }
+}
+
+export default {
+    changePassword,
+    updatePomodoroPreferences
 }

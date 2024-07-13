@@ -4,10 +4,10 @@
       <div class="aspect-square w-full sm:h-full sm:w-min">
         <img src="@/assets/sloth_timer.png"/>
         <div
-            :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', timing && !pauseOrWork ? ' animate-timer' : '']">
+            :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', timing && pauseOrWork == 'Pause'  ? 'animate-timer' : '']">
           <div class="font-bold w-full h-full content-center text-center relative">
             <span
-                :class="['absolute left-[47%] bottom-1/2 w-[6%] h-2/5 origin-[50%_100%] border border-emerald-800 rounded-xl bg-green-500 ', timing && pauseOrWork ? 'animate-spin-seconds' : 'hidden']"></span>
+                :class="['absolute left-[47%] bottom-1/2 w-[6%] h-2/5 origin-[50%_100%] border border-emerald-800 rounded-xl bg-green-500', timing && pauseOrWork == 'Work' ? 'animate-spin-seconds' : 'hidden']"></span>
             <p class="text-sm sm:text-2xl relative">{{ pauseOrWork }}</p>
             <div class="sm:text-4xl flex items-center justify-center relative">
               {{ formattedCounter }}
@@ -95,7 +95,7 @@
       <div
           v-click-outside="() => showEditModal = false"
           class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
-        <div class="mt-3 text-center">
+        <form class="mt-3 text-center" @submit.stop="saveEditChanges">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Current Time</h3>
           <label for="setCycleNumber" class="font-semibold">Numero Ciclo</label>
           <br/>
@@ -117,22 +117,21 @@
             <input type="number" v-model.number="setMinutes" min="0" :max="[setWork == 'true' ? workDuration - 1 : pauseDuration - 1]" id="setMinutes"
                    class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="23">
             <span class="text-2xl font-semibold mx-1 pb-1">:</span>
-            <input type="number" v-model.number="setSeconds" min="0" max="59" id="setSeconds"
+            <input type="number" v-model.number="setSeconds" min="0" max="60" id="setSeconds"
                    class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="59">
           </div>
           <div class="items-center px-4 py-3">
-            <button @click="saveEditChanges"
-                    class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700">Save
-            </button>
+            <input type="submit"
+                    class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700" value="Save" />
             <button @click="showEditModal = false"
                     class="ml-3 px-3 py-1 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
               Cancel
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
-    <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center">
+    <div v-if="showModal" class="fixed inset-0 z-20 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center">
       <div
           v-click-outside="() => showModal = false"
           class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
@@ -179,6 +178,8 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
+import {useAuthStore} from "@/stores/authStore";
+import profileService from "@/services/profileService";
 
 export default defineComponent({
   data() {
@@ -201,6 +202,16 @@ export default defineComponent({
       setSeconds: 0,
       setWork: 'true',
     };
+  },
+  created() {
+    const authStore = useAuthStore();
+    const pomodoroPreferences = authStore.user.preferences.pomodoro;
+    if (pomodoroPreferences) {
+      this.workDuration = pomodoroPreferences.workDuration;
+      this.pauseDuration = pomodoroPreferences.pauseDuration;
+      this.numberOfCycles = pomodoroPreferences.numberOfCycles;
+      this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
+    }
   },
   computed: {
     formattedCounter(): string {
@@ -245,13 +256,17 @@ export default defineComponent({
       this.counter = (cycle + 1) * (this.workDuration + this.pauseDuration) * 60;
     },
     toggleModal() {
+      if (this.timing) {
+        clearInterval(this.intervalRef);
+        this.timing = false;
+      }
       this.showModal = !this.showModal;
     },
     toggleYoutubeModal() {
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      // TODO: update user?
+      profileService.updatePomodoroPreferences(this.workDuration, this.pauseDuration, this.numberOfCycles);
       this.showModal = false;
     },
     openEditModal() {
