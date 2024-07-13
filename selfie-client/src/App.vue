@@ -51,9 +51,9 @@
         <div class="flex items-center">
           <div v-click-outside="closeTooltip">
             <button @click="toggleTooltip"
-                    :class="['font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl',
-                     showTooltip ? ' text-teal-100 bg-teal-700': ' text-teal-900']">
-              <span class="h-7 w-7">
+                    :class="['font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl ',
+                     showTooltip ? 'text-teal-100 bg-teal-700': 'text-teal-900']">
+              <span class="h-7 w-7 block">
                 <v-icon name="gi-time-trap" class="h-full w-full"/>
               </span>
             </button>

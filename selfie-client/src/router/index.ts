@@ -18,12 +18,18 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login/:message?',
     name: 'login',
-    component: LoginView
+    component: LoginView,
+    meta: {
+      requiresNotAuth: true
+    }
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterView
+    component: RegisterView,
+    meta: {
+      requiresNotAuth: true
+    }
   },
   {
     path: '/change-password',
@@ -59,7 +65,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
-    next({ name: 'login' });
+    next({name: 'login'});
+  } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {
+    next({name: 'home'})
   } else {
     next();
   }

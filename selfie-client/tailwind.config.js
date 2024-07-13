@@ -24,6 +24,7 @@ module.exports = {
             },
             animation: {
                 "fade-in": "fade-in 0.5s ease-in-out",
+                'spin-seconds': 'spin 60s infinite steps(60)',
                 aurora: "aurora 60s linear infinite",
             },
         },

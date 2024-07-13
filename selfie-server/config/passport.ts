@@ -1,8 +1,7 @@
 import passport from 'passport';
 import {Strategy as LocalStrategy} from 'passport-local';
-import User, {IUser} from '../models/User';
+import User from '../models/User';
 import bcrypt from "bcryptjs";
-import {Document} from "mongoose";
 
 passport.serializeUser((user: any, done) => {
     done(null, user.id);

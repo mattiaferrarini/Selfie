@@ -10,8 +10,15 @@ import {
     BiCalendar3,
     CoHome,
     GiTimeTrap,
-    MdFlipcameraandroidOutlined, MdPauseRound, MdPlayarrowOutlined, MdQueuemusic,
-    MdRestartalt, MdSettingsRound, MdSkipnext,
+    MdClose,
+    MdFlipcameraandroidOutlined,
+    MdModeeditoutline,
+    MdPauseRound,
+    MdPlayarrowOutlined,
+    MdQueuemusic,
+    MdRestartalt,
+    MdSettingsRound,
+    MdSkipnext,
     MdStickynote2Outlined,
     MdTimerSharp,
     RiLogoutCircleRLine,
@@ -21,7 +28,7 @@ import ClickOutside from "@/directives/ClickOutside";
 
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
-    MdQueuemusic, MdSettingsRound);
+    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose);
 
 const app = createApp(App);
 const pinia = createPinia();
