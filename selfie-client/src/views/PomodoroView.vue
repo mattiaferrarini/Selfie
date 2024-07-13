@@ -4,20 +4,22 @@
       <div class="aspect-square w-full sm:h-full sm:w-min">
         <img src="@/assets/sloth_timer.png"/>
         <div
-            :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', !timing ? ' animate-timer' : '']">
+            :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', timing && !pauseOrWork ? ' animate-timer' : '']">
           <div class="font-bold w-full h-full content-center text-center relative">
             <span
-                :class="['absolute left-[47%] bottom-1/2 w-[6%] h-2/5 origin-[50%_100%] border border-emerald-800 rounded-xl bg-green-500 ', timing ? 'animate-spin-seconds' : 'hidden']"></span>
-            <p class="text-sm sm:text-2xl relative">{{pauseOrWork}}</p>
+                :class="['absolute left-[47%] bottom-1/2 w-[6%] h-2/5 origin-[50%_100%] border border-emerald-800 rounded-xl bg-green-500 ', timing && pauseOrWork ? 'animate-spin-seconds' : 'hidden']"></span>
+            <p class="text-sm sm:text-2xl relative">{{ pauseOrWork }}</p>
             <div class="sm:text-4xl flex items-center justify-center relative">
-              {{formattedCounter}}
-              <v-icon name="md-modeeditoutline" class="ml-0.5 sm:ml-1 w-3.5 h-3.5 sm:w-7 sm:h-7 cursor-pointer"/>
+              {{ formattedCounter }}
+              <v-icon name="md-modeeditoutline" @click.stop="openEditModal"
+                      class="relative z-20 ml-0.5 sm:ml-1 w-3.5 h-3.5 sm:w-7 sm:h-7 cursor-pointer"/>
             </div>
-            <p class="text-sm sm:text-2xl relative">{{formattedCycle}}</p>
+            <p class="text-sm sm:text-2xl relative">{{ formattedCycle }}</p>
           </div>
         </div>
         <div class="sm:flex absolute gap-[4%] justify-center bottom-[2%] w-full hidden">
           <div
+              @click.stop="toggleYoutubeModal"
               class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
             <v-icon name="md-queuemusic" class="w-full h-full"/>
           </div>
@@ -33,10 +35,12 @@
             <v-icon v-else name="md-playarrow-outlined" class="w-full h-full"/>
           </div>
           <div
+              @click="skipCycle"
               class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
             <v-icon name="md-skipnext" class="w-full h-full"/>
           </div>
           <div
+              @click="restartCycle"
               class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
             <v-icon name="md-restartalt" class="w-full h-full"/>
           </div>
@@ -45,6 +49,7 @@
     </div>
     <div class="flex justify-center gap-[4%] pt-12 w-full sm:hidden px-1">
       <div
+          @click.stop="toggleYoutubeModal"
           class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
         <v-icon name="md-queuemusic" class="w-full h-full"/>
       </div>
@@ -54,21 +59,80 @@
         <v-icon name="md-modeeditoutline" class="w-full h-full p-0.5"/>
       </div>
       <div
+          @click="playOrPause"
           class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
         <v-icon v-if="timing" name="md-pause-round" class="w-full h-full"/>
         <v-icon v-else name="md-playarrow-outlined" class="w-full h-full"/>
       </div>
       <div
+          @click="skipCycle"
           class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
         <v-icon name="md-skipnext" class="w-full h-full"/>
       </div>
       <div
+          @click="restartCycle"
           class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 aspect-square">
         <v-icon name="md-restartalt" class="w-full h-full"/>
       </div>
     </div>
-    <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center"
-         id="my-modal">
+    <div v-click-outside="closeYoutubeModal"
+         :class="['fixed top-[15%] h-min p-2 w-min mx-auto sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white', showYoutubeModal ? '' : 'hidden']">
+      <button @click="closeYoutubeModal"
+              class="absolute top-1 right-1 text-red-500 rounded-full hover:bg-red-300">
+        <v-icon name="md-close" class="w-5 h-5"/>
+      </button>
+      <iframe :src="videoUrl" allow="autoplay; encrypted-media" allowfullscreen
+              class="w-full h-auto mb-2 bg-green-100"></iframe>
+      <div class="inline-flex w-max items-center">
+        <input type="text" v-model="inputVideoUrl" placeholder="Youtube URL"
+               class="p-2 border border-gray-300 rounded-md">
+        <v-icon @click="setVideo" name="md-playarrow-outlined"
+                class="w-10 ml-0.5 h-10 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"/>
+      </div>
+    </div>
+    <div v-if="showEditModal"
+         class="fixed inset-0 z-30 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full content-center">
+      <div
+          v-click-outside="() => showEditModal = false"
+          class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
+        <div class="mt-3 text-center">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Current Time</h3>
+          <label for="setCycleNumber" class="font-semibold">Numero Ciclo</label>
+          <br/>
+          <input type="number" v-model.number="setCycleNumber" min="1" :max="numberOfCycles" id="setCycleNumber"
+                 class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="3">
+          <br/>
+          <label for="setWork" class="font-semibold">Lavoro o Pausa</label>
+          <br/>
+          <select v-model="setWork" class="border rounded" id="setWork">
+            <option value="true">Lavoro</option>
+            <option value="false">Pausa</option>
+          </select>
+          <br/>
+          <div class="inline-flex font-semibold">
+            <label for="setMinutes">Minuti</label>&nbsp; : &nbsp;
+            <label for="setSeconds">Secondi</label>
+          </div>
+          <div class="inline-flex items-center">
+            <input type="number" v-model.number="setMinutes" min="0" :max="[setWork == 'true' ? workDuration - 1 : pauseDuration - 1]" id="setMinutes"
+                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="23">
+            <span class="text-2xl font-semibold mx-1 pb-1">:</span>
+            <input type="number" v-model.number="setSeconds" min="0" max="59" id="setSeconds"
+                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="59">
+          </div>
+          <div class="items-center px-4 py-3">
+            <button @click="saveEditChanges"
+                    class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700">Save
+            </button>
+            <button @click="showEditModal = false"
+                    class="ml-3 px-3 py-1 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center">
       <div
           v-click-outside="() => showModal = false"
           class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
@@ -121,19 +185,27 @@ export default defineComponent({
     return {
       timing: false,
       showModal: false,
+      showYoutubeModal: false,
+      showEditModal: false,
+      videoUrl: '',
+      inputVideoUrl: '',
       workDuration: 30,
       pauseDuration: 5,
       numberOfCycles: 5,
       selectingHours: 'false',
       computedNumber: 175,
       intervalRef: 0,
-      counter: 30.5*60, // time is counted in reverse (pause - work) as time missing from the end
+      counter: 35 * 60 * 5, // time is counted in reverse (pause - work) as time missing from the end
+      setCycleNumber: 1,
+      setMinutes: 0,
+      setSeconds: 0,
+      setWork: 'true',
     };
   },
   computed: {
     formattedCounter(): string {
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
-      let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60 )
+      let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60)
       let seconds = cycle_time % 60;
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     },
@@ -147,25 +219,52 @@ export default defineComponent({
     },
   },
   methods: {
+    // TODO: update database in relevant methods?
     playOrPause() {
       if (this.timing) {
         clearInterval(this.intervalRef);
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
+          // TODO: check and notify the user
           if (this.counter <= 0) {
             clearInterval(this.intervalRef);
+            this.counter = 0;
+            this.timing = false;
           }
         }, 1000);
       }
       this.timing = !this.timing;
     },
+    skipCycle() {
+      let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
+      this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
+    },
+    restartCycle() {
+      let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
+      this.counter = (cycle + 1) * (this.workDuration + this.pauseDuration) * 60;
+    },
     toggleModal() {
       this.showModal = !this.showModal;
+    },
+    toggleYoutubeModal() {
+      this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
       // TODO: update user?
       this.showModal = false;
+    },
+    openEditModal() {
+      if (this.timing) {
+        clearInterval(this.intervalRef);
+        this.timing = false;
+      }
+      this.showEditModal = true
+    },
+    saveEditChanges() {
+      // TODO: update?
+      this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
+      this.showEditModal = false;
     },
     calculateNumber: function () {
       let minutes = (this.workDuration + this.pauseDuration) * this.numberOfCycles;
@@ -180,7 +279,21 @@ export default defineComponent({
     calculateCycles: function () {
       let cycle = this.workDuration + this.pauseDuration
       this.numberOfCycles = Math.floor((this.selectingHours == 'true') ? this.computedNumber * 60 / cycle : this.computedNumber / cycle);
-    }
+    },
+    getId: function (url: string) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+
+      return (match && match[2].length === 11)
+          ? match[2]
+          : null;
+    },
+    setVideo: function () {
+      this.videoUrl = `https://www.youtube.com/embed/${this.getId(this.inputVideoUrl)}`;
+    },
+    closeYoutubeModal: function () {
+      this.showYoutubeModal = false;
+    },
   },
 });
 </script>
