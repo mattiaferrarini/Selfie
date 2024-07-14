@@ -25,7 +25,7 @@
               <v-icon name="bi-calendar3" class="h-full w-full"/>
             </div>
           </router-link>
-          <router-link to="/about"
+          <router-link to="/note"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Note</span>
