@@ -5,7 +5,7 @@ import {useAuthStore} from "@/stores/authStore";
 import RegisterView from "@/views/RegisterView.vue";
 import ChangePasswordView from "@/views/ChangePasswordView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
-import NoteView from "@/views/NoteView.vue";
+import NoteView from "@/views/note/NoteView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {

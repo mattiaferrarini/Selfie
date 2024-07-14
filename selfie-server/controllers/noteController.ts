@@ -30,6 +30,7 @@ export const create = async (req: any, res: any) => {
         await new_note.save()
         res.status(200).send(new_note);
     } catch (error) {
+        console.log(error)
         res.status(422).send( { error: "Wrong arguments!"})
     }
 }

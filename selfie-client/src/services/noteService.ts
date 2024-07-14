@@ -21,7 +21,7 @@ const getid = async (id: number) => {
     }
 };
 
-const create = async (content: string, title: string, creation: Date, lastmodify: Date) => {
+const create = async (content: string, title: string, creation: string, lastmodify: string) => {
     try {
         const response = await axios.post(`${API_URL}/`, { content, title, creation, lastmodify }, { withCredentials: true });
         return response.data;
