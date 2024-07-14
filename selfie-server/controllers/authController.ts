@@ -2,7 +2,11 @@ import User, {IUser} from "../models/User";
 import passport from "passport";
 
 const default_preferences = {
-    homeView: {},
+    home: {
+        calendarWeekly: false,
+        notesDescription: false,
+        pomodoroType: "last"
+    },
     notes: {},
     pomodoro: {
         workDuration: 30,

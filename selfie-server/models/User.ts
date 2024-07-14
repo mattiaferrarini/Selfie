@@ -8,7 +8,11 @@ export interface IUser extends Document {
     real_name: string;
     birthday: Date;
     preferences: {
-        homeView: Object; // Adjust the type based on your requirements
+        home: {
+            calendarWeekly: boolean;
+            notesDescription: boolean;
+            pomodoroType: string;
+        };
         notes: Object; // Adjust the type based on your requirements
         pomodoro: {
             workDuration: number;
@@ -42,9 +46,19 @@ const UserSchema: Schema = new Schema<IUser>({
         required: true
     },
     preferences: {
-        homeView: {
-            type: Object, // Or any other type based on your requirements
-            required: false // Adjust based on whether this is optional or required
+        home: {
+            calendarWeekly: {
+                type: Boolean,
+                required: true
+            },
+            notesDescription: {
+                type: Boolean,
+                required: true
+            },
+            pomodoroType: {
+                type: String,
+                required: true
+            }
         },
         notes: {
             type: Object, // Or any other type based on your requirements
