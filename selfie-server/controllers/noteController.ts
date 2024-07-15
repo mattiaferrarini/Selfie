@@ -14,8 +14,6 @@ export const getid = async (req: any, res: any) => {
     } catch {
         res.status(404).send({ error: "Note doesn't exist!"})
     }
-    const note = await Note.findById(id);
-    res.status(200).send(note)
 }
 
 export const create = async (req: any, res: any) => {
@@ -40,8 +38,8 @@ export const modify = async (req: any, res: any) => {
         const note = await Note.findById(req.params.id)
 
         if (note) { // ??
-            note.content = req.body.content,
-            note.title = req.body.title,
+            note.content = req.body.content
+            note.title = req.body.title
             note.lastmodify = req.body.lastmodify
         } else {
             throw new Error("is null")

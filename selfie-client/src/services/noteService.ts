@@ -12,7 +12,7 @@ const getall = async () => {
     }
 };
 
-const getid = async (id: number) => {
+const getid = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return response.data;
@@ -30,16 +30,16 @@ const create = async (content: string, title: string, creation: string, lastmodi
     }
 }
 
-const modify = async (content: string, title: Date, lastmodify: Date) => {
+const modify = async (id: string, content: string, title: Date, lastmodify: Date) => {
     try {
-        const response = await axios.put(`${API_URL}/`, { content, title, lastmodify }, { withCredentials: true });
+        const response = await axios.put(`${API_URL}/`, { id, content, title, lastmodify }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
     }
 }
 
-const remove = async (id: number) => {
+const remove = async (id: string) => {
     try {
         const response = await axios.put(`${API_URL}/${id}`, { withCredentials: true });
         return response.data;

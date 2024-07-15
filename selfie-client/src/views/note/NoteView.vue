@@ -1,11 +1,11 @@
-<script septup lang="ts">
+<script lang="ts">
 import { ref, defineComponent } from "vue";
 import noteService from "@/services/noteService";
 
 export default defineComponent({
   setup() {
-    const allnotes = ref();
-    noteService.getall().then((resolve) => (allnotes.value = resolve));
+
+    const notes = ref();
 
     const createRandomNote = async () => {
       await noteService.create(
@@ -26,11 +26,20 @@ export default defineComponent({
       return result;
     };
 
+    const getnotes = async () => {
+      notes.value = await noteService.getall();
+    };
+
     return {
-      allnotes,
       createRandomNote,
+      getnotes,
+      notes
     };
   },
+
+  mounted() {
+    this.getnotes();
+  }
 });
 </script>
 
@@ -39,13 +48,15 @@ export default defineComponent({
     <h1>NOTE VIEW</h1>
     <button @click="createRandomNote()">create empty</button>
     <div class="flex flex-wrap justify-center m-4">
-      <div v-for="note in allnotes" :key="note.id" class="max-w-sm rounded overflow-hidden shadow-lg">
-        <div class="px-6 py-4">
-          <div class="font-bold text-xl mb-2 break-words">{{ note.title }}</div>
-          <p class="text-gray-700 text-base break-words">
-            {{ note.content }}
-          </p>
-        </div>
+      <div v-for="note in notes" :key="note._id" class="max-w-sm rounded overflow-hidden shadow-lg">
+        <router-link :to="'/note/'+note._id">
+          <div class="px-6 py-4">
+            <div class="font-bold text-xl mb-2 break-words">{{ note.title }}</div>
+            <p class="text-gray-700 text-base break-words">
+              {{ note.content }}
+            </p>
+          </div>
+        </router-link>
       </div>
     </div>
   </div>
