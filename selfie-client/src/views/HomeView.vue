@@ -1,5 +1,11 @@
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
+    <div class="fixed bottom-5 z-10 right-5">
+      <div class="h-14 w-14 bg-emerald-400 text-white rounded-full border-2 border-emerald-950 cursor-pointer"
+           @click.stop="showChatModal = true">
+        <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
+      </div>
+    </div>
     <div class="animate-fade-in w-11/12 p-2 mt-3 sm:p-5 rounded shadow-2xl shadow-emerald-600 bg-white">
       <div>{{ date }}</div>
       <div class="flex flex-col sm:flex-row">
@@ -8,19 +14,19 @@
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showCalendarTooltip ? ' rotate-180' : '']"/>
           </div>
-          <CalendarPreview :date=date :weekly=calendarWeekly />
-            <div v-if="showCalendarTooltip"
-                 class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
-              <label for="weekly" class="font-semibold mr-2">Weekly</label>
-              <input type="checkbox" v-model="calendarWeekly" @change="updatePreferences" id="weekly"/>
-            </div>
+          <CalendarPreview :date=date :weekly="calendarWeekly"/>
+          <div v-if="showCalendarTooltip"
+               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
+            <label for="weekly" class="font-semibold mr-2">Weekly</label>
+            <input type="checkbox" v-model="calendarWeekly" @change="updatePreferences" id="weekly"/>
+          </div>
         </div>
         <div class="p-1 w-full sm:w-1/4 relative" v-click-outside="() => closeTooltip(refs.showNotesTooltip)">
           <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showNotesTooltip)">
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showNotesTooltip ? ' rotate-180' : '']"/>
           </div>
-          <NotesPreview :date=date :desc=notesDescription />
+          <NotesPreview :date=date :desc="notesDescription"/>
           <div v-if="showNotesTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
             <label for="description" class="font-semibold mr-2">Descrizione</label>
@@ -32,7 +38,7 @@
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showPomodoroTooltip ? ' rotate-180' : '']"/>
           </div>
-          <PomodoroPreview :date=date :type="pomodoroType" />
+          <PomodoroPreview :date=date :type="pomodoroType"/>
           <div v-if="showPomodoroTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
             <select v-model="pomodoroType" @change="updatePreferences">
@@ -41,6 +47,16 @@
             </select>
           </div>
         </div>
+      </div>
+    </div>
+    <div v-if="showChatModal" class="fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div v-click-outside="() => showChatModal = false"
+           class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-2 sm:p-5 rounded-lg">
+        <button @click="showChatModal = false"
+                class="absolute top-1 right-1 text-red-500 rounded-full hover:bg-red-300">
+          <v-icon name="md-close" class="w-5 h-5"/>
+        </button>
+        <ChatView/>
       </div>
     </div>
   </div>
@@ -53,12 +69,13 @@ import {storeToRefs} from "pinia";
 import CalendarPreview from "@/components/CalendarPreview.vue";
 import NotesPreview from "@/components/NotesPreview.vue";
 import PomodoroPreview from "@/components/PomodoroPreview.vue";
+import ChatView from "@/components/ChatComponent.vue";
 import profileService from "@/services/profileService";
 import {useAuthStore} from "@/stores/authStore";
 
 export default defineComponent({
   methods: {ref},
-  components: {PomodoroPreview, NotesPreview, CalendarPreview},
+  components: {PomodoroPreview, NotesPreview, CalendarPreview, ChatView},
   setup() {
     const dateStore = useDateStore();
     const homePreferences = useAuthStore().user.preferences.home;
@@ -69,6 +86,7 @@ export default defineComponent({
     const calendarWeekly = ref(homePreferences.calendarWeekly);
     const notesDescription = ref(homePreferences.notesDescription);
     const pomodoroType = ref(homePreferences.pomodoroType);
+    const showChatModal = ref(false);
 
     const toggleTooltip = (tooltip: Ref) => {
       tooltip.value = !tooltip.value;
@@ -97,7 +115,8 @@ export default defineComponent({
       calendarWeekly,
       notesDescription,
       pomodoroType,
-      updatePreferences
+      updatePreferences,
+      showChatModal,
     };
   },
 });

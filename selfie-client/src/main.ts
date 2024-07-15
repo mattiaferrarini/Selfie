@@ -7,7 +7,7 @@ import piniaPluginPersistedState from "pinia-plugin-persistedstate"
 import {addIcons, OhVueIcon} from 'oh-vue-icons';
 import {
     BiCalendar2Range,
-    BiCalendar3,
+    BiCalendar3, BiChatDots,
     CoHome,
     GiTimeTrap,
     MdClose,
@@ -28,7 +28,7 @@ import ClickOutside from "@/directives/ClickOutside";
 
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
-    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose);
+    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, BiChatDots );
 
 const app = createApp(App);
 const pinia = createPinia();
