@@ -29,9 +29,6 @@ app.use(express.urlencoded({extended: true}));
 const client_build_dir = __dirname + '/../selfie-client/dist';
 app.use('/'  , express.static(client_build_dir));
 
-app.use(express.urlencoded({ extended: true }))
-app.use(cors())
-
 // https://stackoverflow.com/questions/40459511/in-express-js-req-protocol-is-not-picking-up-https-for-my-secure-link-it-alwa
 app.enable('trust proxy');
 
