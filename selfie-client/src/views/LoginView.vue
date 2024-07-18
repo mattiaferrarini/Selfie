@@ -12,7 +12,7 @@
       <input type="password" aria-label="Password" v-model="password"
              class="w-full px-3 py-2 mb-3 border rounded" placeholder="Password" required/>
       <input type="submit" value="Login" aria-label="Login"
-             class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded">
+             class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded cursor-pointer">
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
         <router-link to="/register" class="text-emerald-500">Non hai un account? Registrati</router-link>

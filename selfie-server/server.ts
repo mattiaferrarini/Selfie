@@ -11,9 +11,8 @@ import strategy from "./config/passport";
 import ensureAuthenticated from "./middlewares/authMiddleware";
 import * as http from "node:http";
 import {IUser} from "./models/User";
-// WebSocket server for the chat
 import WebSocket from 'ws';
-import chatController from "./controllers/chatController";
+import {handleConnection} from "./ws/wsHandler";
 
 dotenv.config({path: './.env.local'});
 
@@ -71,46 +70,13 @@ wss.on('connection', (ws, req: any) => {
                 if (req.isAuthenticated()) {
                     const user = req.user as IUser;
 
-                    const connections = userConnections.get(user.username) || [];
-                    connections.push(ws);
-                    userConnections.set(user.username, connections);
-
-                    ws.on('close', () => {
-                        // Remove the connection from the map upon disconnection
-                        const connections = userConnections.get(user.username) || [];
-                        const index = connections.indexOf(ws);
-                        if (index > -1) {
-                            connections.splice(index, 1);
-                        }
-                        if (connections.length === 0) {
-                            userConnections.delete(user.username);
-                        } else {
-                            userConnections.set(user.username, connections);
-                        }
-                    });
+                    handleConnection(ws, req, userConnections, user);
                 } else {
                     ws.send(`Unauthorized`);
                     ws.close();
                 }
             });
         });
-    });
-
-    ws.on('message', (message: string) => {
-        try {
-            const parsedMessage = JSON.parse(message);
-            chatController.sendMessage(req.user.username, parsedMessage.to, parsedMessage.text).then(() => {
-                const connections = userConnections.get(parsedMessage.to)
-                if (connections) {
-                    connections.forEach((cws) => cws.send(JSON.stringify({
-                        from: req.user.username,
-                        text: parsedMessage.text
-                    })));
-                }
-            }).catch((err) => ws.send('Error sending message', err));
-        } catch (error) {
-            ws.send('Error sending message');
-        }
     });
 });
 
