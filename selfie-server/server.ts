@@ -4,6 +4,7 @@ import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import chatRoutes from './routes/chat';
+import noteRoutes from './routes/note';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -56,6 +57,7 @@ passport.use(strategy);
 app.use('/auth', authRoutes);
 app.use('/profile', ensureAuthenticated, profileRoutes);
 app.use('/chat', ensureAuthenticated, chatRoutes);
+app.use('/note', ensureAuthenticated, noteRoutes);
 
 const server = http.createServer(app);
 
