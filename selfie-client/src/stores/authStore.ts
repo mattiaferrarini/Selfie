@@ -1,4 +1,23 @@
 import {defineStore} from 'pinia';
+import {useWebSocketStore} from "@/stores/wsStore";
+
+/*interface User {
+    username: string;
+    real_name: string;
+    preferences: {
+        home: {
+            calendarWeekly: boolean;
+            notesDescription: boolean;
+            pomodoroType: string;
+        };
+        notes: Object;
+        pomodoro: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
+    };
+}*/
 
 interface AuthState {
     user: any;
@@ -14,9 +33,11 @@ export const useAuthStore = defineStore('auth', {
         setUser(user: any) {
             this.user = user;
             this.isAuthenticated = true;
+            useWebSocketStore().connect();
         },
         setPreferences(preferences: any) {
-            this.user.preferences = preferences;
+            if (this.user)
+                this.user.preferences = preferences;
         },
         clearAuthData() {
             this.user = null;

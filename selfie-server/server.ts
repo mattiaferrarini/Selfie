@@ -3,13 +3,19 @@ import mongoose from "mongoose";
 import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
+import chatRoutes from './routes/chat';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
 import ensureAuthenticated from "./middlewares/authMiddleware";
+import * as http from "node:http";
+import {IUser} from "./models/User";
+// WebSocket server for the chat
+import WebSocket from 'ws';
+import chatController from "./controllers/chatController";
 
-dotenv.config({ path: './.env.local' });
+dotenv.config({path: './.env.local'});
 
 // Create Express server
 const app = express();
@@ -34,11 +40,12 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/selfie')
     });
 
 // Session configuration
-app.use(session({
+const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
     saveUninitialized: false,
-}));
+});
+app.use(sessionMiddleware);
 
 // Passport middleware
 app.use(passport.initialize());
@@ -48,7 +55,63 @@ passport.use(strategy);
 
 // Routes
 app.use('/auth', authRoutes);
-
 app.use('/profile', ensureAuthenticated, profileRoutes);
+app.use('/chat', ensureAuthenticated, chatRoutes);
 
-app.listen(PORT);
+const server = http.createServer(app);
+
+const wss = new WebSocket.Server({server});
+
+const userConnections = new Map<string, WebSocket[]>();
+wss.on('connection', (ws, req: any) => {
+    // Handle session and passport for WebSocket
+    sessionMiddleware(req, {} as any, () => {
+        passport.initialize()(req, {} as any, () => {
+            passport.session()(req, {} as any, () => {
+                if (req.isAuthenticated()) {
+                    const user = req.user as IUser;
+
+                    const connections = userConnections.get(user.username) || [];
+                    connections.push(ws);
+                    userConnections.set(user.username, connections);
+
+                    ws.on('close', () => {
+                        // Remove the connection from the map upon disconnection
+                        const connections = userConnections.get(user.username) || [];
+                        const index = connections.indexOf(ws);
+                        if (index > -1) {
+                            connections.splice(index, 1);
+                        }
+                        if (connections.length === 0) {
+                            userConnections.delete(user.username);
+                        } else {
+                            userConnections.set(user.username, connections);
+                        }
+                    });
+                } else {
+                    ws.send(`Unauthorized`);
+                    ws.close();
+                }
+            });
+        });
+    });
+
+    ws.on('message', (message: string) => {
+        try {
+            const parsedMessage = JSON.parse(message);
+            chatController.sendMessage(req.user.username, parsedMessage.to, parsedMessage.text).then(() => {
+                const connections = userConnections.get(parsedMessage.to)
+                if (connections) {
+                    connections.forEach((cws) => cws.send(JSON.stringify({
+                        from: req.user.username,
+                        text: parsedMessage.text
+                    })));
+                }
+            }).catch((err) => ws.send('Error sending message', err));
+        } catch (error) {
+            ws.send('Error sending message');
+        }
+    });
+});
+
+server.listen(PORT);

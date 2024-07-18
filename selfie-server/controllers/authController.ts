@@ -45,6 +45,13 @@ export const logout = (req: any, res: any, next: any) => {
         if (err) {
             return next(err);
         }
-        res.redirect('/');
+        req.session.destroy((err: any) => {
+            if (err) {
+                return next(err);
+            }
+            res.clearCookie('connect.sid');
+
+            // TODO: close websocket connections?
+        });
     });
 };

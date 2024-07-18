@@ -2,7 +2,12 @@
   <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
     <div class="fixed bottom-5 z-10 right-5">
       <div class="h-14 w-14 bg-emerald-400 text-white rounded-full border-2 border-emerald-950 cursor-pointer"
-           @click.stop="showChatModal = true">
+           @click.stop="setChatModal(true)">
+        <span class="absolute -top-1 -right-1 flex h-3 w-3" v-if="unread">
+          <span
+              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-75"></span>
+          <span class="relative border border-emerald-50 inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+        </span>
         <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
       </div>
     </div>
@@ -50,9 +55,9 @@
       </div>
     </div>
     <div v-if="showChatModal" class="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div v-click-outside="() => showChatModal = false"
+      <div v-click-outside="() => setChatModal(false)"
            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-2 sm:p-5 rounded-lg">
-        <button @click="showChatModal = false"
+        <button @click="setChatModal(false)"
                 class="absolute top-1 right-1 text-red-500 rounded-full hover:bg-red-300">
           <v-icon name="md-close" class="w-5 h-5"/>
         </button>
@@ -72,6 +77,7 @@ import PomodoroPreview from "@/components/PomodoroPreview.vue";
 import ChatView from "@/components/ChatComponent.vue";
 import profileService from "@/services/profileService";
 import {useAuthStore} from "@/stores/authStore";
+import {useWebSocketStore} from "@/stores/wsStore";
 
 export default defineComponent({
   methods: {ref},
@@ -80,13 +86,18 @@ export default defineComponent({
     const dateStore = useDateStore();
     const homePreferences = useAuthStore().user.preferences.home;
     const date = storeToRefs(dateStore).currentDate;
+
     const showCalendarTooltip = ref(false);
     const showNotesTooltip = ref(false);
     const showPomodoroTooltip = ref(false);
+
     const calendarWeekly = ref(homePreferences.calendarWeekly);
     const notesDescription = ref(homePreferences.notesDescription);
     const pomodoroType = ref(homePreferences.pomodoroType);
+
     const showChatModal = ref(false);
+    const wsStore = useWebSocketStore();
+    const unread = storeToRefs(wsStore).unread;
 
     const toggleTooltip = (tooltip: Ref) => {
       tooltip.value = !tooltip.value;
@@ -96,12 +107,18 @@ export default defineComponent({
       tooltip.value = false;
     };
 
+    const setChatModal = (bool: boolean) => {
+      showChatModal.value = bool;
+      wsStore.setChatModalOpen(bool);
+    };
+
     const updatePreferences = () => {
       profileService.updateHomePreferences(calendarWeekly.value, notesDescription.value, pomodoroType.value);
     };
 
     return {
       date,
+      unread,
       showCalendarTooltip,
       showNotesTooltip,
       showPomodoroTooltip,
@@ -112,6 +129,7 @@ export default defineComponent({
       },
       toggleTooltip,
       closeTooltip,
+      setChatModal,
       calendarWeekly,
       notesDescription,
       pomodoroType,
