@@ -5,11 +5,16 @@ node_modules
 
 # local env files
 selfie-server/.env.local
+selfie-client/.env.local
 .env.*.local
 
 # npm lockfiles
 selfie-client/package-lock.json
 selfie-server/package-lock.json
+
+# build files
+selfie-client/dist/
+selfie-server/**/*.js
 
 # Log files
 npm-debug.log*
