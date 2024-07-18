@@ -1,4 +1,4 @@
-import User, {IUser} from "../models/User";
+import User from "../models/User";
 import passport from "passport";
 
 const default_preferences = {
@@ -20,15 +20,7 @@ export const register = async (req: any, res: any, next: any) => {
     try {
         const newUser = new User({username, real_name, email, password, birthday, preferences: default_preferences});
         await newUser.save();
-        passport.authenticate('local', function (err: any, user: IUser) {
-            if (err) {
-                next(err);
-            }
-            if (!user) {
-                return res.redirect('/login')
-            }
-            res.json({user: {"username": user.username, "real_name": user.real_name, "preferences": user.preferences}});
-        })(req, res, next);
+        passport.authenticate('local')(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
         console.log(err)

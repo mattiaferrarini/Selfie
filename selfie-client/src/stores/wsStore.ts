@@ -28,7 +28,7 @@ export const useWebSocketStore = defineStore('websocket', {
             if (!this.ws) {
                 this.ws = new WebSocket(process.env.VUE_APP_WS_URL);
                 this.ws.onopen = () => {
-                    console.log('WebSocket connected');
+                    console.log('WebSocket chat connected');
                     const username = useAuthStore().user?.username;
                     chatService.list().then(messages => messages.forEach((message: IMessage) => {
                         const withUser = message.senderUsername == username ? message.receiverUsername : message.senderUsername;
@@ -42,7 +42,7 @@ export const useWebSocketStore = defineStore('websocket', {
                         });
                     }));
                 };
-                this.ws.onerror = (error) => console.error('WebSocket error:', error);
+                this.ws.onerror = (error) => console.error('WebSocket chat error:', error);
                 this.ws.onmessage = (event) => {
                     try {
                         const message = JSON.parse(event.data);
@@ -71,6 +71,7 @@ export const useWebSocketStore = defineStore('websocket', {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 this.ws.close();
                 this.ws = null;
+                console.log('WebSocket chat disconnected');
                 this.messages = new Map<string, message[]>();
             }
         },
