@@ -94,7 +94,7 @@
          class="fixed inset-0 z-30 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full content-center">
       <div
           v-click-outside="() => showEditModal = false"
-          class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
+          class="relative mx-auto p-2 w-fit sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
         <form class="mt-3 text-center" @submit.stop="saveEditChanges">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Current Time</h3>
           <label for="setCycleNumber" class="font-semibold">Numero Ciclo</label>
@@ -113,6 +113,7 @@
             <label for="setMinutes">Minuti</label>&nbsp; : &nbsp;
             <label for="setSeconds">Secondi</label>
           </div>
+          <br/>
           <div class="inline-flex items-center">
             <input type="number" v-model.number="setMinutes" min="0"
                    :max="[setWork == 'true' ? workDuration : pauseDuration]" id="setMinutes"
@@ -123,7 +124,7 @@
                    id="setSeconds"
                    class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="59">
           </div>
-          <div class="items-center px-4 py-3">
+          <div class="items-center w-full px-4 py-3">
             <input type="submit"
                    class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"
                    value="Save"/>
