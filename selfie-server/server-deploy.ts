@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 import strategy from "./config/passport";
 import ensureAuthenticated from "./middlewares/authMiddleware";
 
-dotenv.config({ path: './.env.local' });
+dotenv.config({ path: __dirname + '/.env.local' });
 
 // Create Express server
 const app = express();
