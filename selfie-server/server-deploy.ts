@@ -58,10 +58,10 @@ app.use(passport.session());
 passport.use(strategy);
 
 // Routes
-app.use('api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
-app.use('api/profile', ensureAuthenticated, profileRoutes);
+app.use('/api/profile', ensureAuthenticated, profileRoutes);
 
-app.use('api/note', ensureAuthenticated, noteRoutes);
+app.use('/api/note', ensureAuthenticated, noteRoutes);
 
 app.listen(PORT);
