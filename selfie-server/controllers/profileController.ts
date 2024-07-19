@@ -22,6 +22,32 @@ const changePassword = async (req: any, res: any) => {
     }
 }
 
+const changeBirthday = async (req: any, res: any) => {
+    const {birthday} = req.body;
+    try {
+        const user: any = await User.findById(req.user._id);
+        if (!user) return res.status(400).send('User not found');
+        user.birthday = birthday;
+        await user.save();
+        res.status(200).send('Birthday changed');
+    } catch (err: any) {
+        res.status(400).send('Error updating pomodoro preferences');
+    }
+}
+
+const changeRealName = async (req: any, res: any) => {
+    const {real_name} = req.body;
+    try {
+        const user: any = await User.findById(req.user._id);
+        if (!user) return res.status(400).send('User not found');
+        user.real_name = real_name;
+        await user.save();
+        res.status(200).send('Real Name changed');
+    } catch (err: any) {
+        res.status(400).send('Error updating pomodoro preferences');
+    }
+}
+
 const updatePomodoroPreferences = async (req: any, res: any) => {
     const {workDuration, pauseDuration, numberOfCycles} = req.body;
     try {
@@ -40,5 +66,7 @@ const updatePomodoroPreferences = async (req: any, res: any) => {
 
 export default {
     changePassword,
+    changeBirthday,
+    changeRealName,
     updatePomodoroPreferences
 }

@@ -14,8 +14,9 @@
              placeholder="Password" required/>
       <label for="date" class="block text-sm font-medium text-gray-700">Birthday</label>
       <input v-model="birthday" aria-label="birthday" type="date" id="date" class="w-full px-3 py-2 mb-3 border rounded"
-             placeholder="12-03-2003" min="1900-01-01"  required/>
-      <input type="submit" class="w-full px-3 py-2 mb-3 text-white bg-emerald-500 rounded cursor-pointer" value="Register" />
+             :max="(new Date()).toISOString().substring(0,10)" min="1900-01-01" required/>
+      <input type="submit" class="w-full px-3 py-2 mb-3 text-white bg-emerald-500 rounded cursor-pointer"
+             value="Register"/>
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
         <router-link to="/login" class="text-emerald-500">Hai già un account? Login</router-link>

@@ -15,6 +15,12 @@ export const useAuthStore = defineStore('auth', {
             this.user = user;
             this.isAuthenticated = true;
         },
+        setBirthday(birthday: Date) {
+            this.user.birthday = birthday;
+        },
+        setRealName(real_name: string) {
+            this.user.real_name = real_name;
+        },
         setPreferences(preferences: any) {
             this.user.preferences = preferences;
         },
