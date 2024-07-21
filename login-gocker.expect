@@ -2,10 +2,15 @@
 
 set timeout 20
 
-set cmd [lrange $argv 1 end]
 set password [lindex $argv 0]
 
-eval spawn $cmd
-expect "password:"
+spawn ssh gocker.cs.unibo.it "help"
+
+expect "password: "
 send "$password\r";
+
+expect "(gocker): "
+send "start node-20 site232410 Selfie/selfie-server/server-deploy.js\n"
+expect "(gocker): "
+send \004
 interact
