@@ -1,12 +1,21 @@
 import {Document, model, Schema} from 'mongoose';
 import bcrypt from "bcryptjs";
 
+export interface IPushSubscription {
+    endpoint: string;
+    keys: {
+        p256dh: string;
+        auth: string;
+    };
+}
+
 export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
     real_name: string;
     birthday: Date;
+    pushSubscriptions: IPushSubscription[];
     preferences: {
         homeView: Object; // Adjust the type based on your requirements
         notes: Object; // Adjust the type based on your requirements
@@ -17,6 +26,14 @@ export interface IUser extends Document {
         };
     };
 }
+
+const PushSubscriptionSchema: Schema = new Schema<IPushSubscription>({
+    endpoint: {type: String, required: true},
+    keys: {
+        p256dh: {type: String, required: true},
+        auth: {type: String, required: true},
+    }
+});
 
 const UserSchema: Schema = new Schema<IUser>({
     username: {
@@ -41,6 +58,7 @@ const UserSchema: Schema = new Schema<IUser>({
         type: Date,
         required: true
     },
+    pushSubscriptions: [PushSubscriptionSchema],
     preferences: {
         homeView: {
             type: Object, // Or any other type based on your requirements
@@ -76,4 +94,6 @@ UserSchema.pre<IUser>('save', async function (next) {
     next();
 });
 
-export default model('User', UserSchema);
+const User = model<IUser>("User", UserSchema);
+
+export default User;

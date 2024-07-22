@@ -93,6 +93,7 @@ import {useAuthStore} from '@/stores/authStore';
 import {storeToRefs} from 'pinia'
 import router from "@/router";
 import {useDateStore} from "@/stores/dateStore";
+import authService from "@/services/authService";
 
 export default defineComponent({
   setup() {
@@ -103,9 +104,9 @@ export default defineComponent({
     const selectedDate = ref('');
 
     const logout = () => {
+      authService.logout();
       authStore.clearAuthData();
-      router.push({name: "login"})
-      // Optionally, add any additional logout logic here
+      router.push({name: "login"});
     };
 
     const toggleTooltip = () => {

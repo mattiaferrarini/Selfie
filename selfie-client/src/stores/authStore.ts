@@ -1,4 +1,5 @@
 import {defineStore} from 'pinia';
+import notificationService from '@/services/notificationService';
 
 interface AuthState {
     user: any;
@@ -14,11 +15,12 @@ export const useAuthStore = defineStore('auth', {
         setUser(user: any) {
             this.user = user;
             this.isAuthenticated = true;
+            notificationService.subscribe();
         },
         setPreferences(preferences: any) {
             this.user.preferences = preferences;
         },
-        clearAuthData() {
+        async clearAuthData() {
             this.user = null;
             this.isAuthenticated = false;
         },

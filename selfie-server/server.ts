@@ -4,14 +4,14 @@ import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import noteRoutes from './routes/note';
+import notificationRoutes from './routes/notification';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
 import ensureAuthenticated from "./middlewares/authMiddleware";
-import {pushNotificationService} from "./services/pushNotificationService";
 
-dotenv.config({ path: './.env.local' });
+dotenv.config({path: './.env.local'});
 
 // Create Express server
 const app = express();
@@ -48,18 +48,10 @@ app.use(passport.session());
 
 passport.use(strategy);
 
-app.post("/subscribe", ensureAuthenticated, (req, res) => {
-    // Get pushSubscription object
-    const subscription = req.body;
-    // Create payload
-    const payload = { title: "Notification from Knock" };
-    // Sending a push notification
-    pushNotificationService.sendNotification(subscription, payload);
-});
-
 // Routes
 app.use('/auth', authRoutes);
 app.use('/profile', ensureAuthenticated, profileRoutes);
 app.use('/note', ensureAuthenticated, noteRoutes);
+app.use('/notification', ensureAuthenticated, notificationRoutes);
 
 app.listen(PORT);

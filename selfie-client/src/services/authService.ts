@@ -1,4 +1,5 @@
 import axios from 'axios';
+import notificationService from "@/services/notificationService";
 
 const API_URL = process.env.VUE_APP_API_URL + '/auth'; // Change this URL to match your backend API
 
@@ -22,6 +23,7 @@ const register = async (username: string, real_name: string, email: string, pass
 
 const logout = async () => {
     try {
+        await notificationService.unsubscribe();
         const response = await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
         return response.data;
     } catch (error: any) {

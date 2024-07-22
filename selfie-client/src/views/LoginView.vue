@@ -45,8 +45,6 @@ export default defineComponent({
         }*/
         const data = await authService.login(username.value, password.value);
         authStore.setUser(data.user);
-        // Redirect to a protected page or home
-        // this.$router.push('/');
         router.push({name: 'home'})
       } catch (error: any) {
         errorMessage.value = error;

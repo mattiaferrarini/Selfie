@@ -41,6 +41,5 @@ export const logout = (req: any, res: any, next: any) => {
         if (err) {
             return next(err);
         }
-        res.redirect('/');
     });
 };
