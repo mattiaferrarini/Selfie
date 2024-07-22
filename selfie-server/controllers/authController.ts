@@ -2,6 +2,7 @@ import User, {IUser} from "../models/User";
 import passport from "passport";
 
 const default_preferences = {
+    notificationType: "email",
     homeView: {},
     notes: {},
     pomodoro: {

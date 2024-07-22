@@ -1,5 +1,6 @@
-import User from "../models/User";
+import User, {IUser} from "../models/User";
 import {pushNotificationService} from "../services/pushNotificationService";
+import {sendEmail} from "../services/mailerService";
 
 const subscribe = async (req: any, res: any) => {
     // Get pushSubscription object
@@ -40,13 +41,23 @@ const unsubscribe = async (req: any, res: any) => {
     }
 }
 
-const sendNotification = async (req: any, res: any) => {
+// TODO: remove testing function
+const sendNotificationTest = async (req: any, res: any) => {
     const { text } = req.body;
     req.user?.pushSubscriptions.forEach((e: any) => pushNotificationService.sendNotification(e, {title: 'News', body: text}));
+}
+
+const sendNotification = async (user: IUser, payload: any) => {
+    if (user.preferences.notificationType === "push" || user.preferences.notificationType === "both")
+        user.pushSubscriptions.forEach((pushSubscription: any) => pushNotificationService.sendNotification(pushSubscription, payload));
+    if (user.preferences.notificationType === "email" || user.preferences.notificationType === "both")
+        await sendEmail(user.email, payload.title, payload.body);
+    // TODO check compatibility email and push
 }
 
 export default {
     subscribe,
     unsubscribe,
+    sendNotificationTest,
     sendNotification
 }

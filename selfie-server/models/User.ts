@@ -9,6 +9,12 @@ export interface IPushSubscription {
     };
 }
 
+enum NotificationType {
+    EMAIL = "email",
+    PUSH = "push",
+    BOTH = "both"
+}
+
 export interface IUser extends Document {
     username: string;
     email: string;
@@ -17,6 +23,7 @@ export interface IUser extends Document {
     birthday: Date;
     pushSubscriptions: IPushSubscription[];
     preferences: {
+        notificationType: NotificationType
         homeView: Object; // Adjust the type based on your requirements
         notes: Object; // Adjust the type based on your requirements
         pomodoro: {
@@ -60,6 +67,11 @@ const UserSchema: Schema = new Schema<IUser>({
     },
     pushSubscriptions: [PushSubscriptionSchema],
     preferences: {
+        notificationType: {
+            type: String,
+            enum: Object.values(NotificationType),
+            required: true
+        },
         homeView: {
             type: Object, // Or any other type based on your requirements
             required: false // Adjust based on whether this is optional or required
