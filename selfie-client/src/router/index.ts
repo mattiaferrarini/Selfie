@@ -3,7 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from "@/views/LoginView.vue";
 import {useAuthStore} from "@/stores/authStore";
 import RegisterView from "@/views/RegisterView.vue";
-import ChangePasswordView from "@/views/ChangePasswordView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
 import NoteView from "@/views/note/NoteView.vue";
 
@@ -33,9 +33,9 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/change-password',
-    name: 'change-password',
-    component: ChangePasswordView,
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView,
     meta: {
       requiresAuth: true
     }
