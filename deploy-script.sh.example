@@ -1,0 +1,21 @@
+ssh [name.surname]@bettina.cs.unibo.it << EOF
+    export PATH=/usr/local/node/bin/:\$PATH
+
+    cd /home/web/site232410/html/Selfie
+    
+    git checkout deploy
+    git pull
+
+    cd selfie-client
+    /usr/local/node/bin/npm install
+    npm run build
+    cd ../selfie-server
+    npm install
+    npm run build
+    cd ..
+
+    chmod +x login-gocker.expect
+    ./login-gocker.expect '[unibo-password]'
+EOF
+
+echo "All done! :)"

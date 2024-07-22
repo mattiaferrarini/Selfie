@@ -24,7 +24,7 @@ export const register = async (req: any, res: any, next: any) => {
             if (!user) {
                 return res.redirect('/login')
             }
-            res.json({user: {"username": user.username, "real_name": user.real_name, "preferences": user.preferences}});
+            res.json({user: {"username": user.username, "real_name": user.real_name, birthday: user.birthday, "preferences": user.preferences}});
         })(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
@@ -34,7 +34,7 @@ export const register = async (req: any, res: any, next: any) => {
 }
 
 export const login = (req: any, res: any) => {
-    res.json({user: {"username": req.user.username, "real_name": req.user.real_name, "preferences": req.user.preferences}});
+    res.json({user: {"username": req.user.username, "real_name": req.user.real_name, birthday: req.user.birthday, "preferences": req.user.preferences}});
 };
 
 export const logout = (req: any, res: any, next: any) => {
