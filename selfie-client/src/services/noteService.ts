@@ -30,9 +30,9 @@ const create = async (content: string, title: string, creation: string, lastmodi
     }
 }
 
-const modify = async (id: string, content: string, title: Date, lastmodify: Date) => {
+const modify = async (id: string, title: string, content: string, lastmodify: Date) => {
     try {
-        const response = await axios.put(`${API_URL}/`, { id, content, title, lastmodify }, { withCredentials: true });
+        const response = await axios.put(`${API_URL}/${id}`, { content, title, lastmodify }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
@@ -41,7 +41,7 @@ const modify = async (id: string, content: string, title: Date, lastmodify: Date
 
 const remove = async (id: string) => {
     try {
-        const response = await axios.put(`${API_URL}/${id}`, { withCredentials: true });
+        const response = await axios.delete(`${API_URL}/${id}`,{ withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;

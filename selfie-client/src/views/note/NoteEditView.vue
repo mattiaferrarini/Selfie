@@ -2,17 +2,21 @@
 import { ref, defineComponent, watch } from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
+import { useTextareaAutosize } from '@vueuse/core'
+
 
 export default defineComponent({
   setup() {
+    const { textarea: textarea1, input: content } = useTextareaAutosize();
+    const { textarea: textarea2, input: title } = useTextareaAutosize();
 
-    const title = ref();
-    const content = ref();
     const creation = ref();
     const lastmodify = ref();
 
+    let id = "";
+
     const getnote = async () => {
-      let id = String(router.currentRoute.value.params.id);
+      id = String(router.currentRoute.value.params.id);
       let note = await noteService.getid(id);
       title.value = note.title;
       content.value = note.content;
@@ -21,12 +25,26 @@ export default defineComponent({
     };
 
 
+    const savenote = async () => {
+      await noteService.modify(id, title.value, content.value, new Date());
+      await router.push("/note");
+    };
+
+    const deletenote = async () => {
+      await noteService.remove(id);
+      await router.push("/note");
+    };
+
     return {
       getnote,
+      savenote,
+      deletenote,
       title,
       content,
       creation,
-      lastmodify
+      lastmodify,
+      textarea1,
+      textarea2
     };
   },
 
@@ -36,26 +54,45 @@ export default defineComponent({
 });
 </script>
 
+
 <template>
-   <h1>NOTE EDIT</h1>
-    <div class="flex flex-wrap justify-center m-4">
-      <div class="max-w-sm rounded overflow-hidden shadow-lg">
-        <div class="px-6 py-4">
-          <div class="font-bold text-xl mb-2 break-words">
-            <input v-model="title" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Title"/>
-          </div>
-          <p class="text-gray-700 text-base break-words">
-            <textarea v-model="content" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Content"/>
-          </p>
-          <p class="text-gray-700 text-base break-words">
-            creation: {{ creation }}
-          </p>
-          <p class="text-gray-700 text-base break-words">
-            last modify: {{ lastmodify }}
-          </p>
-        </div>
-      </div>
- </div>
+  <div class="flex flex-col">
+    <div class="flex flex-row flex-wrap justify-center">
+      <button
+          type="button"
+          class="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700"
+          @click="savenote()">save and close
+      </button>
+      <button
+          type="button"
+          class="focus:outline-none text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+          @click="deletenote()">delete
+      </button>
+    </div>
+    <div class="flex justify-center">
+      <textarea
+          ref="textarea2"
+          class="w-screen max-w-screen-md text-2xl text-center resize-none"
+          v-model="title"
+          placeholder="edit me"
+      />
+    </div>
+    <div class="flex flex-row flex-wrap justify-center">
+      <p class="m-2">Creation date: {{ creation }}</p>
+      <p class="m-2">Last modification {{ lastmodify }}</p>
+    </div>
+
+    <div class="flex justify-center resize-none" >
+      <textarea
+          ref="textarea1"
+          class="w-screen max-w-screen-md min-h-[200px] resize-none"
+          v-model="content"
+          placeholder="edit me">
+      </textarea>
+    </div>
+
+
+  </div>
 </template>
 
 <style scoped>
