@@ -19,7 +19,7 @@ export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
-    real_name: string;
+    realName: string;
     birthday: Date;
     pushSubscriptions: IPushSubscription[];
     preferences: {
@@ -35,10 +35,10 @@ export interface IUser extends Document {
 }
 
 const PushSubscriptionSchema: Schema = new Schema<IPushSubscription>({
-    endpoint: {type: String, required: true},
+    endpoint: {type: String},
     keys: {
-        p256dh: {type: String, required: true},
-        auth: {type: String, required: true},
+        p256dh: {type: String},
+        auth: {type: String},
     }
 });
 
@@ -51,13 +51,14 @@ const UserSchema: Schema = new Schema<IUser>({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: /.+@.+\..+/ // Simple email validation
     },
     password: {
         type: String,
         required: true
     },
-    real_name: {
+    realName: {
         type: String,
         required: true
     },
@@ -65,7 +66,10 @@ const UserSchema: Schema = new Schema<IUser>({
         type: Date,
         required: true
     },
-    pushSubscriptions: [PushSubscriptionSchema],
+    pushSubscriptions: {
+        type: [PushSubscriptionSchema],
+        default: []
+    },
     preferences: {
         notificationType: {
             type: String,
@@ -73,12 +77,12 @@ const UserSchema: Schema = new Schema<IUser>({
             required: true
         },
         homeView: {
-            type: Object, // Or any other type based on your requirements
-            required: false // Adjust based on whether this is optional or required
+            type: Object,
+            required: false
         },
         notes: {
-            type: Object, // Or any other type based on your requirements
-            required: false // Adjust based on whether this is optional or required
+            type: Object,
+            required: false
         },
         pomodoro: {
             workDuration: {

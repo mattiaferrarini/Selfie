@@ -5,13 +5,31 @@
         <div class="px-6 py-4">
           <div class="font-bold text-xl mb-2">@{{ user?.username }}</div>
           <p class="text-gray-700 text-base">
-            Real Name: {{ user?.real_name }}
+            Real Name: {{ user?.realName }}
           </p>
           <p class="text-gray-700 text-base">
             Birthday: {{ user?.birthday.substring(0, 10) }}
           </p>
+          <p class="text-gray-700 text-base">
+            Tipo Notifiche: {{ user?.preferences.notificationType }}
+          </p>
         </div>
       </div>
+      <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
+        <legend class="text-center text-2xl px-0.5">Cambia Notifiche</legend>
+        <form @submit.stop="changeNotificationType">
+          <label for="notification_mode" class="block text-sm font-medium text-gray-700">Tipo di Notifica</label>
+          <select type="password" v-model="notificationType" id="notification_mode"
+                 class="w-full px-3 py-2 mb-3 border rounded" required>
+            <option value="email">Email</option>
+            <option value="push">Web Push</option>
+            <option value="both">Entrambe</option>
+          </select>
+          <input type="submit" value="Cambia Notifiche"
+                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
+        </form>
+        <p v-if="passErrorMessage" class="mt-2 text-red-500">{{ passErrorMessage }}</p>
+      </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Cambia Password</legend>
         <form @submit.stop="changePassword">
@@ -47,7 +65,7 @@
         <legend class="text-center text-2xl px-0.5">Cambia Nome</legend>
         <form @submit.stop="changeName">
           <label for="name" class="block text-sm font-medium text-gray-700">Nome Reale</label>
-          <input type="text" v-model="real_name" id="name" placeholder="Fabio Rossi"
+          <input type="text" v-model="realName" id="name" placeholder="Fabio Rossi"
                  class="w-full px-3 py-2 mb-3 border rounded" required/>
           <input type="submit" value="Cambia Nome"
                  class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
@@ -72,10 +90,21 @@ export default defineComponent({
     const authStore = useAuthStore();
     const user = storeToRefs(authStore).user;
     const birthday = ref();
-    const real_name = ref();
+    const realName = ref();
+    const notificationType = ref();
     const passErrorMessage = ref('');
     const birthErrorMessage = ref('');
     const nameErrorMessage = ref('');
+    const notificationErrorMessage = ref('');
+
+    const changeNotificationType = async () => {
+      try {
+        await profileService.updateNotificationPreferences(notificationType.value);
+        notificationErrorMessage.value = "Notifiche cambiate con successo";
+      } catch (error: any) {
+        notificationErrorMessage.value = error;
+      }
+    };
 
     //TODO: password validation?
     const changePassword = async () => {
@@ -104,11 +133,11 @@ export default defineComponent({
 
     const changeName = async () => {
       try {
-        if (real_name.value.trim() == "") {
+        if (realName.value.trim() == "") {
           throw "Il nome non può essere vuoto!";
         }
-        await profileService.changeRealName(real_name.value);
-        authStore.setRealName(real_name.value);
+        await profileService.changeRealName(realName.value);
+        authStore.setRealName(realName.value);
         nameErrorMessage.value = "Nome cambiato con successo";
       } catch (error: any) {
         nameErrorMessage.value = error;
@@ -120,14 +149,17 @@ export default defineComponent({
       new_password,
       new_password_r,
       birthday,
-      real_name,
+      realName,
+      notificationType,
       user,
+      changeNotificationType,
       changePassword,
       changeBirthday,
       changeName,
       passErrorMessage,
       birthErrorMessage,
       nameErrorMessage,
+      notificationErrorMessage,
     };
   },
 });

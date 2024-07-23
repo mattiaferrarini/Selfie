@@ -6,7 +6,8 @@ const router = Router();
 // Change password route
 router.post('/change-password', profileController.changePassword);
 router.post('/change-birthday', profileController.changeBirthday);
-router.post('/change-real_name', profileController.changeRealName);
+router.post('/change-realName', profileController.changeRealName);
+router.post('/preferences/notification', profileController.updateNotificationPreferences);
 router.post('/preferences/pomodoro', profileController.updatePomodoroPreferences);
 
 export default router;

@@ -12,9 +12,9 @@ const login = async (username: string, password: string) => {
     }
 };
 
-const register = async (username: string, real_name: string, email: string, password: string, birthday: string) => {
+const register = async (username: string, realName: string, email: string, password: string, birthday: string) => {
     try {
-        const response = await axios.put(`${API_URL}/register`, { username, real_name, email, password, birthday }, { withCredentials: true });
+        const response = await axios.put(`${API_URL}/register`, { username, realName, email, password, birthday }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
