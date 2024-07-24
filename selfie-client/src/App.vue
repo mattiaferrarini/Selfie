@@ -17,7 +17,7 @@
               </div>
             </div>
           </router-link>
-          <router-link to="/about"
+          <router-link to="/calendar"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Calendario</span>

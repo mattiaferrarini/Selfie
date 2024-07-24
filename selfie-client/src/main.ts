@@ -22,13 +22,21 @@ import {
     MdStickynote2Outlined,
     MdTimerSharp,
     RiLogoutCircleRLine,
-    RiUserSettingsLine
+    RiUserSettingsLine,
+    MdNavigatenext,
+    MdNavigatebefore,
+    FaUndo,
+    MdAdd,
+    BiChevronExpand,
+    CoOptions,
+    BiSave
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
-    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose);
+    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, MdNavigatenext, MdNavigatebefore, FaUndo, MdAdd,
+    BiChevronExpand, CoOptions, BiSave);
 
 const app = createApp(App);
 const pinia = createPinia();
