@@ -1,15 +1,17 @@
-import Note from '../models/note/Note';
+import Note from '../models/Note';
 
 
 export const getall = async (req: any, res: any) => {
-    const all_notes = await Note.find();
+    const username = req.user?.username
+    const all_notes = await Note.find({owners: { $in: [username] }})
     res.status(200).send(all_notes)
 }
 
 export const getid = async (req: any, res: any) => {
     const { id } = req.params
+    const username = req.user?.username
     try {
-        const note = await Note.findById(id)
+        const note = await Note.findOne({ _id: id, owners: { $in: [username] }})
         res.status(200).send(note)
     } catch {
         res.status(404).send({ error: "Note doesn't exist!"})
@@ -17,11 +19,14 @@ export const getid = async (req: any, res: any) => {
 }
 
 export const create = async (req: any, res: any) => {
+    const username = req.user?.username
     const new_note = new Note({
         content: req.body.content,
         title: req.body.title,
         creation: req.body.creation,
-        lastmodify: req.body.lastmodify
+        lastmodify: req.body.lastmodify,
+        category: req.body.category,
+        owners: [username]
     })
     
     try {
@@ -34,13 +39,16 @@ export const create = async (req: any, res: any) => {
 }
 
 export const modify = async (req: any, res: any) => {
+    const username = req.user?.username
     try {
-        const note = await Note.findById(req.params.id)
+        const note = await Note.findOne({ _id: req.params.id, owners: { $in: [username] }})
 
         if (note) { // ??
             note.content = req.body.content
             note.title = req.body.title
             note.lastmodify = req.body.lastmodify
+            note.category = req.body.category
+            note.owners = req.body.owners
         } else {
             throw new Error("is null")
         }
@@ -52,8 +60,9 @@ export const modify = async (req: any, res: any) => {
 }
 
 export const remove = async (req: any, res: any) => {
+    const username = req.user?.username
     try {
-        await Note.deleteOne({ _id: req.params.id })
+        await Note.deleteOne({ _id: req.params.id, owners: { $in: [username] }})
         res.status(204).send()
     } catch {
         res.status(404).send({ error: "Note doesn't exist!"})

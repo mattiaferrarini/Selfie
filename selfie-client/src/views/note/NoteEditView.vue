@@ -12,6 +12,8 @@ export default defineComponent({
 
     const creation = ref();
     const lastmodify = ref();
+    const category = ref();
+    const owners = ref();
 
     let id = "";
 
@@ -22,11 +24,13 @@ export default defineComponent({
       content.value = note.content;
       creation.value = note.creation;
       lastmodify.value = note.lastmodify;
+      category.value = note.category;
+      owners.value = note.owners;
     };
 
 
     const savenote = async () => {
-      await noteService.modify(id, title.value, content.value, new Date());
+      await noteService.modify(id, title.value, content.value, new Date(), category.value, owners.value);
       await router.push("/note");
     };
 
@@ -43,6 +47,8 @@ export default defineComponent({
       content,
       creation,
       lastmodify,
+      category,
+      owners,
       textarea1,
       textarea2
     };
@@ -77,6 +83,9 @@ export default defineComponent({
           placeholder="edit me"
       />
     </div>
+    <div class="flex justify-center">
+      <input type="text" v-model="category" class="text-center m-2 focus:outline-none text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+    </div>
     <div class="flex flex-row flex-wrap justify-center">
       <p class="m-2">Creation date: {{ creation }}</p>
       <p class="m-2">Last modification {{ lastmodify }}</p>
@@ -89,6 +98,16 @@ export default defineComponent({
           v-model="content"
           placeholder="edit me">
       </textarea>
+    </div>
+
+    <div class="flex flex-row flex-wrap justify-center m-auto w-screen max-w-screen-md">
+      <p>Owners:</p>
+      <ul>
+        <li v-for="owner in owners" :key="owner" class="me-2">
+          {{ owner }}
+        </li>
+      </ul>
+     <button class="focus:outline-none text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700">add owner</button>
     </div>
 
 

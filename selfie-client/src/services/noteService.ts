@@ -21,18 +21,18 @@ const getid = async (id: string) => {
     }
 };
 
-const create = async (content: string, title: string, creation: string, lastmodify: string) => {
+const create = async (content: string, title: string, creation: string, lastmodify: string, category: string) => {
     try {
-        const response = await axios.post(`${API_URL}/`, { content, title, creation, lastmodify }, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/`, { content, title, creation, lastmodify, category }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
     }
 }
 
-const modify = async (id: string, title: string, content: string, lastmodify: Date) => {
+const modify = async (id: string, title: string, content: string, lastmodify: Date, category: string, owners: [string]) => {
     try {
-        const response = await axios.put(`${API_URL}/${id}`, { content, title, lastmodify }, { withCredentials: true });
+        const response = await axios.put(`${API_URL}/${id}`, { content, title, lastmodify, category, owners }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;

@@ -13,7 +13,7 @@ export default defineComponent({
     };
 
     const newnote = async () => {
-      let note = await noteService.create("", `new note ${new Date()}`, `${new Date()}`, `${new Date()}`);
+      let note = await noteService.create("", `new note ${new Date()}`, `${new Date()}`, `${new Date()}`, "uncategorized");
       let id = note._id;
       await router.push(`/note/${id}`);
     };
@@ -39,12 +39,17 @@ export default defineComponent({
 
     <div class="flex flex-wrap justify-center max-w-screen-md m-auto">
       <div v-for="note in notes" :key="note._id" class="max-w-sm rounded overflow-hidden shadow-lg">
-        <router-link :to="'/note/'+note._id">
+        <router-link :to="`/note/${note._id}`">
           <div class="px-6 py-4">
             <div class="font-bold text-xl mb-2 break-words">{{ note.title }}</div>
             <p class="text-gray-700 text-base break-words">
               {{ note.content }}
             </p>
+          </div>
+          <div>
+            <div class="px-6 py-4">
+              <span>{{ note.category }}</span>
+            </div>
           </div>
         </router-link>
       </div>
