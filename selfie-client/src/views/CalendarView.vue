@@ -1,5 +1,6 @@
 <script lang="ts">
 import {ref, computed, nextTick, defineComponent, Ref} from 'vue';
+import {DatePickerInstance} from "@vuepic/vue-datepicker";
 
 export default defineComponent({
   name: 'CalendarView',
@@ -8,7 +9,6 @@ export default defineComponent({
     const days = ref([
       {date:new Date(), events:[]},
     ]);
-    const showOptions=ref(false);
     const view = ref('month');
     const content = ref('all');
     const showAddForm=ref(false);
@@ -34,7 +34,7 @@ export default defineComponent({
     };
 
     const currentMonthAndYear = computed(() => {
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       const month = months[currentDate.value.getMonth()];
       const year = currentDate.value.getFullYear();
       return `${month} ${year}`;
@@ -48,19 +48,23 @@ export default defineComponent({
       showAddForm.value = true;
     };
 
-    const toggleOptionsVisibility = () => {
-      showOptions.value = !showOptions.value;
+    const closeAddForm = (event: MouseEvent) => {
+      if(event){
+        const openButton = document.getElementById('open-add-form-btn');
+        if (openButton && event.target !== openButton && !openButton.contains(event.target as Node)) {
+          showAddForm.value = false;
+        }
+      }
+      else{
+        showAddForm.value = false;
+      }
     };
 
-    const hideOptions = () => {
-      showOptions.value = false;
-    };
-
-    const onViewChange = (event: Event) => {
+    const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);
     };
 
-    const onContentChange = (event: Event) => {
+    const onContentChange = () => {
       console.log(`View changed to: ${content.value}`);
     };
 
@@ -71,14 +75,13 @@ export default defineComponent({
       prev,
       resetCalendar,
       openAddForm,
-      toggleOptionsVisibility,
-      hideOptions,
-      showOptions,
+      closeAddForm,
       view,
       content,
       onViewChange,
       onContentChange,
-      showAddForm
+      showAddForm,
+      currentDate,
     };
   },
 });
@@ -105,48 +108,31 @@ export default defineComponent({
             <button @click="prev"><v-icon name="md-navigatebefore"></v-icon></button>
             <button @click="next"><v-icon name="md-navigatenext"></v-icon></button>
           </div>
-          <!--
-          <div v-click-outside="hideOptions">
-            <button @click="toggleOptionsVisibility"><v-icon name="co-options"></v-icon></button>
-            <div v-if="showOptions" class="absolute right-1  top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-              <form>
-                <h2>View</h2>
-                <label class="mr-2"><input type="radio" name="viewType" value="day">Day</label>
-                <label class="mr-2"><input type="radio" name="viewType" value="week">Week</label>
-                <label><input type="radio" name="viewType" value="month" checked>Month</label>
-                <div>
-                  <button @click="hideOptions" class="w-full flex-x-1 p-1 mt-2">
-                    <v-icon name="bi-save"></v-icon> Export Calendar
-                  </button>
-                </div>
-                <div class="w-full flex space-x-1 mt-2">
-                  <button @click="hideOptions" class="flex-1 p-1">Close</button>
-                  <button type="submit" class="flex-1 p-1">Save</button>
-                </div>
-              </form>
-            </div>
-          </div>
-          -->
         </div>
       </nav>
 
-      <div class="flex items-center">
-        <div class="flex items-center">
-          <h2>{{ currentMonthAndYear }}</h2>
-          <button @click="resetCalendar"><v-icon name="bi-chevron-expand"></v-icon></button>
-        </div>
-      </div>
+      <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false">
+        <template #trigger>
+          <div class="clickable-text flex items-center justify-center">
+            <h2>{{ currentMonthAndYear }}</h2>
+            <v-icon name="bi-chevron-expand"></v-icon>
+          </div>
+        </template>
+      </VueDatePicker>
 
-      <button @click="openAddForm" class="fixed bottom-4 right-4 bg-emerald-600 text-white p-2 rounded-full h-12 w-12 flex items-center justify-center">
+      <button @click="openAddForm" id="open-add-form-btn" class="fixed bottom-4 right-4 bg-emerald-600 text-white p-2 rounded-full h-12 w-12 flex items-center justify-center">
         <v-icon name="md-add"></v-icon>
       </button>
 
-      <div v-if="showAddForm" class="fixed inset-0 flex justify-center items-center bg-transparent">
-        <form action="">
-          <label>Title<input type="text"></label><br>
-          <label>Start<input type="date"><input type="time"></label>
-        </form>
+      <div v-if="showAddForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50" @click="closeAddForm">
+        <div class="bg-white p-4 rounded-lg shadow-lg" @click.stop>
+          <form action="">
+            <label>Title<input type="text"></label><br>
+            <label>Start<input type="date"><input type="time"></label>
+          </form>
+        </div>
       </div>
+
     </div>
 </template>
 
@@ -154,5 +140,8 @@ export default defineComponent({
   .button-group button {
     border: 1px solid #ccc;
     border-radius: 5px;
+  }
+  .hidden-input .vue-datepicker-input {
+    display: none;
   }
 </style>

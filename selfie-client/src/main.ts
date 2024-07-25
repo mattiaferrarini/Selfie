@@ -33,6 +33,11 @@ import {
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
+
+
+
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
     MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, MdNavigatenext, MdNavigatebefore, FaUndo, MdAdd,
@@ -46,6 +51,8 @@ app.use(pinia);
 app.use(router);
 
 app.component("v-icon", OhVueIcon);
+
+app.component('VueDatePicker', VueDatePicker);
 
 app.directive('click-outside', ClickOutside);
 
