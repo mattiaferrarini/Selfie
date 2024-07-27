@@ -4,6 +4,7 @@ import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import noteRoutes from './routes/note';
+import userRoutes from './routes/user';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -53,5 +54,7 @@ app.use('/auth', authRoutes);
 app.use('/profile', ensureAuthenticated, profileRoutes);
 
 app.use('/note', ensureAuthenticated, noteRoutes);
+
+app.use('/user', ensureAuthenticated, userRoutes);
 
 app.listen(PORT);

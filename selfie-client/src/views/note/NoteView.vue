@@ -1,34 +1,31 @@
-<script lang="ts">
-import { ref, defineComponent } from "vue";
+<script setup lang="ts">
+import {ref, defineComponent, onMounted} from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
 
-export default defineComponent({
-  setup() {
+const notes = ref();
 
-    const notes = ref();
+const getnotes = async () => {
+  notes.value = await noteService.getall();
+};
 
-    const getnotes = async () => {
-      notes.value = await noteService.getall();
-    };
+const newnote = async () => {
+  const note = await noteService.create(
+      "",
+      `new note ${new Date()}`,
+      `${new Date()}`,
+      `${new Date()}`,
+      "uncategorized"
+  );
 
-    const newnote = async () => {
-      let note = await noteService.create("", `new note ${new Date()}`, `${new Date()}`, `${new Date()}`, "uncategorized");
-      let id = note._id;
-      await router.push(`/note/${id}`);
-    };
+  const id = note._id;
+  await router.push(`/note/${id}`);
+};
 
-    return {
-      getnotes,
-      newnote,
-      notes
-    };
-  },
-
-  mounted() {
-    this.getnotes();
-  }
+onMounted(async () => {
+  await getnotes();
 });
+
 </script>
 
 <template>
