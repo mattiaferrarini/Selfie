@@ -3,6 +3,7 @@ import { ref, defineComponent, watch } from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
 import { useTextareaAutosize } from '@vueuse/core'
+import VueMultiSelect from 'vue-multiselect'
 
 
 export default defineComponent({
@@ -50,7 +51,8 @@ export default defineComponent({
       category,
       owners,
       textarea1,
-      textarea2
+      textarea2,
+      VueMultiSelect,
     };
   },
 
@@ -100,14 +102,11 @@ export default defineComponent({
       </textarea>
     </div>
 
-    <div class="flex flex-row flex-wrap justify-center m-auto w-screen max-w-screen-md">
+    <div>
       <p>Owners:</p>
-      <ul>
-        <li v-for="owner in owners" :key="owner" class="me-2">
-          {{ owner }}
-        </li>
-      </ul>
-     <button class="focus:outline-none text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700">add owner</button>
+      <VueMultiselect
+        v-model="owners">
+        </VueMultiselect>
     </div>
 
 
