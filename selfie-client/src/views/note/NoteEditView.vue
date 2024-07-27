@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, defineComponent, onMounted} from "vue";
+import {ref, onMounted} from "vue";
 import noteService from "@/services/noteService";
 import userService from "@/services/userService";
 import router from "@/router";
@@ -8,13 +8,13 @@ import VueMultiselect from 'vue-multiselect'
 
 // declaring reactive variables variables
 const { textarea: contentArea, input: content } = useTextareaAutosize();
-const { textarea: ctitleArea, input: title } = useTextareaAutosize();
+const { textarea: titleArea, input: title } = useTextareaAutosize();
 
 const creation = ref();
 const lastmodify = ref();
 const category = ref();
 
-// ownsers edit
+// owners edit
 const owners = ref(null);
 const users = ref([]);
 
@@ -52,9 +52,6 @@ onMounted( async () => {
   await getUserNames();
 })
 
-const selected = ref(null);
-const options = ref(['list', 'of', 'options']);
-
 </script>
 
 <template>
@@ -73,7 +70,7 @@ const options = ref(['list', 'of', 'options']);
     </div>
     <div class="flex justify-center">
       <textarea
-          ref="textarea2"
+          ref="titleArea"
           class="w-screen max-w-screen-md text-2xl text-center resize-none"
           v-model="title"
           placeholder="edit me"
@@ -89,7 +86,7 @@ const options = ref(['list', 'of', 'options']);
 
     <div class="flex justify-center resize-none" >
       <textarea
-          ref="textarea1"
+          ref="contentArea"
           class="w-screen max-w-screen-md min-h-[200px] resize-none"
           v-model="content"
           placeholder="edit me">

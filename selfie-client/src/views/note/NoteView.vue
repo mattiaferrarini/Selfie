@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, defineComponent, onMounted} from "vue";
+import {ref, onMounted} from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
 
