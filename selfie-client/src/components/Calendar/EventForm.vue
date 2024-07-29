@@ -1,5 +1,5 @@
 <template>
-        <div class="bg-white p-4 rounded-lg shadow-lg w-4/5" @click.stop>
+        <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
           <form class="flex flex-col" @submit="handleSubmit">
             <div>
               <label><input type="text" placeholder="Untitled Event" required v-model="newTitle"></label><br>
@@ -55,11 +55,18 @@
             <hr>
             <div>
               <label><input type="text" placeholder="Add a place"></label><br>
+              <div class="flex items-center justify-between w-full gap-4">
+                Participants
+                <button @click="openParticipantsForm" @click.stop>
+                  {{ newParticipants.length }}
+                  <v-icon name="md-navigatenext"/>
+                </button>
+              </div>
             </div>
             <hr>
             <div>
               <div class="flex items-center justify-between w-full gap-4">
-                <p>Notification</p>
+                Notification
                 <div class="flex flex-wrap justify-end space-x-4">
                   <label> <input type="checkbox" v-model="newNotificationOptions.os" /> OS</label>
                   <label> <input type="checkbox" v-model="newNotificationOptions.email" /> Email </label>
@@ -95,13 +102,20 @@
               <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
             </div>
           </form>
+
+          <ParticipantsForm v-if="showParticipantsForm" :participants="newParticipants" @closeParticipantsForm="handleCloseParticipantsForm"/>
+
         </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import ParticipantsForm from './ParticipantsForm.vue';
 
 export default defineComponent({
+  components: {
+    ParticipantsForm
+  },
     props: {
       title: {
         type: String,
@@ -158,6 +172,10 @@ export default defineComponent({
       repeatNotify: {
         type: String,
         default: 'never'
+      },
+      participants: {
+        type: Array,
+        required: true
       }
     },
     emits: ['closeEventForm', 'saveEvent'],
@@ -175,7 +193,9 @@ export default defineComponent({
         newRepeatEndDate: this.repeatEndDate,
         newNotificationOptions: this.notificationOptions,
         newWhenNotify: this.whenNotify,
-        newRepeatNotify: this.repeatNotify
+        newRepeatNotify: this.repeatNotify,
+        newParticipants: this.participants,
+        showParticipantsForm: false
       }
     },
     methods: {
@@ -198,9 +218,20 @@ export default defineComponent({
             repeatEndDate: this.newRepeatEndDate,
             notificationOptions: this.newNotificationOptions,
             whenNotify: this.newWhenNotify,
-            repeatNotify: this.newRepeatNotify
+            repeatNotify: this.newRepeatNotify,
+            participants: this.newParticipants
         }
         this.$emit('saveEvent', newEvent);
+      },
+      openParticipantsForm() {
+        this.showParticipantsForm = true;
+      },
+      closeParticipantsForm() {
+        this.showParticipantsForm = false;
+      },
+      handleCloseParticipantsForm(participants: any) {
+        this.newParticipants = participants;
+        this.closeParticipantsForm();
       }
     },
     computed: {
@@ -239,7 +270,7 @@ export default defineComponent({
         set(value: string) {
           this.newRepeatEndDate = new Date(value);
         }
-      },
+      }
     }
 });
 </script>

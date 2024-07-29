@@ -67,9 +67,14 @@ const EventSchema: Schema = new Schema<IEvent>({
         }
     },
     participants: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        username: {
+            type: String,
+            required: true
+        },
+        status: {
+            type: String,
+            required: true
+        }
     }]
 });
 

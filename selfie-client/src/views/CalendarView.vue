@@ -143,6 +143,21 @@ export default defineComponent({
     const newWhenNotify = ref("atEvent");
     const newRepatNotify = ref("never");
 
+    const newParticipants = ref([
+      {
+        username: 'Jane Doe',
+        status: 'accepted'
+      },
+      {
+        username: 'John Doe',
+        status: 'pending'
+      },
+      {
+        username: 'Jack Doe',
+        status: 'declined'
+      }
+    ]);
+
     // variables for activity form
     const newDone = ref(false);
 
@@ -196,7 +211,7 @@ export default defineComponent({
       endMinutes = endMinutes === 60 ? 0 : endMinutes;
       newEndTime.value = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
 
-      showUnavailabilityForm.value = true;
+      showEventForm.value = true;
     };
 
     const closeAddForm = (event: MouseEvent) => {
@@ -307,7 +322,8 @@ export default defineComponent({
       newRepeat, newUntil, newNumberOfReps, newRepeatEndDate, notificationOptions, newWhenNotify, newRepatNotify, setRangeDates,
       newTitle, saveEvent, showForm, closeEventForm, closeActivityForm, saveActivity, rangeEvents, showAppointments, modifyEvent,
       rangeActivities, modifyActivity, markAsDone, undoActivity, newDone, rangeUnavailabilities, saveUnavailability,
-      closeUnavailabilityForm, showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability
+      closeUnavailabilityForm, showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
+      newParticipants
     };
   },
 });
@@ -342,7 +358,7 @@ export default defineComponent({
     <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false">
       <template #trigger>
         <div class="clickable-text flex items-center justify-center">
-          <h2>{{ currentDisplayedPeriodString }}</h2>
+            <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
           <v-icon name="bi-chevron-expand"></v-icon>
         </div>
       </template>
@@ -375,7 +391,7 @@ export default defineComponent({
         :allDay="newAllDay" :startDate="newStartDate" :startTime="newStartTime" :endDate="newEndDate"
         :endTime="newEndTime" :repeat="newRepeat" :until="newUntil" :numberOfReps="newNumberOfReps"
         :repeatEndDate="newRepeatEndDate" :notificationOptions="notificationOptions" :whenNotify="newWhenNotify"
-        :repeatNotify="newRepatNotify" />
+        :repeatNotify="newRepatNotify" :participants="newParticipants"/>
       <ActivityForm v-if="showActivityForm" @closeActivityForm="closeActivityForm" @save-activity="saveActivity"
         :deadline="newEndDate" :title="newTitle" :done="newDone" :notificationOptions="notificationOptions"
         :whenNotify="newWhenNotify" :repeatNotify="newRepatNotify" />
@@ -394,10 +410,6 @@ export default defineComponent({
   border-radius: 5px;
 }
 
-.hidden-input .vue-datepicker-input {
-  display: none;
-}
-
 :root {
   --dp-input-icon-padding: 10px;
 }
@@ -409,10 +421,5 @@ export default defineComponent({
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.5em 1em;
   border: 1px solid #ccc;
-}
-
-.max-w-xs {
-  max-width: 1em;
-  /* Adjust the value as needed */
 }
 </style>

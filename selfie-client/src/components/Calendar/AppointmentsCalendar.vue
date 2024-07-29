@@ -4,7 +4,7 @@
             <div v-if="date" class="m-4 sm:m-8 grid-item">
                 <div class="flex align-center justify-between border-t-2 border-b-2 border-gray-300 mb-2"
                     :class="{ 'bg-emerald-500': timeMethods.isWeekend(date), 'bg-white': !timeMethods.isWeekend(date) }">
-                    <h3 v-if="view !== 'day'">{{ String(date.getDate()).padStart(2, '0') }}/{{ String(date.getMonth() + 1).padStart(2, '0') }}</h3>
+                    <h3>{{ String(date.getDate()).padStart(2, '0') }}/{{ String(date.getMonth() + 1).padStart(2, '0') }}</h3>
                     <h3>{{ timeMethods.getDayOfWeek(date) }}</h3>
                 </div>
                 <div v-if="includeEvents" class="mb-2">
