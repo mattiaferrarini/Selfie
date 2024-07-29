@@ -29,7 +29,8 @@ import {
     MdAdd,
     BiChevronExpand,
     CoOptions,
-    BiSave
+    BiSave,
+    MdDone
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 
@@ -41,7 +42,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
     MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, MdNavigatenext, MdNavigatebefore, FaUndo, MdAdd,
-    BiChevronExpand, CoOptions, BiSave);
+    BiChevronExpand, CoOptions, BiSave, MdDone);
 
 const app = createApp(App);
 const pinia = createPinia();
