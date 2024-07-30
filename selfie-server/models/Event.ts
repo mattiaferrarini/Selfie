@@ -48,7 +48,7 @@ const EventSchema: Schema = new Schema<IEvent>({
     },
     notification: {
         method: {
-            type: String,
+            type: [String], // Changed to an array of strings
             // required: true
         },
         when: {

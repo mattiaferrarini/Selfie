@@ -1,12 +1,15 @@
 <script lang="ts">
 import { ref, computed, nextTick, defineComponent, Ref, onMounted } from 'vue';
-import { DatePickerInstance } from "@vuepic/vue-datepicker";
 import EventForm from "@/components/Calendar/EventForm.vue";
 import ActivitiesList from "@/components/Calendar/ActivitiesList.vue";
 import AppointmentsCalendar from "@/components/Calendar/AppointmentsCalendar.vue";
 import ActivityForm from "@/components/Calendar/ActivityForm.vue";
 import UnavailabilityForm from '@/components/Calendar/UnavailabilityForm.vue';
-import timeMethods from '@/components/Calendar/timeMethods';
+import timeMethods from '@/services/timeService';
+import { CalendarEvent } from '@/models/Event';
+import { Activity } from '@/models/Activity';
+import { Unavailability } from '@/models/Unavailability';
+import { useAuthStore } from '@/stores/authStore';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -124,25 +127,6 @@ export default defineComponent({
     const showActivityForm = ref(false);
     const showUnavailabilityForm = ref(false);
 
-    // variables for event form
-    const newTitle = ref("");
-    const newAllDay = ref(false);
-    const newStartDate = ref(new Date());
-    const newStartTime = ref("");
-    const newEndDate = ref(new Date());
-    const newEndTime = ref("");
-    const newRepeat = ref("never");
-    const newUntil = ref("infinity");
-    const newNumberOfReps = ref(1);
-    const newRepeatEndDate = ref(new Date());
-    const notificationOptions = ref({
-      os: false,
-      email: false,
-      whatsapp: false
-    });
-    const newWhenNotify = ref("atEvent");
-    const newRepatNotify = ref("never");
-
     const newParticipants = ref([
       {
         username: 'Jane Doe',
@@ -158,27 +142,16 @@ export default defineComponent({
       }
     ]);
 
-    // variables for activity form
-    const newDone = ref(false);
+    const newEvent = ref<CalendarEvent>(new CalendarEvent());
+    const newActivity = ref<Activity>(new Activity());
+    const newUnavailability = ref<Unavailability>(new Unavailability());
 
     const next = () => {
-      if (view.value === 'day') {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), currentDate.value.getDate() + 1);
-      } else if (view.value === 'week') {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), currentDate.value.getDate() + 7);
-      } else {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1);
-      }
+      currentDate.value = timeMethods.nextCurrentDate(currentDate.value, view.value);
     };
 
     const prev = () => {
-      if (view.value === 'day') {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), currentDate.value.getDate() - 1);
-      } else if (view.value === 'week') {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), currentDate.value.getDate() - 7);
-      } else {
-        currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1);
-      }
+      currentDate.value = timeMethods.prevCurrentDate(currentDate.value, view.value);
     };
 
     const resetCalendar = () => {
@@ -192,38 +165,48 @@ export default defineComponent({
       showAddOptions.value = false;
     };
 
-    const openAddForm = () => {
-      newStartDate.value = currentDate.value;
-      newEndDate.value = currentDate.value;
-      newRepeatEndDate.value = currentDate.value;
+    const openAddEventForm = () => {
+      newEvent.value = new CalendarEvent();
 
-      const now = new Date();
-      let minutes = Math.round(now.getMinutes() / 5) * 5;
-      let hours = now.getHours();
-      hours = minutes === 60 ? hours + 1 : hours;
-      minutes = minutes === 60 ? 0 : minutes;
-      newStartTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-      let endMinutes = Math.round(oneHourLater.getMinutes() / 5) * 5;
-      let endHours = oneHourLater.getHours();
-      endHours = endMinutes === 60 ? endHours + 1 : endHours;
-      endMinutes = endMinutes === 60 ? 0 : endMinutes;
-      newEndTime.value = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+      newEvent.value.start = timeMethods.roundTime(currentDate.value);
+      newEvent.value.end = timeMethods.moveAheadByHours(newEvent.value.start, 1);
+      newEvent.value.repetition.endDate = new Date(newEvent.value.end);
+      newEvent.value.participants = [{username: useAuthStore().user.username, status: 'accepted'}];
 
       showEventForm.value = true;
     };
 
-    const closeAddForm = (event: MouseEvent) => {
+    const openAddActivityForm = () => {
+      newActivity.value = new Activity();
+      newActivity.value.deadline = timeMethods.moveAheadByDays(currentDate.value, 7);
+      showActivityForm.value = true;
+    };
+
+    const openUnavailabilityForm = () => {
+      newUnavailability.value = new Unavailability();
+      newUnavailability.value.start = timeMethods.roundTime(currentDate.value);
+      newUnavailability.value.end = timeMethods.moveAheadByHours(newUnavailability.value.start, 1);
+      newUnavailability.value.repetition.endDate = new Date(newUnavailability.value.end);
+      showUnavailabilityForm.value = true;
+    };
+
+    const closeAddForms = (event: MouseEvent) => {
       if (event) {
         const openButton = document.getElementById('open-add-form-btn');
         if (openButton && event.target !== openButton && !openButton.contains(event.target as Node)) {
-          showEventForm.value = false;
+          hideAllForms();
         }
       }
       else {
-        showEventForm.value = false;
+        hideAllForms();
       }
+    };
+
+    const hideAllForms = () => {
+      showEventForm.value = false;
+      showActivityForm.value = false;
+      showUnavailabilityForm.value = false;
+      showAddOptions.value = false;
     };
 
     const onViewChange = () => {
@@ -234,32 +217,14 @@ export default defineComponent({
       console.log(`View changed to: ${content.value}`);
     };
 
-    const closeEventForm = () => {
-      showEventForm.value = false;
-      console.log('Event form closed');
-      // TODO: complete
-    };
-
     const saveEvent = (newEvent: any) => {
       //TODO: Save event to database
       rangeEvents.value.push(newEvent);
     };
 
-    const closeActivityForm = () => {
-      showActivityForm.value = false;
-      console.log('Activity form closed');
-      // TODO: complete
-    };
-
     const saveActivity = (newActivity: any) => {
       //TODO: Save activity to database
       rangeActivities.value.push(newActivity);
-    };
-
-    const closeUnavailabilityForm = () => {
-      showUnavailabilityForm.value = false;
-      console.log('Activity form closed');
-      // TODO: complete
     };
 
     const saveUnavailability = (newUnav: any) => {
@@ -275,26 +240,29 @@ export default defineComponent({
       return content.value === 'appointments' || content.value === 'events' || content.value === 'unavailabilities';
     });
 
-    const modifyEvent = (event: any) => {
-      console.log('Event modified:', event);
+    const modifyEvent = (event: CalendarEvent) => {
+      newEvent.value = event;
+      showEventForm.value = true;
     };
 
-    const modifyActivity = (activity: any) => {
-      console.log('Activity modified:', activity);
+    const modifyActivity = (activity: Activity) => {
+      newActivity.value = activity;
+      showActivityForm.value = true;
     };
 
-    const markAsDone = (activity: any) => {
+    const modifyUnavailability = (unavailability: Unavailability) => {
+      newUnavailability.value = unavailability;
+      showUnavailabilityForm.value = true;
+    };
+
+    const markAsDone = (activity: Activity) => {
       activity.done = true;
       console.log('Activity marked as done:', activity);
     };
 
-    const undoActivity = (activity: any) => {
+    const undoActivity = (activity: Activity) => {
       activity.done = false;
       console.log('Activity marked as not done:', activity);
-    };
-
-    const modifyUnavailability = (unavailability: any) => {
-      console.log('Unavailability modified:', unavailability);
     };
 
     onMounted(() => {
@@ -317,13 +285,11 @@ export default defineComponent({
     });
 
     return {
-      next, prev, resetCalendar, openAddForm, closeAddForm, view, content, onViewChange, onContentChange, showEventForm,
-      showActivityForm, showUnavailabilityForm, currentDate, newAllDay, newStartDate, newStartTime, newEndDate, newEndTime,
-      newRepeat, newUntil, newNumberOfReps, newRepeatEndDate, notificationOptions, newWhenNotify, newRepatNotify, setRangeDates,
-      newTitle, saveEvent, showForm, closeEventForm, closeActivityForm, saveActivity, rangeEvents, showAppointments, modifyEvent,
-      rangeActivities, modifyActivity, markAsDone, undoActivity, newDone, rangeUnavailabilities, saveUnavailability,
-      closeUnavailabilityForm, showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
-      newParticipants
+      next, prev, resetCalendar, closeAddForms, view, content, onViewChange, onContentChange, showEventForm,
+      showActivityForm, showUnavailabilityForm, currentDate, setRangeDates, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
+      modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
+      showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
+      newParticipants, newEvent, newActivity, newUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm
     };
   },
 });
@@ -358,26 +324,27 @@ export default defineComponent({
     <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false">
       <template #trigger>
         <div class="clickable-text flex items-center justify-center">
-            <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
+          <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
           <v-icon name="bi-chevron-expand"></v-icon>
         </div>
       </template>
     </VueDatePicker>
 
     <AppointmentsCalendar v-if="showAppointments" @modifyEvent="modifyEvent" @modifyActivity="modifyActivity"
-      @undoActivity="undoActivity" @markAsDone="markAsDone" @modify-unavailability="modifyUnavailability" :currentDate="currentDate" :view="view"
-      :allEvents="rangeEvents" :include-events="content === 'appointments' || content === 'events'"
+      @undoActivity="undoActivity" @markAsDone="markAsDone" @modify-unavailability="modifyUnavailability"
+      :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
+      :include-events="content === 'appointments' || content === 'events'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
-      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content==='unavailabilities'"/>
+      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'" />
 
     <ActivitiesList v-if="content === 'activities'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
       @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view" />
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">
       <ul class="mr-4 mb-4 self-start" v-if="showAddOptions">
-        <li><button class="add-button" @click="openAddForm">Event</button></li>
-        <li><button class="add-button" @click="openAddForm">Activity</button></li>
-        <li><button class="add-button">Unavailability</button></li>
+        <li><button class="add-button" @click="openAddEventForm">Event</button></li>
+        <li><button class="add-button" @click="openAddActivityForm">Activity</button></li>
+        <li><button class="add-button" @click="openUnavailabilityForm">Unavailability</button></li>
       </ul>
       <button @click="openAddOptions" id="open-add-form-btn"
         class="bg-emerald-600 text-white p-2 rounded-full h-12 w-12 flex items-center justify-center self-end">
@@ -386,19 +353,12 @@ export default defineComponent({
     </div>
 
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
-      @click="closeAddForm">
-      <EventForm v-if="showEventForm" @close-event-form="closeEventForm" @save-event="saveEvent" :title="newTitle"
-        :allDay="newAllDay" :startDate="newStartDate" :startTime="newStartTime" :endDate="newEndDate"
-        :endTime="newEndTime" :repeat="newRepeat" :until="newUntil" :numberOfReps="newNumberOfReps"
-        :repeatEndDate="newRepeatEndDate" :notificationOptions="notificationOptions" :whenNotify="newWhenNotify"
-        :repeatNotify="newRepatNotify" :participants="newParticipants"/>
-      <ActivityForm v-if="showActivityForm" @closeActivityForm="closeActivityForm" @save-activity="saveActivity"
-        :deadline="newEndDate" :title="newTitle" :done="newDone" :notificationOptions="notificationOptions"
-        :whenNotify="newWhenNotify" :repeatNotify="newRepatNotify" />
-      <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeUnavailabilityForm"
-        @save-unavailability="saveUnavailability" :title="newTitle" :all-day="newAllDay" :start-date="newStartDate"
-        :end-date="newEndDate" :start-time="newStartTime" :end-time="newEndTime" :repeat="newRepeat"
-        :number-of-reps="newNumberOfReps" :until="newUntil" :repeat-end-date="newRepeatEndDate" />
+      @click="closeAddForms">
+      <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" :event="newEvent" />
+      <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
+        :activity="newActivity" />
+      <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
+        @save-unavailability="saveUnavailability" :unavailability="newUnavailability" />
     </div>
 
   </div>

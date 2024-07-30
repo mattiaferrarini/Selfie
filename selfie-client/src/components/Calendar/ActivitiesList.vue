@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import timeMethods from './timeMethods';
+import timeMethods from '../../services/timeService';
 export default defineComponent({
     props: {
         activities: {

@@ -87,6 +87,47 @@ const sameDate = (date1: Date, date2: Date): boolean => {
     return d1.toDateString() === d2.toDateString();
 };
 
+const prevCurrentDate = (currentDate: Date, view: string): Date => {
+    let newDate: Date;
+    if (view === 'day') {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1);
+    } else if (view === 'week') {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
+    } else {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    }
+    return newDate;
+};
+
+const nextCurrentDate = (currentDate: Date, view: string): Date => {
+    let newDate: Date;
+    if (view === 'day') {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
+    } else if (view === 'week') {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7);
+    } else {
+        newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    }
+    return newDate;
+};
+
+const roundTime = (date: Date): Date => {
+    let minutes = Math.round(date.getMinutes() / 5) * 5;
+    let hours = date.getHours();
+    hours = minutes === 60 ? hours + 1 : hours;
+    minutes = minutes === 60 ? 0 : minutes;
+
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
+};
+
+const moveAheadByHours = (date: Date, hours: number): Date => {
+    return new Date(date.getTime() + hours * 60 * 60 * 1000);
+};
+
+const moveAheadByDays = (date: Date, days: number): Date => {
+    return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+};
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -99,5 +140,10 @@ export default {
     isWeekend,
     getStartOfDay,
     getEndOfDay,
-    sameDate
+    sameDate,
+    prevCurrentDate,
+    nextCurrentDate,
+    roundTime,
+    moveAheadByHours,
+    moveAheadByDays
 };

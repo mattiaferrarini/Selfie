@@ -2,11 +2,11 @@
     <div class="bg-white p-4 rounded-lg shadow-lg w-4/5" @click.stop>
         <form class="flex flex-col" @submit="handleSubmit">
             <div>
-                <label><input type="text" placeholder="Untitled Activity" required v-model="newTitle"></label><br>
+                <label><input type="text" placeholder="Untitled Activity" required v-model="newActivity.title"></label><br>
             </div>
             <hr>
             <div>
-                <label><input type="checkbox" v-model="newDone"> Completed </label><br>
+                <label><input type="checkbox" v-model="newActivity.done"> Completed </label><br>
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
@@ -28,7 +28,7 @@
                 </div>
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
                     How long
-                    <select name="whenNotify" v-model="newWhenNotify">
+                    <select name="whenNotify" v-model="newActivity.notification.when">
                         <option value="atEvent">Day of deadline</option>
                         <option value="1day">1 day after</option>
                         <option value="3days">3 days after</option>
@@ -39,7 +39,7 @@
                 </label>
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
                     Frequency
-                    <select name="repeatNotify" v-model="newRepeatNotify" class="max-w-36">
+                    <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36">
                         <option value="never">Never</option>
                         <option value="daily">Daily</option>
                         <option value="linear">Increase by 1 every day</option>
@@ -59,66 +59,45 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { Activity } from '@/models/Activity';
 
 export default defineComponent({
     props: {
-        title: {
-            type: String,
-            default: ''
-        },
-        done: {
-            type: Boolean,
-            default: false
-        },
-        deadline: {
-            type: Date,
+        activity: {
+            type: Object as () => Activity,
             required: true
-        },
-        notificationOptions: {
-            type: Object,
-            default: () => ({
-                os: false,
-                email: false,
-                whatsapp: false
-            })
-        },
-        whenNotify: {
-            type: String,
-            default: 'atEvent'
-        },
-        repeatNotify: {
-            type: String,
-            default: 'never'
         }
     },
-    emits: ['closeActivityForm', 'saveActivity'],
+    emits: ['closeForm', 'saveActivity'],
     data() {
         return {
-            newTitle: this.title,
-            newDone: this.done,
-            newDeadline: this.deadline,
-            newStartTime: this.startTime,
-            newNotificationOptions: this.notificationOptions,
-            newWhenNotify: this.whenNotify,
-            newRepeatNotify: this.repeatNotify
+            newActivity: this.activity,
+            newNotificationOptions: {
+                os: this.activity.notification.method.includes('os'),
+                email: this.activity.notification.method.includes('email'),
+                whatsapp: this.activity.notification.method.includes('whatsapp')
+            },
         }
     },
     methods: {
         closeForm() {
             console.log('closeForm');
-            this.$emit('closeActivityForm');
+            this.$emit('closeForm');
         },
         handleSubmit(event: Event) {
             event.preventDefault();
-            const newActivity = {
-                title: this.newTitle,
-                done: this.newDone,
-                deadline: this.newDeadline,
-                notificationOptions: this.newNotificationOptions,
-                whenNotify: this.newWhenNotify,
-                repeatNotify: this.newRepeatNotify
-            }
-            this.$emit('saveActivity', newActivity);
+
+            this.newActivity.notification.method = [];
+            if (this.newNotificationOptions.os)
+                this.newActivity.notification.method.push('os');
+
+            if (this.newNotificationOptions.email)
+                this.newActivity.notification.method.push('email');
+
+            if (this.newNotificationOptions.whatsapp)
+                this.newActivity.notification.method.push('whatsapp');
+            
+            this.$emit('saveActivity', this.newActivity);
         }
     },
     computed: {
@@ -127,10 +106,10 @@ export default defineComponent({
         },
         formattedEndDate: {
             get() {
-                return this.newDeadline.toISOString().split('T')[0];
+                return this.newActivity.deadline.toISOString().split('T')[0];
             },
             set(value: string) {
-                this.newDeadline = new Date(value);
+                this.newActivity.deadline = new Date(value);
             }
         },
     }

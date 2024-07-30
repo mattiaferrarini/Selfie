@@ -7,7 +7,7 @@
                 <input type="text" placeholder="Add usernames" class="border border-gray-300 p-1 flex-grow">
                 <button class="px-2 bg-gray-300"><v-icon name="md-add"></v-icon></button>
             </div>
-        <button class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
+        <button v-if="yourselfMissing" @click="addYoursef" class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
         </div>
         <div>
             <h3 class="font-semibold">Invited</h3>
@@ -32,6 +32,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
 
 export default defineComponent({
     emits: ['closeParticipantsForm'],
@@ -44,6 +45,7 @@ export default defineComponent({
     data() {
         return {
             newParticipants: [...this.participants],
+            yourself: useAuthStore().user.username,
         };
     },
     methods: {
@@ -59,10 +61,13 @@ export default defineComponent({
         },
         closeForm() {
             this.$emit('closeParticipantsForm', this.newParticipants);
+        },
+        addYoursef() {
+            this.newParticipants.push({ username: this.yourself, status: 'accepted' });
         }
     },
     computed: {
-        sortedParticipants() {
+        sortedParticipants() : any[]{
             return [...this.newParticipants].sort((a: any, b: any) => {
                 if (a.status === 'accepted' && b.status !== 'accepted') {
                     return -1;
@@ -76,6 +81,9 @@ export default defineComponent({
                     return 0;
                 }
             });
+        },
+        yourselfMissing() :boolean{
+            return !this.newParticipants.some((participant: any) => participant.username === this.yourself);
         }
     }
 });
