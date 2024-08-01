@@ -5,6 +5,8 @@ import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import noteRoutes from './routes/note';
 import eventRoutes from './routes/event';
+import activityRoutes from './routes/activity';
+import unavailabilityRoutes from './routes/unavailability';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -56,5 +58,9 @@ app.use('/profile', ensureAuthenticated, profileRoutes);
 app.use('/note', ensureAuthenticated, noteRoutes);
 
 app.use('/event', ensureAuthenticated, eventRoutes);
+
+app.use('/activity', ensureAuthenticated, activityRoutes);
+
+app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 
 app.listen(PORT);

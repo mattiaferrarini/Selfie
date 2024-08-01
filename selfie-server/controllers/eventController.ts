@@ -1,12 +1,30 @@
 // Import the Event model
 import Event from '../models/Event';
 
+
+const formatEvent = (event: any) => {
+    return {
+        id: event._id,
+        allDay: event.allDay,
+        title: event.title,
+        start: event.start,
+        end: event.end,
+        repetition: event.repetition,
+        place: event.place,
+        notification: event.notification,
+        participants: event.participants
+    };
+};
+
 // Function to get all events with a specified user as a participant
 export const getEventsByUser = async (req: any, res: any) => {
-    const { userId } = req.params;
+    const { username } = req.params;
     try {
-        const events = await Event.find({ participants: userId });
-        res.status(200).send(events);
+        const events = await Event.find({ "participants.username": username });
+        const formattedEvents = events.map((event: any) => formatEvent(event));
+
+        res.status(200).send(formattedEvents);
+        //res.status(200).send(events);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving events' });
     }
@@ -26,6 +44,7 @@ export const deleteEvent = async (req: any, res: any) => {
 // Function to add a new event
 export const addEvent = async (req: any, res: any) => {
     const newEvent = new Event({
+        allDay: req.body.allDay,
         title: req.body.title,
         start: req.body.start,
         end: req.body.end,
@@ -37,7 +56,7 @@ export const addEvent = async (req: any, res: any) => {
 
     try {
         await newEvent.save();
-        res.status(201).send(newEvent);
+        res.status(201).send(formatEvent(newEvent));
     } catch (error) {
         res.status(422).send({ error: 'Error creating event' });
     }
@@ -51,6 +70,7 @@ export const modifyEvent = async (req: any, res: any) => {
 
         if (event) {
             event.title = req.body.title;
+            event.allDay = req.body.allDay;
             event.start = req.body.start;
             event.end = req.body.end;
             event.repetition = req.body.repetition;
@@ -59,7 +79,7 @@ export const modifyEvent = async (req: any, res: any) => {
             event.participants = req.body.participants;
 
             await event.save();
-            res.status(200).send(event);
+            res.status(200).send(formatEvent(event));
         } else {
             res.status(404).send({ error: "Event doesn't exist!" });
         }

@@ -1,80 +1,48 @@
 import { model, Schema, Document } from 'mongoose';
-import { IUser } from './User';
 
 export interface IEvent extends Document {
     title: string;
+    allDay: boolean;
     start: Date;
     end: Date;
     repetition: {
         frequency: string;
+        until: string;
         numberOfRepetitions: number;
         endDate: Date;
     };
     place: string;
     notification: {
-        method: string;
+        method: string[];
         when: string;
         repeat: string;
     };
-    participants: IUser[];
+    participants:{
+        username: string;
+        status: string;
+    }[];
 }
 
-const EventSchema: Schema = new Schema<IEvent>({
-    title: {
-        type: String,
-        required: true
-    },
-    start: {
-        type: Date,
-        required: true
-    },
-    end: {
-        type: Date,
-        required: true
-    },
+const EventSchema = new Schema({
+    title: { type: String, required: true },
+    allDay: { type: Boolean, required: true },
+    start: { type: Date, required: true },
+    end: { type: Date, required: true },
     repetition: {
-        frequency: {
-            type: String,
-        },
-        numberOfRepetitions: {
-            type: Number
-        },
-        endDate: {
-            type: Date
-        }
+        frequency: { type: String, required: true },
+        until: { type: String, required: true },
+        numberOfRepetitions: { type: Number, required: true },
+        endDate: { type: Date, required: true }
     },
-    place: {
-        type: String
-    },
+    place: { type: String },
     notification: {
-        method: {
-            type: [String], // Changed to an array of strings
-            // required: true
-        },
-        when: {
-            type: String,
-            // enum: ['all\'ora voluta', 'un minuto', 'cinque minuti', 'un\'ora', 'due ore', 'un giorno', 'due giorni prima'],
-            required: function() {
-                return this.notification.method != null;
-            }
-        },
-        repeat: {
-            type: String,
-            // enum: ['ripeti tre volte', 'ripeti ogni minuto', 'ripeti ogni ora', 'ripeti fino a che non rispondo', 'ecc.'],
-            required: function() {
-                return this.notification.method != null;
-            }
-        }
+        method: { type: [String], required: true },
+        when: { type: String, required: true },
+        repeat: { type: String, required: true }
     },
     participants: [{
-        username: {
-            type: String,
-            required: true
-        },
-        status: {
-            type: String,
-            required: true
-        }
+        username: { type: String, required: true },
+        status: { type: String, required: true }
     }]
 });
 
