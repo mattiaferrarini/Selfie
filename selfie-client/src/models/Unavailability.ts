@@ -1,5 +1,6 @@
 export class Unavailability {
     title: string;
+    id: string | undefined;
     allDay: boolean;
     start: Date;
     end: Date;
@@ -9,6 +10,7 @@ export class Unavailability {
         numberOfRepetitions: number;
         endDate: Date;
     };
+    username: string;
 
     constructor(
         title = '',
@@ -25,12 +27,14 @@ export class Unavailability {
             until: 'infinity',
             numberOfRepetitions: 0,
             endDate: new Date()
-        }
+        },
+        username = ''
     ) {
         this.title = title;
         this.allDay = allDay;
         this.start = start;
         this.end = end;
         this.repetition = repetition;
+        this.username = username;
     }
 }

@@ -1,5 +1,6 @@
 export class CalendarEvent {
     title: string;
+    id: string | undefined;
     allDay: boolean;
     start: Date;
     end: Date;
@@ -9,6 +10,7 @@ export class CalendarEvent {
         numberOfRepetitions: number;
         endDate: Date;
     };
+    place: string;
     notification: {
         method: string[];
         when: string;
@@ -35,6 +37,7 @@ export class CalendarEvent {
             numberOfRepetitions: 0,
             endDate: new Date()
         },
+        place = '',
         notification: {
             method: string[];
             when: string;
@@ -54,6 +57,7 @@ export class CalendarEvent {
         this.start = start;
         this.end = end;
         this.repetition = repetition;
+        this.place = place;
         this.notification = notification;
         this.participants = participants;
     }
