@@ -10,6 +10,7 @@ import { CalendarEvent } from '@/models/Event';
 import { Activity } from '@/models/Activity';
 import { Unavailability } from '@/models/Unavailability';
 import { useAuthStore } from '@/stores/authStore';
+import eventService from '@/services/eventService';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -21,35 +22,18 @@ export default defineComponent({
     UnavailabilityForm
   },
   setup() {
+    const authStore = useAuthStore();
+
     const currentDate = ref(new Date());
     const rangeStartDate = ref(new Date());
     const rangeEndDate = ref(new Date());
-    const rangeEvents = ref([
-      {
-        id: 1,
-        title: "Event 1",
-        start: new Date(2024, 6, 1),
-        end: new Date(2024, 6, 2)
-      },
-      {
-        id: 2,
-        title: "Event 2",
-        start: new Date(2024, 6, 3),
-        end: new Date(2024, 6, 5)
-      },
-      {
-        id: 3,
-        title: "Event 3",
-        start: new Date(2024, 6, 5),
-        end: new Date(2024, 6, 6)
-      },
-      {
-        id: 4,
-        title: "Event 4",
-        start: new Date(2024, 6, 3, 9, 0),
-        end: new Date(2024, 6, 3, 10, 30)
-      },
-    ]);
+    const rangeEvents = ref<CalendarEvent[]>([]);
+
+    const modifying = ref(false);
+
+    const fetchEvents = async () => {
+      rangeEvents.value = await eventService.getEventsByUser(authStore.user.username);
+    };
 
     const rangeActivities = ref([
       {
@@ -127,30 +111,15 @@ export default defineComponent({
     const showActivityForm = ref(false);
     const showUnavailabilityForm = ref(false);
 
-    const newParticipants = ref([
-      {
-        username: 'Jane Doe',
-        status: 'accepted'
-      },
-      {
-        username: 'John Doe',
-        status: 'pending'
-      },
-      {
-        username: 'Jack Doe',
-        status: 'declined'
-      }
-    ]);
-
-    const newEvent = ref<CalendarEvent>(new CalendarEvent());
+    const selectedEvent = ref<CalendarEvent>(new CalendarEvent());
     const newActivity = ref<Activity>(new Activity());
     const newUnavailability = ref<Unavailability>(new Unavailability());
 
-    const next = () => {
+    const nextPeriod = () => {
       currentDate.value = timeMethods.nextCurrentDate(currentDate.value, view.value);
     };
 
-    const prev = () => {
+    const prevPeriod = () => {
       currentDate.value = timeMethods.prevCurrentDate(currentDate.value, view.value);
     };
 
@@ -166,12 +135,12 @@ export default defineComponent({
     };
 
     const openAddEventForm = () => {
-      newEvent.value = new CalendarEvent();
+      selectedEvent.value = new CalendarEvent();
 
-      newEvent.value.start = timeMethods.roundTime(currentDate.value);
-      newEvent.value.end = timeMethods.moveAheadByHours(newEvent.value.start, 1);
-      newEvent.value.repetition.endDate = new Date(newEvent.value.end);
-      newEvent.value.participants = [{username: useAuthStore().user.username, status: 'accepted'}];
+      selectedEvent.value.start = timeMethods.roundTime(currentDate.value);
+      selectedEvent.value.end = timeMethods.moveAheadByHours(selectedEvent.value.start, 1);
+      selectedEvent.value.repetition.endDate = new Date(selectedEvent.value.end);
+      selectedEvent.value.participants = [{ username: authStore.user.username, status: 'accepted' }];
 
       showEventForm.value = true;
     };
@@ -207,19 +176,25 @@ export default defineComponent({
       showActivityForm.value = false;
       showUnavailabilityForm.value = false;
       showAddOptions.value = false;
+
+      modifying.value = false;
     };
 
     const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);
     };
 
-    const onContentChange = () => {
-      console.log(`View changed to: ${content.value}`);
-    };
+    const saveEvent = async (newEvent: CalendarEvent) => {
+      if (modifying.value) {
+        const res = await eventService.modifyEvent(newEvent);
+        const index = rangeEvents.value.findIndex(event => event.id === res.id);
+        rangeEvents.value[index] = res;
+      } else {
+        const res = await eventService.addEvent(newEvent);
+        rangeEvents.value.push(res);
+      }
 
-    const saveEvent = (newEvent: any) => {
-      //TODO: Save event to database
-      rangeEvents.value.push(newEvent);
+      hideAllForms();
     };
 
     const saveActivity = (newActivity: any) => {
@@ -241,8 +216,15 @@ export default defineComponent({
     });
 
     const modifyEvent = (event: CalendarEvent) => {
-      newEvent.value = event;
+      selectedEvent.value = event;
+      modifying.value = true;
       showEventForm.value = true;
+    };
+
+    const deleteEvent = (event: CalendarEvent) => {
+      eventService.deleteEvent(event);
+      rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
+      hideAllForms();
     };
 
     const modifyActivity = (activity: Activity) => {
@@ -267,29 +249,20 @@ export default defineComponent({
 
     onMounted(() => {
       setRangeDates();
+      fetchEvents();
     });
 
     const currentDisplayedPeriodString = computed(() => {
-      if (view.value === 'day') {
-        return timeMethods.formatDayMonth(currentDate.value);
-      } else if (view.value === 'week') {
-        const firstDay = timeMethods.getFirstDayOfWeek(currentDate.value);
-        const lastDay = timeMethods.getLastDayOfWeek(currentDate.value);
-        return `${timeMethods.formatDayMonth(firstDay)} - ${timeMethods.formatDayMonth(lastDay)}`;
-      } else {
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const month = months[currentDate.value.getMonth()];
-        const year = currentDate.value.getFullYear();
-        return `${month} ${year}`;
-      }
+      return timeMethods.formatPeriodString(currentDate.value, view.value);
     });
 
     return {
-      next, prev, resetCalendar, closeAddForms, view, content, onViewChange, onContentChange, showEventForm,
+      next: nextPeriod, prev: prevPeriod, resetCalendar, closeAddForms, view, content, onViewChange, showEventForm,
       showActivityForm, showUnavailabilityForm, currentDate, setRangeDates, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
-      newParticipants, newEvent, newActivity, newUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm
+      selectedEvent, newActivity, newUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
+      modifying, deleteEvent
     };
   },
 });
@@ -304,7 +277,7 @@ export default defineComponent({
           <option value="week">Week</option>
           <option value="month">Month</option>
         </select>
-        <select id="content" name="content" v-model="content" @change="onContentChange" class="p-1 h-full rounded">
+        <select id="content" name="content" v-model="content" class="p-1 h-full rounded">
           <option value="appointments">Appointments</option>
           <option value="events">Events</option>
           <option value="activities">Activities</option>
@@ -354,7 +327,8 @@ export default defineComponent({
 
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
-      <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" :event="newEvent" />
+      <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
+        :event="selectedEvent" :modifying="modifying" />
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         :activity="newActivity" />
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"

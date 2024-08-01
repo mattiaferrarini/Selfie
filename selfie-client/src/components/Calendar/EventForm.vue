@@ -1,8 +1,13 @@
 <template>
   <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
+    <div class="flex justify-end">
+      <button @click="closeForm"> 
+        <v-icon name="md-close" />
+      </button>
+    </div>
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
-        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title"></label><br>
+        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title" class="w-full"></label><br>
       </div>
       <hr>
       <div>
@@ -55,10 +60,10 @@
       </div>
       <hr>
       <div>
-        <label><input type="text" placeholder="Add a place"></label><br>
+        <label><input type="text" placeholder="Add a place" v-model="newEvent.place" class="w-full"></label><br>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
-          <button @click="openParticipantsForm" @click.stop>
+          <button type="button" @click="openParticipantsForm" @click.stop>
             {{ newEvent.participants.length }}
             <v-icon name="md-navigatenext" />
           </button>
@@ -98,10 +103,14 @@
         </label>
       </div>
       <hr>
+      <div class="flex-col space-y-1 w-full mt-4">
+        <button v-if="modifying" type="button" class="w-full p-1 rounded-lg bg-gray-300">Export event</button>
+        <button v-else type="button" class="w-full p-1 rounded-lg bg-gray-300">Import event</button>
       <div class="flex w-full space-x-1">
-        <button type="button" @click="closeForm" class="flex-1 bg-red-600 text-white p-1 rounded-lg">Cancel</button>
+        <button v-if="modifying" type="button" @click="deleteEvent" class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
         <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
       </div>
+    </div>
     </form>
 
     <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants"
@@ -123,12 +132,16 @@ export default defineComponent({
     event: {
       type: Object as () => CalendarEvent,
       required: true
+    },
+    modifying: {
+      type: Boolean,
+      default: false
     }
   },
-  emits: ['closeForm', 'saveEvent'],
+  emits: ['closeForm', 'saveEvent', 'deleteEvent'],
   data() {
     return {
-      newEvent: this.event,
+      newEvent: { ...this.event },
       newStartTime: `${String(this.event.start.getHours()).padStart(2, '0')}:${String(this.event.start.getMinutes()).padStart(2, '0')}`,
       newEndTime: `${String(this.event.end.getHours()).padStart(2, '0')}:${String(this.event.end.getMinutes()).padStart(2, '0')}`,
       newNotificationOptions: {
@@ -141,7 +154,6 @@ export default defineComponent({
   },
   methods: {
     closeForm() {
-      console.log('closeForm');
       this.$emit('closeForm');
     },
     handleSubmit(event: Event) {
@@ -166,6 +178,9 @@ export default defineComponent({
     handleCloseParticipantsForm(participants: any) {
       this.newEvent.participants = participants;
       this.closeParticipantsForm();
+    },
+    deleteEvent() {
+      this.$emit('deleteEvent', this.event);
     }
   },
   computed: {

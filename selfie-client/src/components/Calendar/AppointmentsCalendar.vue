@@ -10,7 +10,7 @@
                 <div v-if="includeEvents" class="mb-2">
                     <h4 class="font-bold">Events</h4>
                     <ul>
-                        <li v-for="event in eventsForDay(date)" :key="event.id">
+                        <li v-for="event in eventsForDay(date)" :key="event.id" class="clickable-item">
                             <div class="flex align-center justify-between" @click="modifyEvent(event[0])">
                                 <h5>{{ event[0].title }}</h5>
                                 <p>{{ event[1] }}</p>
@@ -22,7 +22,7 @@
                 <div v-if="includeActivities">
                     <h4 class="font-bold">Activities</h4>
                     <ul>
-                        <li v-for="activity in activitiesForTheDay(date)" :key="activity.id">
+                        <li v-for="activity in activitiesForTheDay(date)" :key="activity.id" class="clickable-item">
                             <div class="flex align-center justify-between" @click="modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                 <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
@@ -35,7 +35,7 @@
                 <div v-if="includeUnavailable" class="mb-2">
                     <h4 class="font-bold">Unavailabilities</h4>
                     <ul>
-                        <li v-for="unav in unavailabiltiesForTheDay(date)" :key="unav.id">
+                        <li v-for="unav in unavailabiltiesForTheDay(date)" :key="unav.id" class="clickable-item">
                             <div class="flex align-center justify-between" @click="modifyUnavailability(unav[0])">
                                 <h5>{{ unav[0].title }}</h5>
                                 <p>{{ unav[1] }}</p>
@@ -97,7 +97,8 @@ export default defineComponent({
     },
     methods: {
         eventsForDay(date: Date): any[] {
-            return this.filterAndSortForDay(this.allEvents, date);
+            const res = this.filterAndSortForDay(this.allEvents, date);
+            return res;
         },
         formatEventTime(event: any, date: Date) {
             let startOfDay: any = timeMethods.getStartOfDay(date);
@@ -227,5 +228,9 @@ export default defineComponent({
 
 .done {
     text-decoration: line-through;
+}
+
+.clickable-item {
+    cursor: pointer;
 }
 </style>

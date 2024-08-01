@@ -128,6 +128,23 @@ const moveAheadByDays = (date: Date, days: number): Date => {
     return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 };
 
+const formatPeriodString = (currentDate: Date, view: string): string => {
+    if (view === 'day') {
+        return formatDayMonth(currentDate);
+    }
+    else if (view === 'week') {
+        const firstDay = getFirstDayOfWeek(currentDate);
+        const lastDay = getLastDayOfWeek(currentDate);
+        return `${formatDayMonth(firstDay)} - ${formatDayMonth(lastDay)}`;
+    }
+    else {
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const month = months[currentDate.getMonth()];
+        const year = currentDate.getFullYear();
+        return `${month} ${year}`;
+    }
+};
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -145,5 +162,6 @@ export default {
     nextCurrentDate,
     roundTime,
     moveAheadByHours,
-    moveAheadByDays
+    moveAheadByDays,
+    formatPeriodString
 };
