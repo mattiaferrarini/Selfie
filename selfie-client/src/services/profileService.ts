@@ -17,11 +17,6 @@ const updateHomePreferences = async (calendarWeekly: boolean, notesDescription: 
         const authStore = useAuthStore();
         authStore.setPreferences(response.data.preferences);
     } catch (error: any) {
-        if (401 === error.response.status) {
-            const authStore = useAuthStore();
-            authStore.clearAuthData();
-            await router.push({name: "login", params: {message: "Your session has expired. Please login again."}});
-        }
         throw error.response.data;
     }
 }

@@ -29,6 +29,7 @@ const handleMessage = (message: string, ws: WebSocket, userConnections: Map<stri
         const parsedMessage = JSON.parse(message);
         chatController.sendMessage(user.username, parsedMessage.to, parsedMessage.text).then(() => {
             const connections = userConnections.get(parsedMessage.to);
+            // TODO: email?
             if (connections) {
                 connections.forEach((cws) => cws.send(JSON.stringify({
                     from: user.username,

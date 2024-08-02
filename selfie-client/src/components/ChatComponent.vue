@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="flex">
-      <input type="text" v-model="newMessage" v-on:keyup.enter="sendMessage" placeholder="Type a message..."
+      <textarea type="text" v-model="newMessage" v-on:keyup.enter="sendMessage" placeholder="Type a message..."
              class="flex-grow p-2 border rounded-l-lg"/>
       <button @click="sendMessage" class="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded-r-lg">
         Send
