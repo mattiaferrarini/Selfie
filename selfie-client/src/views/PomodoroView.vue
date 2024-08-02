@@ -94,7 +94,7 @@
          class="fixed inset-0 z-30 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full content-center">
       <div
           v-click-outside="() => showEditModal = false"
-          class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
+          class="relative mx-auto p-2 w-fit sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
         <form class="mt-3 text-center" @submit.stop="saveEditChanges">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Current Time</h3>
           <label for="setCycleNumber" class="font-semibold">Numero Ciclo</label>
@@ -113,16 +113,21 @@
             <label for="setMinutes">Minuti</label>&nbsp; : &nbsp;
             <label for="setSeconds">Secondi</label>
           </div>
+          <br/>
           <div class="inline-flex items-center">
-            <input type="number" v-model.number="setMinutes" min="0" :max="[setWork == 'true' ? workDuration - 1 : pauseDuration - 1]" id="setMinutes"
+            <input type="number" v-model.number="setMinutes" min="0"
+                   :max="[setWork == 'true' ? workDuration : pauseDuration]" id="setMinutes"
                    class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="23">
             <span class="text-2xl font-semibold mx-1 pb-1">:</span>
-            <input type="number" v-model.number="setSeconds" min="0" max="60" id="setSeconds"
+            <input type="number" v-model.number="setSeconds" min="0"
+                   :max="[setWork == 'true' ? (setMinutes == workDuration ? 0 : 59) : (setMinutes == pauseDuration ? 0 : 59)]"
+                   id="setSeconds"
                    class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="59">
           </div>
-          <div class="items-center px-4 py-3">
+          <div class="items-center w-full px-4 py-3">
             <input type="submit"
-                    class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700" value="Save" />
+                   class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"
+                   value="Save"/>
             <button @click="showEditModal = false"
                     class="ml-3 px-3 py-1 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
               Cancel
@@ -131,7 +136,8 @@
         </form>
       </div>
     </div>
-    <div v-if="showModal" class="fixed inset-0 z-20 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center">
+    <div v-if="showModal"
+         class="fixed inset-0 z-20 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full content-center">
       <div
           v-click-outside="() => showModal = false"
           class="relative mx-auto p-2 w-min sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
@@ -217,14 +223,17 @@ export default defineComponent({
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
       let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60)
       let seconds = cycle_time % 60;
+      // pad seconds and if minutes == 0 set it to workDuration
+      !minutes && (minutes = this.workDuration);
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     },
     pauseOrWork(): string {
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
-      return cycle_time > this.pauseDuration * 60 ? 'Work' : 'Pause';
+      return cycle_time > this.pauseDuration * 60 || cycle_time == 0 ? 'Work' : 'Pause';
     },
     formattedCycle(): string {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
+      cycle == this.numberOfCycles && (cycle -= 1);
       return `${this.numberOfCycles - cycle}/${this.numberOfCycles}`;
     },
   },

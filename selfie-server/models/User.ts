@@ -1,18 +1,34 @@
 import {Document, model, Schema} from 'mongoose';
 import bcrypt from "bcryptjs";
 
+export interface IPushSubscription {
+    endpoint: string;
+    keys: {
+        p256dh: string;
+        auth: string;
+    };
+}
+
+enum NotificationType {
+    EMAIL = "email",
+    PUSH = "push",
+    BOTH = "both"
+}
+
 export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
-    real_name: string;
+    realName: string;
     birthday: Date;
+    pushSubscriptions: IPushSubscription[];
     preferences: {
         home: {
             calendarWeekly: boolean;
             notesDescription: boolean;
             pomodoroType: string;
         };
+        notificationType: NotificationType;
         notes: Object; // Adjust the type based on your requirements
         pomodoro: {
             workDuration: number;
@@ -21,6 +37,14 @@ export interface IUser extends Document {
         };
     };
 }
+
+const PushSubscriptionSchema: Schema = new Schema<IPushSubscription>({
+    endpoint: {type: String},
+    keys: {
+        p256dh: {type: String},
+        auth: {type: String},
+    }
+});
 
 const UserSchema: Schema = new Schema<IUser>({
     username: {
@@ -31,19 +55,24 @@ const UserSchema: Schema = new Schema<IUser>({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: /.+@.+\..+/ // Simple email validation
     },
     password: {
         type: String,
         required: true
     },
-    real_name: {
+    realName: {
         type: String,
         required: true
     },
     birthday: {
         type: Date,
         required: true
+    },
+    pushSubscriptions: {
+        type: [PushSubscriptionSchema],
+        default: []
     },
     preferences: {
         home: {
@@ -60,9 +89,14 @@ const UserSchema: Schema = new Schema<IUser>({
                 required: true
             }
         },
+        notificationType: {
+            type: String,
+            enum: Object.values(NotificationType),
+            required: true
+        },
         notes: {
-            type: Object, // Or any other type based on your requirements
-            required: false // Adjust based on whether this is optional or required
+            type: Object,
+            required: false
         },
         pomodoro: {
             workDuration: {
@@ -90,4 +124,6 @@ UserSchema.pre<IUser>('save', async function (next) {
     next();
 });
 
-export default model('User', UserSchema);
+const User = model<IUser>("User", UserSchema);
+
+export default User;
