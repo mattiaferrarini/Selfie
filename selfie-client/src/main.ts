@@ -7,7 +7,7 @@ import piniaPluginPersistedState from "pinia-plugin-persistedstate"
 import {addIcons, OhVueIcon} from 'oh-vue-icons';
 import {
     BiCalendar2Range,
-    BiCalendar3,
+    BiCalendar3, BiChatDots,
     CoHome,
     GiTimeTrap,
     MdClose,
@@ -30,7 +30,7 @@ import axios from "axios";
 
 addIcons(CoHome, BiCalendar3, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
-    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose);
+    MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, BiChatDots );
 
 // setup automatic response to 401 (Unauthenticated)
 axios.interceptors.response.use((response: any) => {

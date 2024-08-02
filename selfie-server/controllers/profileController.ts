@@ -22,6 +22,22 @@ const changePassword = async (req: any, res: any) => {
     }
 }
 
+const updateHomePreferences = async (req: any, res: any) => {
+    const {calendarWeekly, notesDescription, pomodoroType} = req.body;
+    try {
+        const user: any = await User.findById(req.user._id);
+        if (!user) return res.status(400).send('User not found');
+
+        user.preferences.home.calendarWeekly = calendarWeekly;
+        user.preferences.home.notesDescription = notesDescription;
+        user.preferences.home.pomodoroType = pomodoroType;
+        await user.save();
+        res.status(200).json({"preferences": user.preferences});
+    } catch (err: any) {
+        res.status(400).send('Error updating home preferences');
+    }
+}
+
 const changeBirthday = async (req: any, res: any) => {
     const {birthday} = req.body;
     try {
@@ -80,6 +96,7 @@ const updatePomodoroPreferences = async (req: any, res: any) => {
 
 export default {
     changePassword,
+    updateHomePreferences,
     changeBirthday,
     changeRealName,
     updateNotificationPreferences,

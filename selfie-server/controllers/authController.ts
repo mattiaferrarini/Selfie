@@ -1,9 +1,13 @@
-import User, {IUser} from "../models/User";
+import User from "../models/User";
 import passport from "passport";
 
 const default_preferences = {
+    home: {
+        calendarWeekly: false,
+        notesDescription: false,
+        pomodoroType: "last"
+    },
     notificationType: "email",
-    homeView: {},
     notes: {},
     pomodoro: {
         workDuration: 30,
@@ -17,15 +21,7 @@ export const register = async (req: any, res: any, next: any) => {
     try {
         const newUser = new User({username, realName, email, password, birthday, preferences: default_preferences});
         await newUser.save();
-        passport.authenticate('local', function (err: any, user: IUser) {
-            if (err) {
-                next(err);
-            }
-            if (!user) {
-                return res.redirect('/login')
-            }
-            res.json({user: {"username": user.username, "realName": user.realName, birthday: user.birthday, "preferences": user.preferences}});
-        })(req, res, next);
+        passport.authenticate('local')(req, res, next);
         // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
         console.log(err)
@@ -42,5 +38,13 @@ export const logout = (req: any, res: any, next: any) => {
         if (err) {
             return next(err);
         }
+        req.session.destroy((err: any) => {
+            if (err) {
+                return next(err);
+            }
+            res.clearCookie('connect.sid');
+
+            // TODO: close websocket connections?
+        });
     });
 };

@@ -1,4 +1,5 @@
 import {defineStore} from 'pinia';
+import {useWebSocketStore} from "@/stores/wsStore";
 import notificationService from '@/services/notificationService';
 
 interface AuthState {
@@ -15,6 +16,7 @@ export const useAuthStore = defineStore('auth', {
         setUser(user: any) {
             this.user = user;
             this.isAuthenticated = true;
+            useWebSocketStore().connect();
             notificationService.subscribe();
         },
         setBirthday(birthday: Date) {
@@ -24,7 +26,8 @@ export const useAuthStore = defineStore('auth', {
             this.user.realName = realName;
         },
         setPreferences(preferences: any) {
-            this.user.preferences = preferences;
+            if (this.user)
+                this.user.preferences = preferences;
         },
         async clearAuthData() {
             this.user = null;
@@ -32,6 +35,6 @@ export const useAuthStore = defineStore('auth', {
         },
     },
     persist: {
-        storage: sessionStorage,
+        storage: localStorage,
     }
 });

@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import {createRouter, createWebHashHistory, RouteRecordRaw} from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from "@/views/LoginView.vue";
 import {useAuthStore} from "@/stores/authStore";
@@ -8,14 +8,14 @@ import PomodoroView from "@/views/PomodoroView.vue";
 import NoteView from "@/views/note/NoteView.vue";
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView,
-    meta: {
-      requiresAuth: true
-    }
-  },
+    {
+        path: '/',
+        name: 'home',
+        component: HomeView,
+        meta: {
+            requiresAuth: true
+        }
+    },
   {
     path: '/login/:message?',
     name: 'login',
@@ -67,19 +67,19 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+    history: createWebHashHistory(),
+    routes
 })
 
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
-  if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
-    next({name: 'login'});
-  } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {
-    next({name: 'home'})
-  } else {
-    next();
-  }
+    const authStore = useAuthStore();
+    if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+        next({name: 'login'});
+    } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {
+        next({name: 'home'})
+    } else {
+        next();
+    }
 })
 
 export default router
