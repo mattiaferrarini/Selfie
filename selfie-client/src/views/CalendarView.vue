@@ -11,6 +11,9 @@ import { Activity } from '@/models/Activity';
 import { Unavailability } from '@/models/Unavailability';
 import { useAuthStore } from '@/stores/authStore';
 import eventService from '@/services/eventService';
+import activityService from '@/services/activityService';
+import unavailabilityService from '@/services/unavailabilityService';
+import { useDateStore } from '@/stores/dateStore';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -22,73 +25,46 @@ export default defineComponent({
     UnavailabilityForm
   },
   setup() {
+    /* store instances */
     const authStore = useAuthStore();
+    const dateStore = useDateStore();
 
-    const currentDate = ref(new Date());
+    /* to handle the time period for which events are loaded (TODO: implement) */
+    const currentDate = ref(dateStore.getCurrentDate());
     const rangeStartDate = ref(new Date());
     const rangeEndDate = ref(new Date());
-    const rangeEvents = ref<CalendarEvent[]>([]);
 
+    /* content of the view */
+    const rangeEvents = ref<CalendarEvent[]>([]);
+    const rangeActivities = ref<Activity[]>([]);
+    const rangeUnavailabilities = ref<Unavailability[]>([]);
+
+    /* selected content */
+    const selectedEvent = ref<CalendarEvent>(new CalendarEvent());
+    const selectedActivity = ref<Activity>(new Activity());
+    const selectedUnavailability = ref<Unavailability>(new Unavailability());
+
+    /* variables to control what is displayed */
+    const view = ref('day');
+    const content = ref('appointments');
+    const showAddOptions = ref(false);
+    const showEventForm = ref(false);
+    const showActivityForm = ref(false);
+    const showUnavailabilityForm = ref(false);
     const modifying = ref(false);
 
+    /* Fetch content of the view */
     const fetchEvents = async () => {
       rangeEvents.value = await eventService.getEventsByUser(authStore.user.username);
     };
+    const fetchActivities = async () => {
+      rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username);
+    };
+    const fetchUnavailabilities = async () => {
+      rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username);
+    };
 
-    const rangeActivities = ref([
-      {
-        id: 1,
-        title: "Activity 1",
-        deadline: new Date(2024, 6, 1),
-        done: false
-      },
-      {
-        id: 2,
-        title: "Activity 2",
-        deadline: new Date(2024, 6, 2),
-        done: false
-      },
-      {
-        id: 3,
-        title: "Activity 3",
-        deadline: new Date(2024, 6, 3),
-        done: false
-      },
-      {
-        id: 4,
-        title: "Activity 4",
-        deadline: new Date(2024, 6, 3),
-        done: false
-      },
-    ]);
-
-    const rangeUnavailabilities = ref([
-      {
-        id: 1,
-        title: "Unavailability 1",
-        start: new Date(2024, 6, 1),
-        end: new Date(2024, 6, 2)
-      },
-      {
-        id: 2,
-        title: "Unavailability 2",
-        start: new Date(2024, 6, 3),
-        end: new Date(2024, 6, 5)
-      },
-      {
-        id: 3,
-        title: "Unavailability 3",
-        start: new Date(2024, 6, 5),
-        end: new Date(2024, 6, 6)
-      },
-      {
-        id: 4,
-        title: "Unavailability 4",
-        start: new Date(2024, 6, 3, 9, 0),
-        end: new Date(2024, 6, 3, 10, 30)
-      },
-    ]);
-
+    /* TODO */
     const setRangeDates = () => {
       const firstDayOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1);
       const lastDayOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0);
@@ -103,30 +79,21 @@ export default defineComponent({
       rangeEndDate.value = lastDayOfWeek;
     };
 
-    // variables to control what is displayed
-    const view = ref('day');
-    const content = ref('appointments');
-    const showAddOptions = ref(false);
-    const showEventForm = ref(false);
-    const showActivityForm = ref(false);
-    const showUnavailabilityForm = ref(false);
-
-    const selectedEvent = ref<CalendarEvent>(new CalendarEvent());
-    const newActivity = ref<Activity>(new Activity());
-    const newUnavailability = ref<Unavailability>(new Unavailability());
-
+    /* Navigation and date handling */
     const nextPeriod = () => {
       currentDate.value = timeMethods.nextCurrentDate(currentDate.value, view.value);
     };
-
     const prevPeriod = () => {
       currentDate.value = timeMethods.prevCurrentDate(currentDate.value, view.value);
     };
-
     const resetCalendar = () => {
       currentDate.value = new Date();
     };
+    const onViewChange = () => {
+      console.log(`View changed to: ${view.value}`);
+    };
 
+    /* Open forms to add events, activities, and unavailabilities */
     const openAddOptions = () => {
       showAddOptions.value = true;
     };
@@ -136,29 +103,35 @@ export default defineComponent({
 
     const openAddEventForm = () => {
       selectedEvent.value = new CalendarEvent();
-
-      selectedEvent.value.start = timeMethods.roundTime(currentDate.value);
-      selectedEvent.value.end = timeMethods.moveAheadByHours(selectedEvent.value.start, 1);
-      selectedEvent.value.repetition.endDate = new Date(selectedEvent.value.end);
-      selectedEvent.value.participants = [{ username: authStore.user.username, status: 'accepted' }];
-
       showEventForm.value = true;
     };
-
     const openAddActivityForm = () => {
-      newActivity.value = new Activity();
-      newActivity.value.deadline = timeMethods.moveAheadByDays(currentDate.value, 7);
+      selectedActivity.value = new Activity();
       showActivityForm.value = true;
     };
-
     const openUnavailabilityForm = () => {
-      newUnavailability.value = new Unavailability();
-      newUnavailability.value.start = timeMethods.roundTime(currentDate.value);
-      newUnavailability.value.end = timeMethods.moveAheadByHours(newUnavailability.value.start, 1);
-      newUnavailability.value.repetition.endDate = new Date(newUnavailability.value.end);
+      selectedUnavailability.value = new Unavailability();
       showUnavailabilityForm.value = true;
     };
 
+    /* Open forms to modify events, activities, and unavailabilities */
+    const modifyEvent = (event: CalendarEvent) => {
+      selectedEvent.value = event;
+      modifying.value = true;
+      showEventForm.value = true;
+    };
+    const modifyActivity = (activity: Activity) => {
+      selectedActivity.value = activity;
+      modifying.value = true;
+      showActivityForm.value = true;
+    };
+    const modifyUnavailability = (unavailability: Unavailability) => {
+      selectedUnavailability.value = unavailability;
+      modifying.value = true;
+      showUnavailabilityForm.value = true;
+    };
+
+    /* Close forms */
     const closeAddForms = (event: MouseEvent) => {
       if (event) {
         const openButton = document.getElementById('open-add-form-btn');
@@ -170,20 +143,16 @@ export default defineComponent({
         hideAllForms();
       }
     };
-
     const hideAllForms = () => {
       showEventForm.value = false;
       showActivityForm.value = false;
       showUnavailabilityForm.value = false;
-      showAddOptions.value = false;
 
+      showAddOptions.value = false;
       modifying.value = false;
     };
 
-    const onViewChange = () => {
-      console.log(`View changed to: ${view.value}`);
-    };
-
+    /* Save new/modified events and delete them */
     const saveEvent = async (newEvent: CalendarEvent) => {
       if (modifying.value) {
         const res = await eventService.modifyEvent(newEvent);
@@ -196,64 +165,76 @@ export default defineComponent({
 
       hideAllForms();
     };
-
-    const saveActivity = (newActivity: any) => {
-      //TODO: Save activity to database
-      rangeActivities.value.push(newActivity);
-    };
-
-    const saveUnavailability = (newUnav: any) => {
-      //TODO: Save activity to database
-      rangeUnavailabilities.value.push(newUnav);
-    };
-
-    const showForm = computed(() => {
-      return showEventForm.value || showActivityForm.value || showUnavailabilityForm.value;
-    });
-
-    const showAppointments = computed(() => {
-      return content.value === 'appointments' || content.value === 'events' || content.value === 'unavailabilities';
-    });
-
-    const modifyEvent = (event: CalendarEvent) => {
-      selectedEvent.value = event;
-      modifying.value = true;
-      showEventForm.value = true;
-    };
-
     const deleteEvent = (event: CalendarEvent) => {
       eventService.deleteEvent(event);
       rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
       hideAllForms();
     };
 
-    const modifyActivity = (activity: Activity) => {
-      newActivity.value = activity;
-      showActivityForm.value = true;
-    };
+    /* Save new/modified activities and delete them */
+    const saveActivity = async (newActivity: any) => {
+      if (modifying.value) {
+        const res = await activityService.modifyActivity(newActivity);
+        const index = rangeActivities.value.findIndex(activity => activity.id === newActivity.id);
+        rangeActivities.value[index] = res;
+      } else {
+        const res = await activityService.addActivity(newActivity);
+        rangeActivities.value.push(res);
+      }
 
-    const modifyUnavailability = (unavailability: Unavailability) => {
-      newUnavailability.value = unavailability;
-      showUnavailabilityForm.value = true;
+      hideAllForms();
     };
-
-    const markAsDone = (activity: Activity) => {
+    const markAsDone = async (activity: Activity) => {
       activity.done = true;
-      console.log('Activity marked as done:', activity);
+      const res = await activityService.modifyActivity(activity);
     };
-
-    const undoActivity = (activity: Activity) => {
+    const undoActivity = async (activity: Activity) => {
       activity.done = false;
-      console.log('Activity marked as not done:', activity);
+      const res = await activityService.modifyActivity(activity);
+    };
+    const deleteActivity = (activity: Activity) => {
+      activityService.deleteActivity(activity);
+      rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
+      hideAllForms();
     };
 
+    /* Save new/modified unavailabilities and delete them */
+    const saveUnavailability = async (newUnav: any) => {
+      if (modifying.value) {
+        const res = await unavailabilityService.modifyUnavailability(newUnav);
+        const index = rangeUnavailabilities.value.findIndex(unav => unav.id === newUnav.id);
+        rangeUnavailabilities.value[index] = res;
+      }
+      else {
+        const res = await unavailabilityService.addUnavailability(newUnav);
+        rangeUnavailabilities.value.push(res);
+      }
+
+      hideAllForms();
+    };
+    const deleteUnavailability = async (unavailability: Unavailability) => {
+      unavailabilityService.deleteUnavailability(unavailability);
+      rangeUnavailabilities.value = rangeUnavailabilities.value.filter(u => u.id !== unavailability.id);
+      hideAllForms();
+    };
+
+    /* Computed properties */
+    const showForm = computed(() => {
+      return showEventForm.value || showActivityForm.value || showUnavailabilityForm.value;
+    });
+    const showAppointments = computed(() => {
+      return content.value === 'appointments' || content.value === 'events' || content.value === 'unavailabilities';
+    });
+    const currentDisplayedPeriodString = computed(() => {
+      return timeMethods.formatPeriodString(currentDate.value, view.value);
+    });
+
+    /* Lifecycle hooks */
     onMounted(() => {
       setRangeDates();
       fetchEvents();
-    });
-
-    const currentDisplayedPeriodString = computed(() => {
-      return timeMethods.formatPeriodString(currentDate.value, view.value);
+      fetchActivities();
+      fetchUnavailabilities();
     });
 
     return {
@@ -261,8 +242,8 @@ export default defineComponent({
       showActivityForm, showUnavailabilityForm, currentDate, setRangeDates, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
-      selectedEvent, newActivity, newUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
-      modifying, deleteEvent
+      selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
+      modifying, deleteEvent, deleteActivity, deleteUnavailability
     };
   },
 });
@@ -328,11 +309,11 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" />
-      <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
-        :activity="newActivity" />
-      <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
-        @save-unavailability="saveUnavailability" :unavailability="newUnavailability" />
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" />
+      <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity" @delete-activity="deleteActivity"
+        :activity="selectedActivity" :modifying="modifying" :current-date="currentDate" />
+      <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms" @delete-unavailability="deleteUnavailability"
+        @save-unavailability="saveUnavailability" :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate"/>
     </div>
 
   </div>

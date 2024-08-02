@@ -9,7 +9,7 @@ export class Activity {
         repeat: string;
     };
     participants: {
-        id: string;
+        username: string;
         status: string;
     }[];
 
@@ -26,7 +26,7 @@ export class Activity {
             when: 'atEvent',
             repeat: 'never'
         },
-        participants = []
+        participants = [],
     ) {
         this.title = title;
         this.done = done;

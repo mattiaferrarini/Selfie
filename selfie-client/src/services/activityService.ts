@@ -43,8 +43,7 @@ const deleteActivity = async (activity: Activity) => {
 const formatActivity = (activity: any) => {
     return {
         ...activity,
-        start: new Date(activity.start),
-        end: new Date(activity.end)
+        deadline: new Date(activity.deadline)
     }
 };
 

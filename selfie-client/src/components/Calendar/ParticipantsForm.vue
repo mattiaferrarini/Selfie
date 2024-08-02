@@ -7,7 +7,8 @@
                 <input type="text" placeholder="Add usernames" class="border border-gray-300 p-1 flex-grow">
                 <button class="px-2 bg-gray-300"><v-icon name="md-add"></v-icon></button>
             </div>
-        <button v-if="yourselfMissing" @click="addYoursef" class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
+            <button v-if="yourselfMissing" @click="addYoursef"
+                class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
         </div>
         <div>
             <h3 class="font-semibold">Invited</h3>
@@ -24,9 +25,11 @@
             </ul>
         </div>
         <div class="flex w-full space-x-1 mt-8">
-              <button type="button" @click="cancelChanges" class="flex-1 bg-red-600 text-white p-1 rounded-lg">Cancel</button>
-              <button type="submit" @click="saveChanges" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
-            </div>
+            <button type="button" @click="cancelChanges"
+                class="flex-1 bg-red-600 text-white p-1 rounded-lg">Back</button>
+            <button type="submit" @click="saveChanges"
+                class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+        </div>
     </div>
 </template>
 
@@ -67,7 +70,7 @@ export default defineComponent({
         }
     },
     computed: {
-        sortedParticipants() : any[]{
+        sortedParticipants(): any[] {
             return [...this.newParticipants].sort((a: any, b: any) => {
                 if (a.status === 'accepted' && b.status !== 'accepted') {
                     return -1;
@@ -82,7 +85,7 @@ export default defineComponent({
                 }
             });
         },
-        yourselfMissing() :boolean{
+        yourselfMissing(): boolean {
             return !this.newParticipants.some((participant: any) => participant.username === this.yourself);
         }
     }

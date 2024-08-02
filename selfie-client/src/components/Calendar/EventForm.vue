@@ -123,6 +123,8 @@
 import { defineComponent } from 'vue';
 import ParticipantsForm from './ParticipantsForm.vue';
 import { CalendarEvent } from '@/models/Event';
+import timeService from '@/services/timeService';
+import { useAuthStore } from '@/stores/authStore';
 
 export default defineComponent({
   components: {
@@ -136,23 +138,43 @@ export default defineComponent({
     modifying: {
       type: Boolean,
       default: false
+    },
+    currentDate : {
+      type: Date,
+      required: true
     }
   },
   emits: ['closeForm', 'saveEvent', 'deleteEvent'],
   data() {
     return {
       newEvent: { ...this.event },
-      newStartTime: `${String(this.event.start.getHours()).padStart(2, '0')}:${String(this.event.start.getMinutes()).padStart(2, '0')}`,
-      newEndTime: `${String(this.event.end.getHours()).padStart(2, '0')}:${String(this.event.end.getMinutes()).padStart(2, '0')}`,
+      newStartTime: "",
+      newEndTime: "",
       newNotificationOptions: {
         os: this.event.notification.method.includes('os'),
         email: this.event.notification.method.includes('email'),
         whatsapp: this.event.notification.method.includes('whatsapp')
       },
-      showParticipantsForm: false
+      showParticipantsForm: false,
+      authStore: useAuthStore(),
     }
   },
+  mounted(){
+    this.onFormVisible();
+  },
   methods: {
+    onFormVisible(){
+      if(!this.modifying){
+        // intialize default values for new event
+        this.newEvent.start = timeService.roundTime(this.currentDate);
+        this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
+        this.newEvent.repetition.endDate = new Date(this.newEvent.end);
+        this.newEvent.participants = [{ username: this.authStore.user.username, status: 'accepted' }];
+      }
+
+      this.newStartTime = `${String(this.newEvent.start.getHours()).padStart(2, '0')}:${String(this.newEvent.start.getMinutes()).padStart(2, '0')}`;
+      this.newEndTime = `${String(this.newEvent.end.getHours()).padStart(2, '0')}:${String(this.newEvent.end.getMinutes()).padStart(2, '0')}`;
+    },
     closeForm() {
       this.$emit('closeForm');
     },
@@ -175,7 +197,7 @@ export default defineComponent({
     closeParticipantsForm() {
       this.showParticipantsForm = false;
     },
-    handleCloseParticipantsForm(participants: any) {
+    handleCloseParticipantsForm(participants: any[]) {
       this.newEvent.participants = participants;
       this.closeParticipantsForm();
     },

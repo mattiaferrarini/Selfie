@@ -1,8 +1,14 @@
 <template>
-    <div class="bg-white p-4 rounded-lg shadow-lg w-4/5" @click.stop>
+    <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
+        <div class="flex justify-end">
+            <button @click="closeForm">
+                <v-icon name="md-close" />
+            </button>
+        </div>
         <form class="flex flex-col" @submit="handleSubmit">
             <div>
-                <label><input type="text" placeholder="Untitled Activity" required v-model="newActivity.title"></label><br>
+                <label><input type="text" placeholder="Untitled Activity" required
+                        v-model="newActivity.title"></label><br>
             </div>
             <hr>
             <div>
@@ -14,6 +20,16 @@
                     <div class="flex gap-1">
                         <input type="date" v-model="formattedEndDate">
                     </div>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <div class="flex items-center justify-between w-full gap-4">
+                    Participants
+                    <button type="button" @click="openParticipantsForm" @click.stop>
+                        {{ newActivity.participants.length }}
+                        <v-icon name="md-navigatenext" />
+                    </button>
                 </div>
             </div>
             <hr>
@@ -49,39 +65,69 @@
             </div>
             <hr>
             <div class="flex w-full space-x-1">
-                <button type="button" @click="closeForm"
-                    class="flex-1 bg-red-600 text-white p-1 rounded-lg">Cancel</button>
+                <button v-if="modifying" type="button" @click="deleteActivity"
+                    class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
                 <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
             </div>
         </form>
+
+        <ParticipantsForm v-if="showParticipantsForm" :participants="newActivity.participants"
+      @closeParticipantsForm="handleCloseParticipantsForm" />
+
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import ParticipantsForm from './ParticipantsForm.vue';
 import { Activity } from '@/models/Activity';
+import timeService from '@/services/timeService';
+import { useAuthStore } from '@/stores/authStore';
+
 
 export default defineComponent({
+    components: {
+    ParticipantsForm
+  },
     props: {
         activity: {
             type: Object as () => Activity,
             required: true
+        },
+        modifying: {
+            type: Boolean,
+            default: false
+        },
+        currentDate: {
+            type: Date,
+            required: true
         }
     },
-    emits: ['closeForm', 'saveActivity'],
+    emits: ['closeForm', 'saveActivity', 'deleteActivity'],
     data() {
         return {
-            newActivity: this.activity,
+            authStore: useAuthStore(),
+            newActivity: { ...this.activity },
             newNotificationOptions: {
                 os: this.activity.notification.method.includes('os'),
                 email: this.activity.notification.method.includes('email'),
                 whatsapp: this.activity.notification.method.includes('whatsapp')
             },
+            showParticipantsForm: false,
         }
     },
+    mounted() {
+        this.onFormVisible();
+    },
     methods: {
+        onFormVisible() {
+            if (!this.modifying) {
+                // default initialization for new activity
+                this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
+                this.newActivity.participants = [{ username: this.authStore.user.username, status: 'accepted' }];
+            }
+        },
         closeForm() {
-            console.log('closeForm');
             this.$emit('closeForm');
         },
         handleSubmit(event: Event) {
@@ -96,9 +142,22 @@ export default defineComponent({
 
             if (this.newNotificationOptions.whatsapp)
                 this.newActivity.notification.method.push('whatsapp');
-            
+
             this.$emit('saveActivity', this.newActivity);
-        }
+        },
+        deleteActivity() {
+            this.$emit('deleteActivity', this.activity);
+        },
+        openParticipantsForm() {
+      this.showParticipantsForm = true;
+    },
+    closeParticipantsForm() {
+      this.showParticipantsForm = false;
+    },
+    handleCloseParticipantsForm(participants: any[]) {
+      this.newActivity.participants = participants;
+      this.closeParticipantsForm();
+    }
     },
     computed: {
         notifyAfterDeadline() {
@@ -116,5 +175,4 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
