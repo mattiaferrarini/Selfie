@@ -6,7 +6,7 @@
       <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie"/>
       <input v-model="username" aria-label="username" class="w-full px-3 py-2 mb-3 border rounded"
              placeholder="Username" required/>
-      <input v-model="real_name" aria-label="real name" class="w-full px-3 py-2 mb-3 border rounded"
+      <input v-model="realName" aria-label="real name" class="w-full px-3 py-2 mb-3 border rounded"
              placeholder="Real Name" required/>
       <input v-model="email" aria-label="email" type="email" class="w-full px-3 py-2 mb-3 border rounded"
              placeholder="Email" required/>
@@ -35,7 +35,7 @@ export default defineComponent({
   setup() {
     const username = ref('');
     const email = ref('');
-    const real_name = ref('');
+    const realName = ref('');
     const birthday = ref('');
     const password = ref('');
     const errorMessage = ref('');
@@ -43,10 +43,10 @@ export default defineComponent({
     //TODO: password validation?
     const register = async () => {
       try {
-        if (username.value.trim() == "" || password.value.trim() == "" || email.value.trim() == "" || real_name.value.trim() == "" || birthday.value.trim() == "") {
+        if (username.value.trim() == "" || password.value.trim() == "" || email.value.trim() == "" || realName.value.trim() == "" || birthday.value.trim() == "") {
           throw "I valori dei campi non possono essere vuoti!";
         }
-        const data = await authService.register(username.value, real_name.value, email.value, password.value, birthday.value);
+        const data = await authService.register(username.value, realName.value, email.value, password.value, birthday.value);
         authStore.setUser(data.user);
         router.push({name: 'home'})
         // Redirect to a protected page or home
@@ -60,7 +60,7 @@ export default defineComponent({
       username,
       password,
       email,
-      real_name,
+      realName,
       birthday,
       register,
       errorMessage,

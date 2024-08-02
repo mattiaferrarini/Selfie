@@ -11,9 +11,9 @@ const changePassword = async (old_password: string, new_password: string) => {
     }
 };
 
-const changeRealName = async (real_name: string) => {
+const changeRealName = async (realName: string) => {
     try {
-        await axios.post(`${API_URL}/change-real_name`, {real_name}, {withCredentials: true});
+        await axios.post(`${API_URL}/change-realName`, {realName}, {withCredentials: true});
     } catch (error: any) {
         throw error.response.data;
     }
@@ -26,6 +26,16 @@ const changeBirthday = async (birthday: Date) => {
         throw error.response.data;
     }
 };
+
+const updateNotificationPreferences = async (notificationType: string) => {
+    try {
+        const response= await axios.post(`${API_URL}/preferences/notification`, {notificationType}, {withCredentials: true});
+        const authStore = useAuthStore();
+        authStore.setPreferences(response.data.preferences);
+    } catch (error: any) {
+        throw error.response.data;
+    }
+}
 
 const updatePomodoroPreferences = async (workDuration: number, pauseDuration: number, numberOfCycles: number) => {
     try {
@@ -41,5 +51,6 @@ export default {
     changePassword,
     changeRealName,
     changeBirthday,
+    updateNotificationPreferences,
     updatePomodoroPreferences
 };

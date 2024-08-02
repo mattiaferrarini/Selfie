@@ -39,14 +39,9 @@ export default defineComponent({
       try {
         if (username.value.trim() == "" || password.value.trim() == "") {
           throw "I valori dei campi non possono essere vuoti!";
-        } /*else if (username.value == "fl") {
-          authStore.setUser({username:"pippo", real_name: "pippo"})
-          router.push({name: 'home'})
-        }*/
+        }
         const data = await authService.login(username.value, password.value);
         authStore.setUser(data.user);
-        // Redirect to a protected page or home
-        // this.$router.push('/');
         router.push({name: 'home'})
       } catch (error: any) {
         errorMessage.value = error;
