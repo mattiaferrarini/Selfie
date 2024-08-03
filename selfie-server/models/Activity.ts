@@ -13,6 +13,7 @@ interface IActivity extends Document{
         username: string;
         status: string;
     }[];
+    subActivitiesIDs: string[];
 }
 
 const ActivitySchema = new Schema({
@@ -53,6 +54,10 @@ const ActivitySchema = new Schema({
                 required: true
             }
         }],
+        required: true
+    },
+    subActivitiesIDs: {
+        type: [String],
         required: true
     }
 });

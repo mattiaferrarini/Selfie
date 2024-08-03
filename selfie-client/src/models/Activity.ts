@@ -12,6 +12,7 @@ export class Activity {
         username: string;
         status: string;
     }[];
+    subActivitiesIDs: string[];
 
     constructor(
         title = '',
@@ -27,11 +28,13 @@ export class Activity {
             repeat: 'never'
         },
         participants = [],
+        subActivitiesIDs = []
     ) {
         this.title = title;
         this.done = done;
         this.deadline = deadline;
         this.notification = notification;
         this.participants = participants;
+        this.subActivitiesIDs = subActivitiesIDs;
     }
 }

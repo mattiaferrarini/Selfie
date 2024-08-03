@@ -12,7 +12,16 @@ const getActivitiesByUser = async (username: string) => {
         console.log(error);
         throw error.response.data;
     }
-};
+}
+
+const getActivityById = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
+        return formatActivity(response.data);
+    } catch (error: any) {
+        throw error.response.data;
+    }
+}
 
 const addActivity = async (activity: Activity) => {
     try {
@@ -21,7 +30,7 @@ const addActivity = async (activity: Activity) => {
     } catch (error: any) {
         throw error.response.data;
     }
-};
+}
 
 const modifyActivity = async (activity: Activity) => {
     try {
@@ -30,7 +39,7 @@ const modifyActivity = async (activity: Activity) => {
     } catch (error: any) {
         throw error.response.data;
     }
-};
+}
 
 const deleteActivity = async (activity: Activity) => {
     try {
@@ -45,11 +54,12 @@ const formatActivity = (activity: any) => {
         ...activity,
         deadline: new Date(activity.deadline)
     }
-};
+}
 
 export default {
     getActivitiesByUser,
+    getActivityById,
     addActivity,
     modifyActivity,
     deleteActivity
-};
+}

@@ -7,7 +7,8 @@ const formatActivity = (activity: any) => {
         done: activity.done,
         deadline: activity.deadline,
         notification: activity.notification,
-        participants: activity.participants
+        participants: activity.participants,
+        subActivitiesIDs: activity.subActivitiesIDs
     };
 }
 
@@ -20,7 +21,17 @@ export const getActivitiesByUser = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving activities' });
     }
-};
+}
+
+export const getActivityById = async (req: any, res: any) => {
+    const { id } = req.params;
+    try {
+        const activity = await Activity.findById(id);
+        res.status(200).send(formatActivity(activity));
+    } catch (error) {
+        res.status(404).send({ error: "Activity doesn't exist!" });
+    }
+}
 
 export const deleteActivity = async (req: any, res: any) => {
     const { id } = req.params;
@@ -30,7 +41,7 @@ export const deleteActivity = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({ error: "Activity doesn't exist!" });
     }
-};
+}
 
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
@@ -38,7 +49,8 @@ export const addActivity = async (req: any, res: any) => {
         done: req.body.done,
         deadline: req.body.deadline,
         notification: req.body.notification,
-        participants: req.body.participants
+        participants: req.body.participants,
+        subActivitiesIDs: req.body.subActivitiesIDs
     });
 
     try {
@@ -47,7 +59,7 @@ export const addActivity = async (req: any, res: any) => {
     } catch (error) {
         res.status(400).send({ error: 'Error adding activity' });
     }
-};
+}
 
 export const modifyActivity = async (req: any, res: any) => {
     const { id } = req.params;
@@ -58,4 +70,4 @@ export const modifyActivity = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({ error: "Activity doesn't exist!" });
     }
-};
+}

@@ -44,7 +44,11 @@ const formatUnavailability = (unavailability: any) => {
     return {
         ...unavailability,
         start: new Date(unavailability.start),
-        end: new Date(unavailability.end)
+        end: new Date(unavailability.end),
+        repetition: {
+            ...unavailability.repetition,
+            endDate: new Date(unavailability.repetition.endDate)
+        }
     }
 };
 

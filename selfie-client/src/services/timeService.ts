@@ -60,6 +60,11 @@ const getEndOfCurrentPeriod = (date: Date, view: string): Date => {
     }
 };
 
+const getNormalizedDayOfWeek = (date: Date): number => {
+    const day = date.getDay();
+    return day === 0 ? 6 : day - 1;
+}
+
 const getDayOfWeek = (date: Date): string => {
     const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return daysOfWeek[date.getDay()];
@@ -128,6 +133,19 @@ const moveAheadByDays = (date: Date, days: number): Date => {
     return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 };
 
+const moveAheadByMonths = (date: Date, months: number): Date => {
+    let new_months = date.getMonth() + months;
+    const new_year = date.getFullYear() + Math.floor(new_months / 12);
+    new_months = new_months % 12;
+
+    return cropDate(new_year, new_months, date.getDate());
+};
+
+const cropDate = (year: number, month: number, day: number): Date =>{
+    const daysInMonth = new Date(year, month, 0).getDate();
+    return new Date(year, month, Math.min(day, daysInMonth));
+}
+
 const formatPeriodString = (currentDate: Date, view: string): string => {
     if (view === 'day') {
         return formatDayMonth(currentDate);
@@ -144,6 +162,23 @@ const formatPeriodString = (currentDate: Date, view: string): string => {
         return `${month} ${year}`;
     }
 };
+
+const dayDifference = (date1: Date, date2: Date): number => {
+    const oneDay = 24 * 60 * 60 * 1000; // Number of milliseconds in a day
+    const time1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()).getTime();
+    const time2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate()).getTime();
+    const diffDays = Math.round(Math.abs((time1 - time2) / oneDay));
+    return diffDays;
+}
+
+const monthDifference = (endDate: Date, startDate: Date): number => {
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth();
+    const endYear = endDate.getFullYear();
+    const endMonth = endDate.getMonth();
+
+    return (endYear - startYear) * 12 + (endMonth - startMonth);
+}
 
 export default {
     getFirstDayOfWeek,
@@ -163,5 +198,10 @@ export default {
     roundTime,
     moveAheadByHours,
     moveAheadByDays,
-    formatPeriodString
+    formatPeriodString,
+    dayDifference,
+    monthDifference,
+    getNormalizedDayOfWeek,
+    cropDate,
+    moveAheadByMonths
 };

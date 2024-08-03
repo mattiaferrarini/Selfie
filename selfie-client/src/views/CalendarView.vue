@@ -174,14 +174,11 @@ export default defineComponent({
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: any) => {
       if (modifying.value) {
-        const res = await activityService.modifyActivity(newActivity);
         const index = rangeActivities.value.findIndex(activity => activity.id === newActivity.id);
-        rangeActivities.value[index] = res;
+        rangeActivities.value[index] = newActivity;
       } else {
-        const res = await activityService.addActivity(newActivity);
-        rangeActivities.value.push(res);
+        rangeActivities.value.push(newActivity);
       }
-
       hideAllForms();
     };
     const markAsDone = async (activity: Activity) => {
@@ -193,7 +190,6 @@ export default defineComponent({
       const res = await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
-      activityService.deleteActivity(activity);
       rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
       hideAllForms();
     };
@@ -309,7 +305,7 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" />
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity" @delete-activity="deleteActivity"
         :activity="selectedActivity" :modifying="modifying" :current-date="currentDate" />
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms" @delete-unavailability="deleteUnavailability"

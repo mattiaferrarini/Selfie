@@ -119,6 +119,10 @@ export default defineComponent({
     },
     handleSubmit(event: Event) {
       event.preventDefault();
+
+      this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
+      this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
+
       this.$emit('saveUnavailability', this.newUnavailability);
     },
     deleteUnavailability() {

@@ -44,7 +44,11 @@ const formatEvent = (event: any) => {
     return {
         ...event,
         start: new Date(event.start),
-        end: new Date(event.end)
+        end: new Date(event.end),
+        repetition: {
+            ...event.repetition,
+            endDate: new Date(event.repetition.endDate)
+        }
     }
 };
 

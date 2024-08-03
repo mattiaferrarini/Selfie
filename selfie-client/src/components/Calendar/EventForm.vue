@@ -189,6 +189,15 @@ export default defineComponent({
       if (this.newNotificationOptions.whatsapp)
         this.newEvent.notification.method.push('whatsapp');
 
+      if (this.newEvent.allDay) {
+        this.newEvent.start.setHours(0, 0);
+        this.newEvent.end.setHours(23, 59, 59);
+      }
+      else{
+        this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
+        this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
+      }
+
       this.$emit('saveEvent', this.newEvent);
     },
     openParticipantsForm() {

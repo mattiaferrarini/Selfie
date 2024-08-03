@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
+    <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
         <div class="flex justify-end">
             <button @click="closeForm">
                 <v-icon name="md-close" />
@@ -28,6 +28,16 @@
                     Participants
                     <button type="button" @click="openParticipantsForm" @click.stop>
                         {{ newActivity.participants.length }}
+                        <v-icon name="md-navigatenext" />
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <div class="flex items-center justify-between w-full gap-4">
+                    Sub-activities
+                    <button type="button" @click="openSubActivitiesForm" @click.stop>
+                        {{ newActivity.subActivitiesIDs.length }}
                         <v-icon name="md-navigatenext" />
                     </button>
                 </div>
@@ -72,7 +82,7 @@
         </form>
 
         <ParticipantsForm v-if="showParticipantsForm" :participants="newActivity.participants"
-      @closeParticipantsForm="handleCloseParticipantsForm" />
+            @closeParticipantsForm="handleCloseParticipantsForm" />
 
     </div>
 </template>
@@ -83,12 +93,13 @@ import ParticipantsForm from './ParticipantsForm.vue';
 import { Activity } from '@/models/Activity';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
+import activityService from '@/services/activityService';
 
 
 export default defineComponent({
     components: {
-    ParticipantsForm
-  },
+        ParticipantsForm
+    },
     props: {
         activity: {
             type: Object as () => Activity,
@@ -114,6 +125,7 @@ export default defineComponent({
                 whatsapp: this.activity.notification.method.includes('whatsapp')
             },
             showParticipantsForm: false,
+            showSubActivitiesForm: false
         }
     },
     mounted() {
@@ -130,34 +142,51 @@ export default defineComponent({
         closeForm() {
             this.$emit('closeForm');
         },
-        handleSubmit(event: Event) {
+        async handleSubmit(event: Event) {
             event.preventDefault();
-
+        
             this.newActivity.notification.method = [];
             if (this.newNotificationOptions.os)
                 this.newActivity.notification.method.push('os');
-
+        
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
-
+        
             if (this.newNotificationOptions.whatsapp)
                 this.newActivity.notification.method.push('whatsapp');
-
-            this.$emit('saveActivity', this.newActivity);
+        
+            let res = null;
+            if(this.modifying) 
+                res = await activityService.modifyActivity(this.newActivity);
+            else
+                res = await activityService.addActivity(this.newActivity);
+        
+            this.$emit('saveActivity', res);
         },
         deleteActivity() {
+            activityService.deleteActivity(this.activity);
             this.$emit('deleteActivity', this.activity);
         },
         openParticipantsForm() {
-      this.showParticipantsForm = true;
-    },
-    closeParticipantsForm() {
-      this.showParticipantsForm = false;
-    },
-    handleCloseParticipantsForm(participants: any[]) {
-      this.newActivity.participants = participants;
-      this.closeParticipantsForm();
-    }
+            this.showParticipantsForm = true;
+        },
+        closeParticipantsForm() {
+            this.showParticipantsForm = false;
+        },
+        handleCloseParticipantsForm(participants: any[]) {
+            this.newActivity.participants = participants;
+            this.closeParticipantsForm();
+        },
+        openSubActivitiesForm() {
+            this.showSubActivitiesForm = true;
+        },
+        closeSubActivitiesForm() {
+            this.showSubActivitiesForm = false;
+        },
+        handleCloseSubActivitiesForm(subActivitiesIDs: string[]) {
+            this.newActivity.subActivitiesIDs = subActivitiesIDs;
+            this.closeSubActivitiesForm();
+        }
     },
     computed: {
         notifyAfterDeadline() {

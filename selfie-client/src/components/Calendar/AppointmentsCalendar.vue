@@ -53,6 +53,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import timeMethods from '../../services/timeService';
+import { CalendarEvent } from '@/models/Event';
+import { Unavailability } from '@/models/Unavailability';
 export default defineComponent({
     name: 'AppointmentsCalendar',
     props: {
@@ -65,7 +67,7 @@ export default defineComponent({
             required: true
         },
         allEvents: {
-            type: Array,
+            type: Array<CalendarEvent>,
             required: true
         },
         includeEvents: {
@@ -85,7 +87,7 @@ export default defineComponent({
             required: false
         },
         allUnavailabilities: {
-            type: Array,
+            type: Array<Unavailability>,
             required: false
         }
     },
@@ -100,14 +102,17 @@ export default defineComponent({
             const res = this.filterAndSortForDay(this.allEvents, date);
             return res;
         },
-        formatEventTime(event: any, date: Date) {
-            let startOfDay: any = timeMethods.getStartOfDay(date);
-            let endOfDay: any = timeMethods.getEndOfDay(date);
+        formatEventTime(event: {event: any, dates: {start: Date, end: Date}}, date: Date) {
+            let startOfDay: Date = timeMethods.getStartOfDay(date);
+            let endOfDay: Date = timeMethods.getEndOfDay(date);
 
-            let start = event.start <= startOfDay ? startOfDay : event.start;
-            let end = event.end >= endOfDay ? endOfDay : event.end;
+            let eventStart = event.dates.start;
+            let eventEnd = event.dates.end;
 
-            if (start === startOfDay && endOfDay - end < 1000)
+            let start = eventStart <= startOfDay ? startOfDay : eventStart;
+            let end = eventEnd >= endOfDay ? endOfDay : eventEnd;
+
+            if (start === startOfDay && endOfDay.getTime() - end.getTime() < 1000)
                 return "All day";
             else
                 return `${start.getHours().toString()}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString()}:${end.getMinutes().toString().padStart(2, '0')}`;
@@ -148,15 +153,28 @@ export default defineComponent({
             else
                 return this.filterAndSortForDay(this.allUnavailabilities, date);
         },
-        filterAndSortForDay(events:any[], date:Date) :any[]{
-            let startOfDay = timeMethods.getStartOfDay(date);
-            let endOfDay = timeMethods.getEndOfDay(date);
-            let filtered = events.filter((event: any) => {
-                return event.start <= endOfDay && event.end >= startOfDay;
+        filterAndSortForDay(events: any[], date:Date) :any[]{
+            // get the period of the next repetition
+            let withDates = events.map((event: any) => {
+                return {event: event, dates: this.getNextRepetition(event, date)};
             });
 
-            let eventPairs = filtered.map(event => [event, this.formatEventTime(event, date)]);
+            // remove repetitions that are not on the date
+            const startOfDay = timeMethods.getStartOfDay(date);
+            const endOfDay = timeMethods.getEndOfDay(date);
+            let inRange = withDates.filter((event: any) => {
+                return event.dates.start <= endOfDay && event.dates.end >= startOfDay;
+            });
 
+            // remove repetitions that are not valid
+            let valid = inRange.filter((event: any) => {
+                return this.isValidRepetition(event.event, event.dates.start, event.dates.end);
+            });
+
+            // format the time of the event for display
+            let eventPairs = valid.map(event => [event.event, this.formatEventTime(event, date)]);
+
+            // sort the events by start time
             eventPairs.sort((a: any, b: any) => {
                 let aTime = a[1];
                 let bTime = b[1];
@@ -173,6 +191,68 @@ export default defineComponent({
         },
         modifyUnavailability(unav: any) {
             this.$emit('modifyUnavailability', unav);
+        },
+        getNextRepetition(event: any, referenceDate: Date): {start: Date, end: Date}{
+            if(event.repetition.frequency === 'never' || event.start > timeMethods.getEndOfDay(referenceDate))
+                return {start: event.start, end: event.end};
+
+            let nextRepetition = new Date();
+            let nextRepetitionEnd = new Date();
+
+            if (event.repetition.frequency == 'everyday') {
+                nextRepetition = new Date(referenceDate);
+            } 
+            else if (event.repetition.frequency == 'weekly'){
+                let distanceFromStart = timeMethods.dayDifference(referenceDate, event.start);
+                let previousRepetition = timeMethods.moveAheadByDays(event.start, distanceFromStart - distanceFromStart % 7);
+
+                if(distanceFromStart % 7 <= timeMethods.dayDifference(event.end, event.start))
+                    nextRepetition = previousRepetition;
+                else
+                    nextRepetition = timeMethods.moveAheadByDays(previousRepetition, 7);
+            }
+            else if (event.repetition.frequency == 'monthly') {
+                let distanceFromStart = timeMethods.monthDifference(referenceDate, event.start);
+                let previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart);
+
+                if(previousRepetition.getDate() > referenceDate.getDate())
+                    previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart - 1);
+
+                if(timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
+                    nextRepetition = previousRepetition;
+                else
+                    nextRepetition = timeMethods.moveAheadByMonths(previousRepetition, 1);
+            } 
+            else {
+                nextRepetition = new Date(event.start);
+            }
+
+            // set times and compute end date
+            nextRepetition.setHours(event.start.getHours());
+            nextRepetition.setMinutes(event.start.getMinutes());
+
+            const offset = event.end.getTime() - event.start.getTime();
+            nextRepetitionEnd.setTime(nextRepetition.getTime() + offset);
+
+            return {start: nextRepetition, end: nextRepetitionEnd};
+        },
+        isValidRepetition(event: any, repStart: Date, repEnd: Date){
+            if(event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
+                return true;
+            else if(event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
+                return true;
+            else if(event.repetition.until === 'n-reps'){
+                if(event.repetition.frequency === 'everyday')
+                    return timeMethods.dayDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
+                else if(event.repetition.frequency === 'weekly')
+                    return timeMethods.dayDifference(repStart, event.start) / 7 < event.repetition.numberOfRepetitions;
+                else if(event.repetition.frequency === 'monthly')
+                    return timeMethods.monthDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
+                else
+                    return false;
+            }
+            else
+               return false;
         }
     },
     computed: {
