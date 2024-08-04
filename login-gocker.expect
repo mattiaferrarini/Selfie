@@ -1,0 +1,16 @@
+#!/usr/bin/expect
+
+set timeout 20
+
+set password [lindex $argv 0]
+
+spawn ssh gocker.cs.unibo.it "help"
+
+expect "password: "
+send "$password\r";
+
+expect "(gocker): "
+send "start node-20 site232410 Selfie/selfie-server/server-deploy.js\n"
+expect "(gocker): "
+send \004
+interact
