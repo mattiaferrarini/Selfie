@@ -5,6 +5,9 @@ import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import chatRoutes from './routes/chat';
 import noteRoutes from './routes/note';
+import eventRoutes from './routes/event';
+import activityRoutes from './routes/activity';
+import unavailabilityRoutes from './routes/unavailability';
 import notificationRoutes from './routes/notification';
 import session from "express-session";
 import cors from 'cors'
@@ -60,6 +63,9 @@ app.use('/profile', ensureAuthenticated, profileRoutes);
 app.use('/chat', ensureAuthenticated, chatRoutes);
 app.use('/note', ensureAuthenticated, noteRoutes);
 app.use('/notification', ensureAuthenticated, notificationRoutes);
+app.use('/event', ensureAuthenticated, eventRoutes);
+app.use('/activity', ensureAuthenticated, activityRoutes);
+app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 
 const server = http.createServer(app);
 

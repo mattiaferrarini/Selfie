@@ -1,0 +1,86 @@
+<template>
+    <div>
+        <h3>Activities</h3>
+        <ul>
+            <li v-for="activity in sortedActivities" :key="activity.id">
+                <div class="flex align-center justify-between" @click="modifyActivity(activity)">
+                        <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
+                        <div class="flex gap-4">
+                            {{timeMethods.formatDayMonth(activity.deadline)}}
+                            <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
+                            <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
+                        </div>
+                </div>
+            </li>
+        </ul>
+        <p v-if="sortedActivities.length === 0">No activities</p>
+    </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import timeMethods from '../../services/timeService';
+export default defineComponent({
+    props: {
+        activities: {
+            type: Array,
+            required: true
+        },
+        currentDate: {
+            type: Date,
+            required: true
+        },
+        view: {
+            type: String,
+            required: true
+        }
+    },
+    emits: ['modifyActivity', 'markAsDone', 'undoActivity'],
+    methods: {
+        modifyActivity(activity: any) {
+            this.$emit('modifyActivity', activity);
+        },
+        markAsDone(activity: any) {
+            this.$emit('markAsDone', activity);
+        },
+        undoActivity(activity: any) {
+            this.$emit('undoActivity', activity);
+        },
+    },
+    computed: {
+        sortedActivities(): any[] {
+    
+            const startOfPeriod = timeMethods.getStartOfCurrentPeriod(this.currentDate, this.view);
+            const endOfPeriod = timeMethods.getEndOfCurrentPeriod(this.currentDate, this.view);
+
+            let inPeriod = this.activities.filter((activity: any) => {
+                return activity.deadline >= startOfPeriod && activity.deadline <= endOfPeriod;
+            });
+
+            inPeriod.sort((a: any, b: any) => {
+                if (a.done && !b.done) {
+                    return 1;
+                } else if (!a.done && b.done) {
+                    return -1;
+                } else {
+                    return a.deadline - b.deadline;
+                }
+            });
+
+            return inPeriod;
+        }
+    },
+    // Add the timeMethods property
+    data() {
+        return {
+            timeMethods: timeMethods
+        };
+    }
+});
+</script>
+
+<style scoped>
+.done {
+    text-decoration: line-through;
+}
+</style>

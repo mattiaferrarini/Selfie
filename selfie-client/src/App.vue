@@ -22,7 +22,7 @@
               <span class="relative inline-flex border border-emerald-50 rounded-full h-3 w-3 bg-emerald-400"></span>
             </span>
           </router-link>
-          <router-link to="/about"
+          <router-link to="/calendar"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Calendario</span>
