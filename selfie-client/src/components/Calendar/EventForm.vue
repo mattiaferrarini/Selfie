@@ -215,20 +215,20 @@ export default defineComponent({
     }
   },
   computed: {
-    repeatNewEvent() {
+    repeatNewEvent() : boolean{
       return this.newEvent.repetition.frequency !== 'never';
     },
-    repeatNTimes() {
+    repeatNTimes() : boolean{
       return this.newEvent.repetition.until === 'n-reps';
     },
-    repeatUntilDate() {
+    repeatUntilDate() : boolean{
       return this.newEvent.repetition.until === 'date';
     },
-    notifyNewEvent() {
+    notifyNewEvent() :boolean{
       return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
     },
     formattedStartDate: {
-      get() {
+      get() : string{
         return this.newEvent.start.toISOString().split('T')[0];
       },
       set(value: string) {
@@ -236,7 +236,7 @@ export default defineComponent({
       }
     },
     formattedEndDate: {
-      get() {
+      get() : string{
         return this.newEvent.end.toISOString().split('T')[0];
       },
       set(value: string) {
@@ -244,7 +244,7 @@ export default defineComponent({
       }
     },
     formattedRepeatEndDate: {
-      get() {
+      get() : string{
         return this.newEvent.repetition.endDate.toISOString().split('T')[0];
       },
       set(value: string) {

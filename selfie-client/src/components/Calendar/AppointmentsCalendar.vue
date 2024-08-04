@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import timeMethods from '../../services/timeService';
 import { CalendarEvent } from '@/models/Event';
 import { Unavailability } from '@/models/Unavailability';
@@ -67,7 +67,7 @@ export default defineComponent({
             required: true
         },
         allEvents: {
-            type: Array<CalendarEvent>,
+            type: Array as PropType<CalendarEvent[]>,
             required: true
         },
         includeEvents: {
@@ -87,7 +87,7 @@ export default defineComponent({
             required: false
         },
         allUnavailabilities: {
-            type: Array<Unavailability>,
+            type: Array as PropType<Unavailability[]>,
             required: false
         }
     },
@@ -102,7 +102,7 @@ export default defineComponent({
             const res = this.filterAndSortForDay(this.allEvents, date);
             return res;
         },
-        formatEventTime(event: {event: any, dates: {start: Date, end: Date}}, date: Date) {
+        formatEventTime(event: {event: any, dates: {start: Date, end: Date}}, date: Date) : string{
             let startOfDay: Date = timeMethods.getStartOfDay(date);
             let endOfDay: Date = timeMethods.getEndOfDay(date);
 
@@ -236,7 +236,7 @@ export default defineComponent({
 
             return {start: nextRepetition, end: nextRepetitionEnd};
         },
-        isValidRepetition(event: any, repStart: Date, repEnd: Date){
+        isValidRepetition(event: any, repStart: Date, repEnd: Date) : boolean{
             if(event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
                 return true;
             else if(event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
@@ -256,7 +256,7 @@ export default defineComponent({
         }
     },
     computed: {
-        datesToDisplay() {
+        datesToDisplay() : Date[]{
             if (this.view === 'day') {
                 return [this.currentDate];
             } else if (this.view === 'week') {
@@ -285,7 +285,7 @@ export default defineComponent({
                 return [];
             }
         },
-        datesToDisplayWithPlaceholders() {
+        datesToDisplayWithPlaceholders() : any[]{
             const dates = this.datesToDisplay;
             const datesWithPlaceholders = [];
             for (let i = 0; i < dates.length; i++) {

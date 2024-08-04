@@ -189,11 +189,11 @@ export default defineComponent({
         }
     },
     computed: {
-        notifyAfterDeadline() {
+        notifyAfterDeadline() : boolean {
             return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
         },
         formattedEndDate: {
-            get() {
+            get() : string{
                 return this.newActivity.deadline.toISOString().split('T')[0];
             },
             set(value: string) {

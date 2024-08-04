@@ -130,17 +130,17 @@ export default defineComponent({
     }
   },
   computed: {
-    repeatNew() {
+    repeatNew() : boolean {
       return this.newUnavailability.repetition.frequency !== 'never';
     },
-    repeatNTimes() {
+    repeatNTimes() : boolean {
       return this.newUnavailability.repetition.until === 'n-reps';
     },
-    repeatUntilDate() {
+    repeatUntilDate() : boolean {
       return this.newUnavailability.repetition.until === 'date';
     },
     formattedStartDate: {
-      get() {
+      get() : string {
         return this.newUnavailability
           .start.toISOString().split('T')[0];
       },
@@ -150,7 +150,7 @@ export default defineComponent({
       }
     },
     formattedEndDate: {
-      get() {
+      get() : string{
         return this.newUnavailability
           .end.toISOString().split('T')[0];
       },
@@ -160,7 +160,7 @@ export default defineComponent({
       }
     },
     formattedRepeatEndDate: {
-      get() {
+      get() :string{
         return this.newUnavailability
           .repetition.endDate.toISOString().split('T')[0];
       },
