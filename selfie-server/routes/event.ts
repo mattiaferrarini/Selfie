@@ -5,6 +5,7 @@ const router = Router();
 
 router.get('/user/:username', eventController.getEventsByUser);
 router.post('/', eventController.addEvent);
+router.put('/import', eventController.importICalendar);
 router.put('/:id', eventController.modifyEvent);
 router.delete('/:id', eventController.deleteEvent);
 

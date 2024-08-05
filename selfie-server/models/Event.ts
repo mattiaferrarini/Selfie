@@ -11,7 +11,7 @@ export interface IEvent extends Document {
         numberOfRepetitions: number;
         endDate: Date;
     };
-    place: string;
+    location: string;
     notification: {
         method: string[];
         when: string;
@@ -19,6 +19,7 @@ export interface IEvent extends Document {
     };
     participants:{
         username: string;
+        email: string;
         status: string;
     }[];
 }
@@ -34,7 +35,7 @@ const EventSchema = new Schema({
         numberOfRepetitions: { type: Number, required: true },
         endDate: { type: Date, required: true }
     },
-    place: { type: String },
+    location: { type: String },
     notification: {
         method: { type: [String], required: true },
         when: { type: String, required: true },
@@ -42,6 +43,7 @@ const EventSchema = new Schema({
     },
     participants: [{
         username: { type: String, required: true },
+        email: { type: String, required: true },
         status: { type: String, required: true }
     }]
 });

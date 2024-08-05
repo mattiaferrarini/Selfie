@@ -134,16 +134,27 @@ const moveAheadByDays = (date: Date, days: number): Date => {
 };
 
 const moveAheadByMonths = (date: Date, months: number): Date => {
-    let new_months = date.getMonth() + months;
-    const new_year = date.getFullYear() + Math.floor(new_months / 12);
-    new_months = new_months % 12;
+    let new_month = date.getMonth() + months;
+    const new_year = date.getFullYear() + Math.floor(new_month / 12);
+    new_month = new_month % 12;
 
-    return cropDate(new_year, new_months, date.getDate());
+    return cropDate(new_year, new_month, date.getDate());
 };
 
+const moveAheadByYears = (date: Date, years: number): Date => {
+    if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
+        return new Date(date.getFullYear() + years, date.getMonth(), 28);
+    else
+        return new Date(date.getFullYear() + years, date.getMonth(), date.getDate());
+}
+
 const cropDate = (year: number, month: number, day: number): Date =>{
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const daysInMonth = getDaysInMonth(year, month);
     return new Date(year, month, Math.min(day, daysInMonth));
+}
+
+const getDaysInMonth = (year: number, month: number): number => {
+    return new Date(year, month, 0).getDate();
 }
 
 const formatPeriodString = (currentDate: Date, view: string): string => {
@@ -180,6 +191,10 @@ const monthDifference = (endDate: Date, startDate: Date): number => {
     return (endYear - startYear) * 12 + (endMonth - startMonth);
 }
 
+const yearDifference = (endDate: Date, startDate: Date): number => {
+    return endDate.getFullYear() - startDate.getFullYear();
+}
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -198,10 +213,12 @@ export default {
     roundTime,
     moveAheadByHours,
     moveAheadByDays,
+    moveAheadByYears,
     formatPeriodString,
     dayDifference,
     monthDifference,
     getNormalizedDayOfWeek,
     cropDate,
-    moveAheadByMonths
+    moveAheadByMonths,
+    yearDifference
 };

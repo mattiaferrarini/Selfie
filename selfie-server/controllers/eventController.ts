@@ -1,5 +1,6 @@
 // Import the Event model
 import Event from '../models/Event';
+import ical from 'node-ical';
 
 
 const formatEvent = (event: any) => {
@@ -10,7 +11,7 @@ const formatEvent = (event: any) => {
         start: event.start,
         end: event.end,
         repetition: event.repetition,
-        place: event.place,
+        location: event.location,
         notification: event.notification,
         participants: event.participants
     };
@@ -49,7 +50,7 @@ export const addEvent = async (req: any, res: any) => {
         start: req.body.start,
         end: req.body.end,
         repetition: req.body.repetition,
-        place: req.body.place,
+        location: req.body.location,
         notification: req.body.notification,
         participants: req.body.participants
     });
@@ -74,7 +75,7 @@ export const modifyEvent = async (req: any, res: any) => {
             event.start = req.body.start;
             event.end = req.body.end;
             event.repetition = req.body.repetition;
-            event.place = req.body.place;
+            event.location = req.body.location;
             event.notification = req.body.notification;
             event.participants = req.body.participants;
 
@@ -84,6 +85,16 @@ export const modifyEvent = async (req: any, res: any) => {
             res.status(404).send({ error: "Event doesn't exist!" });
         }
     } catch (error) {
-        res.status(500).send({ error: 'Error updating event' });
+        res.status(500).send({ error: 'Error updatding event' });
+    }
+};
+
+export const importICalendar = async (req: any, res: any) => {
+    const { icalStr } = req.body;
+    try {
+        const events = await ical.async.parseICS(icalStr);
+        res.status(200).send(events);
+    } catch (error) {
+        res.status(500).send({ error: 'Error importing iCalendar' });
     }
 };

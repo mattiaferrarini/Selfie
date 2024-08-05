@@ -36,7 +36,7 @@
           Repeat
           <select name="repeat" v-model="newUnavailability.repetition.frequency">
             <option value="never">Never</option>
-            <option value="everyday">Every day</option>
+            <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
           </select>

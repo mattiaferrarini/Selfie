@@ -1,13 +1,14 @@
 <template>
   <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
     <div class="flex justify-end">
-      <button @click="closeForm"> 
+      <button @click="closeForm">
         <v-icon name="md-close" />
       </button>
     </div>
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
-        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title" class="w-full"></label><br>
+        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title"
+            class="w-full"></label><br>
       </div>
       <hr>
       <div>
@@ -35,9 +36,10 @@
           Repeat
           <select name="repeat" v-model="newEvent.repetition.frequency">
             <option value="never">Never</option>
-            <option value="everyday">Every day</option>
+            <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
           </select>
         </label>
         <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
@@ -60,7 +62,7 @@
       </div>
       <hr>
       <div>
-        <label><input type="text" placeholder="Add a place" v-model="newEvent.place" class="w-full"></label><br>
+        <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full"></label><br>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
           <button type="button" @click="openParticipantsForm" @click.stop>
@@ -104,17 +106,24 @@
       </div>
       <hr>
       <div class="flex-col space-y-1 w-full mt-4">
-        <button v-if="modifying" type="button" class="w-full p-1 rounded-lg bg-gray-300">Export event</button>
-        <button v-else type="button" class="w-full p-1 rounded-lg bg-gray-300">Import event</button>
-      <div class="flex w-full space-x-1">
-        <button v-if="modifying" type="button" @click="deleteEvent" class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-        <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-1 rounded-lg bg-gray-300">Export
+          event</button>
+        <div v-else class="text-center">
+          <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import event</label>
+          <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
+        </div>
+        <div class="flex w-full space-x-1">
+          <button v-if="modifying" type="button" @click="deleteEvent"
+            class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
+          <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+        </div>
       </div>
-    </div>
     </form>
 
     <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants"
       @closeParticipantsForm="handleCloseParticipantsForm" />
+
+    <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
   </div>
 </template>
@@ -122,13 +131,16 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import ParticipantsForm from './ParticipantsForm.vue';
+import EventExportPanel from './EventExportPanel.vue';
 import { CalendarEvent } from '@/models/Event';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
+import eventService from '@/services/eventService';
 
 export default defineComponent({
   components: {
-    ParticipantsForm
+    ParticipantsForm,
+    EventExportPanel
   },
   props: {
     event: {
@@ -139,7 +151,7 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    currentDate : {
+    currentDate: {
       type: Date,
       required: true
     }
@@ -157,21 +169,28 @@ export default defineComponent({
       },
       showParticipantsForm: false,
       authStore: useAuthStore(),
+      showExportPanel: false
     }
   },
-  mounted(){
+  mounted() {
     this.onFormVisible();
   },
   methods: {
-    onFormVisible(){
-      if(!this.modifying){
+    onFormVisible() {
+      if (!this.modifying) {
         // intialize default values for new event
         this.newEvent.start = timeService.roundTime(this.currentDate);
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
-        this.newEvent.participants = [{ username: this.authStore.user.username, status: 'accepted' }];
+        this.newEvent.participants = [
+          { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
+          { username: 'user2', email: 'email2', status: 'accepted' }
+        ];
       }
 
+      this.setTimes();
+    },
+    setTimes(){
       this.newStartTime = `${String(this.newEvent.start.getHours()).padStart(2, '0')}:${String(this.newEvent.start.getMinutes()).padStart(2, '0')}`;
       this.newEndTime = `${String(this.newEvent.end.getHours()).padStart(2, '0')}:${String(this.newEvent.end.getMinutes()).padStart(2, '0')}`;
     },
@@ -193,7 +212,7 @@ export default defineComponent({
         this.newEvent.start.setHours(0, 0);
         this.newEvent.end.setHours(23, 59, 59);
       }
-      else{
+      else {
         this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
         this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
       }
@@ -212,23 +231,48 @@ export default defineComponent({
     },
     deleteEvent() {
       this.$emit('deleteEvent', this.event);
+    },
+    openExportPanel() {
+      this.showExportPanel = true;
+    },
+    closeExportPanel() {
+      this.showExportPanel = false;
+    },
+    handleEventUpload(event: Event) {
+      const file = (event.target as HTMLInputElement)?.files?.[0] || null;
+
+      if (file && file.type === 'text/calendar') {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const fileContent = e.target?.result;
+          this.setUploadedFile(fileContent as string);
+        };
+        reader.readAsText(file);
+      } else {
+        alert('Please upload a valid .ics file.');
+      }
+    },
+    async setUploadedFile(fileContent: string) {
+      this.newEvent = await eventService.convertICalendarToEvent(fileContent);
+      this.setTimes();
     }
   },
   computed: {
-    repeatNewEvent() : boolean{
+    repeatNewEvent(): boolean {
       return this.newEvent.repetition.frequency !== 'never';
     },
-    repeatNTimes() : boolean{
+    repeatNTimes(): boolean {
       return this.newEvent.repetition.until === 'n-reps';
     },
-    repeatUntilDate() : boolean{
+    repeatUntilDate(): boolean {
       return this.newEvent.repetition.until === 'date';
     },
-    notifyNewEvent() :boolean{
+    notifyNewEvent(): boolean {
       return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
     },
     formattedStartDate: {
-      get() : string{
+      get(): string {
         return this.newEvent.start.toISOString().split('T')[0];
       },
       set(value: string) {
@@ -236,7 +280,7 @@ export default defineComponent({
       }
     },
     formattedEndDate: {
-      get() : string{
+      get(): string {
         return this.newEvent.end.toISOString().split('T')[0];
       },
       set(value: string) {
@@ -244,7 +288,7 @@ export default defineComponent({
       }
     },
     formattedRepeatEndDate: {
-      get() : string{
+      get(): string {
         return this.newEvent.repetition.endDate.toISOString().split('T')[0];
       },
       set(value: string) {
@@ -256,5 +300,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Your component's styles go here */
+#event-upload {
+  cursor: pointer;
+}
 </style>

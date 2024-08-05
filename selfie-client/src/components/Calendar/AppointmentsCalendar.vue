@@ -199,7 +199,7 @@ export default defineComponent({
             let nextRepetition = new Date();
             let nextRepetitionEnd = new Date();
 
-            if (event.repetition.frequency == 'everyday') {
+            if (event.repetition.frequency == 'daily') {
                 nextRepetition = new Date(referenceDate);
             } 
             else if (event.repetition.frequency == 'weekly'){
@@ -222,7 +222,19 @@ export default defineComponent({
                     nextRepetition = previousRepetition;
                 else
                     nextRepetition = timeMethods.moveAheadByMonths(previousRepetition, 1);
-            } 
+            }
+            else if(event.repetition.frequency == 'yearly'){
+                let distanceFromStart = timeMethods.yearDifference(referenceDate, event.start);
+                let previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart);
+
+                if(previousRepetition > referenceDate)
+                    previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart - 1);
+
+                if(timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
+                    nextRepetition = previousRepetition;
+                else
+                    nextRepetition = timeMethods.moveAheadByYears(previousRepetition, 1);
+            }
             else {
                 nextRepetition = new Date(event.start);
             }
@@ -242,12 +254,14 @@ export default defineComponent({
             else if(event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
                 return true;
             else if(event.repetition.until === 'n-reps'){
-                if(event.repetition.frequency === 'everyday')
+                if(event.repetition.frequency === 'daily')
                     return timeMethods.dayDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
                 else if(event.repetition.frequency === 'weekly')
                     return timeMethods.dayDifference(repStart, event.start) / 7 < event.repetition.numberOfRepetitions;
                 else if(event.repetition.frequency === 'monthly')
                     return timeMethods.monthDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
+                else if(event.repetition.frequency === 'yearly')
+                    return timeMethods.yearDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
                 else
                     return false;
             }
