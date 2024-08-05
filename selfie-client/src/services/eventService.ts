@@ -15,7 +15,7 @@ const getEventsByUser = async (username: string) => {
         console.log(error);
         throw error.response.data;
     }
-};
+}
 
 const addEvent = async (event: CalendarEvent) => {
     try {
@@ -24,7 +24,7 @@ const addEvent = async (event: CalendarEvent) => {
     } catch (error: any) {
         throw error.response.data;
     }
-};
+}
 
 const modifyEvent = async (event: CalendarEvent) => {
     try {
@@ -33,7 +33,7 @@ const modifyEvent = async (event: CalendarEvent) => {
     } catch (error: any) {
         throw error.response.data;
     }
-};
+}
 
 const deleteEvent = async (event: CalendarEvent) => {
     try {
@@ -53,7 +53,7 @@ const formatEvent = (event: any) => {
             endDate: new Date(event.repetition.endDate)
         }
     }
-};
+}
 
 const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
     
@@ -150,7 +150,7 @@ const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> 
 
 const getEventFromIcal = async (icalStr: string) : Promise<any> => {
     try {
-        const response = await axios.put(`${API_URL}/import`, {icalStr}, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/import`, {icalStr}, { withCredentials: true });
         return response.data;
     }
     catch (error: any) {
@@ -191,6 +191,16 @@ const formatICAttendee = (attendee: any) => {
     };
 }
 
+const sendExportViaEmail = async (formData: FormData) => {
+    try{
+        const response = await axios.post(`${API_URL}/export`, formData, { withCredentials: true });
+        console.log(response.data);
+    }
+    catch (error: any) {
+        throw error.response.data;
+    }
+}
+
 export default {
     getEventsByUser,
     addEvent,
@@ -202,5 +212,6 @@ export default {
     convertOptionsToGoogle,
     convertOptionsToOutlook,
     convertICalendarToEvent,
-    getEventFromIcal
+    getEventFromIcal,
+    sendExportViaEmail
 };

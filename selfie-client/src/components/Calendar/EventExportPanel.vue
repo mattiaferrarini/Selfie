@@ -21,6 +21,7 @@ import eventService from '@/services/eventService';
 import { CalendarEvent } from '@/models/Event';
 import { CalendarOptions } from 'datebook';
 import FileSaver from 'file-saver';
+import { useAuthStore } from '@/stores/authStore';
 
 export default defineComponent({
     emits: ['closePanel'],
@@ -36,7 +37,8 @@ export default defineComponent({
             iCalendarFile: '',
             yahooLink: '',
             googleLink: '',
-            outlookLink: ''
+            outlookLink: '',
+            authStore: useAuthStore()
         }
     },
     methods: {
@@ -47,9 +49,21 @@ export default defineComponent({
         closePanel() {
             this.$emit('closePanel');
         },
-        sendAllToEmail() {
-            // TODO: implement sendAllToEmail
+        async sendAllToEmail() {
             console.log('sendAllToEmail');
+            const formData = new FormData();
+
+            const blob = new Blob([this.iCalendarFile], { type: 'text/calendar' });
+            formData.append('file', blob, `${this.event.title}.ics`);
+
+            formData.append('to', this.authStore.user.email);
+            formData.append('eventName', this.event.title);
+            formData.append('yahooLink', this.yahooLink);
+            formData.append('googleLink', this.googleLink);
+            formData.append('outlookLink', this.outlookLink);
+
+            await eventService.sendExportViaEmail(formData);
+            console.log('sent');
         }
     },
     computed: {

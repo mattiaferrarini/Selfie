@@ -1,7 +1,7 @@
 // Import the Event model
 import Event from '../models/Event';
 import ical from 'node-ical';
-
+import { sendEmailWithAttachments } from '../services/mailerService';
 
 const formatEvent = (event: any) => {
     return {
@@ -15,7 +15,7 @@ const formatEvent = (event: any) => {
         notification: event.notification,
         participants: event.participants
     };
-};
+}
 
 // Function to get all events with a specified user as a participant
 export const getEventsByUser = async (req: any, res: any) => {
@@ -29,7 +29,7 @@ export const getEventsByUser = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving events' });
     }
-};
+}
 
 // Function to delete an event by ID
 export const deleteEvent = async (req: any, res: any) => {
@@ -40,7 +40,7 @@ export const deleteEvent = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({ error: "Event doesn't exist!" });
     }
-};
+}
 
 // Function to add a new event
 export const addEvent = async (req: any, res: any) => {
@@ -61,7 +61,7 @@ export const addEvent = async (req: any, res: any) => {
     } catch (error) {
         res.status(422).send({ error: 'Error creating event' });
     }
-};
+}
 
 // Function to modify an existing event by ID
 export const modifyEvent = async (req: any, res: any) => {
@@ -87,7 +87,7 @@ export const modifyEvent = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error updatding event' });
     }
-};
+}
 
 export const importICalendar = async (req: any, res: any) => {
     const { icalStr } = req.body;
@@ -97,4 +97,26 @@ export const importICalendar = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error importing iCalendar' });
     }
-};
+}
+
+export const sendExportViaEmail = async (req: any, res: any) => {
+    const file = req.file;
+    const {to, eventName, yahooLink, googleLink, outlookLink} = req.body;
+
+    if (!file) {
+        res.status(400).send({ error: 'No file uploaded' });
+        return;
+    }
+    else{
+        const subject = `Export of ${eventName}`;
+        const text = `Export of ${eventName} attached.\nYou can also add the event to your calendar by clicking the following links:\nYahoo: ${yahooLink}\nGoogle: ${googleLink}\nOutlook: ${outlookLink}`;
+        const attachments = [{ path: file.path}];
+
+        try {
+            await sendEmailWithAttachments(to, subject, text, attachments, true);
+            res.status(200).send();
+        } catch (error) {
+            res.status(500).send({ error: 'Error sending email' });
+        }
+    }
+}
