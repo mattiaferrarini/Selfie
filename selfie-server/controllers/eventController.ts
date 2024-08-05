@@ -114,9 +114,9 @@ export const sendExportViaEmail = async (req: any, res: any) => {
 
         try {
             await sendEmailWithAttachments(to, subject, text, attachments, true);
-            res.status(200).send();
+            res.status(200).send('Email sent!');
         } catch (error) {
-            res.status(500).send({ error: 'Error sending email' });
+            res.status(500).send({ error: 'Error sending the email.' });
         }
     }
 }

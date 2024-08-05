@@ -7,7 +7,8 @@
             <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
             <a :href="googleLink" target="_blank" class="export-option">Open in Google Calendar</a>
             <a :href="outlookLink" target="_blank" class="export-option">Open in Outlook Web Calendar</a>
-            <button @click="sendAllToEmail" class="export-option">Send All to Email</button>
+            <button v-if="!emailSent" @click="sendAllToEmail" class="export-option">Send All to Email</button>
+            <div v-if="emailSent" class="export-option">{{ emailSentResult }}</div>
         </div>
 
         <button @click="closePanel" class="w-full p-1 rounded-lg bg-gray-300">Done</button>
@@ -38,7 +39,9 @@ export default defineComponent({
             yahooLink: '',
             googleLink: '',
             outlookLink: '',
-            authStore: useAuthStore()
+            authStore: useAuthStore(),
+            emailSent: false,
+            emailSentResult: ''
         }
     },
     methods: {
@@ -50,7 +53,6 @@ export default defineComponent({
             this.$emit('closePanel');
         },
         async sendAllToEmail() {
-            console.log('sendAllToEmail');
             const formData = new FormData();
 
             const blob = new Blob([this.iCalendarFile], { type: 'text/calendar' });
@@ -62,8 +64,14 @@ export default defineComponent({
             formData.append('googleLink', this.googleLink);
             formData.append('outlookLink', this.outlookLink);
 
-            await eventService.sendExportViaEmail(formData);
-            console.log('sent');
+            this.emailSentResult = await eventService.sendExportViaEmail(formData);
+            this.setEmailSent();
+        },
+        setEmailSent() {
+            this.emailSent = true;
+            setTimeout(() => {
+                this.emailSent = false;
+            }, 5000);
         }
     },
     computed: {

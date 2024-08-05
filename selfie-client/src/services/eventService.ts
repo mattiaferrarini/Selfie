@@ -194,10 +194,10 @@ const formatICAttendee = (attendee: any) => {
 const sendExportViaEmail = async (formData: FormData) => {
     try{
         const response = await axios.post(`${API_URL}/export`, formData, { withCredentials: true });
-        console.log(response.data);
+        return response.data;
     }
     catch (error: any) {
-        throw error.response.data;
+        return "Error sending the email. Please try again later.";
     }
 }
 
