@@ -10,6 +10,7 @@ export class Activity {
     };
     participants: {
         username: string;
+        email: string;
         status: string;
     }[];
     subActivitiesIDs: string[];
@@ -27,7 +28,11 @@ export class Activity {
             when: 'atEvent',
             repeat: 'never'
         },
-        participants = [],
+        participants: {
+            username: string;
+            email: string;
+            status: string;
+        }[] = [],
         subActivitiesIDs = []
     ) {
         this.title = title;

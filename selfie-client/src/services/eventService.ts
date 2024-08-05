@@ -2,6 +2,7 @@ import axios from 'axios';
 import { CalendarOptions, GoogleCalendar, ICalendar, OutlookCalendar, YahooCalendar } from "datebook";
 import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
 import { CalendarEvent } from '@/models/Event';
+import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = process.env.VUE_APP_API_URL + '/event'; // Change this URL to match your backend API
 
@@ -99,11 +100,8 @@ const convertOptionsToOutlook = (options: CalendarOptions): string => {
     return new OutlookCalendar(options).render();
 }
 
-const convertICalendarToEvent = async (icalStr: string) => {
-    console.log(icalStr);
-    try {
-        const response = await axios.put(`${API_URL}/import`, {icalStr}, { withCredentials: true });
-        const data = response.data;
+const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> => {
+    const data = await getEventFromIcal(icalStr);
 
         const event = new CalendarEvent();
 
@@ -125,6 +123,9 @@ const convertICalendarToEvent = async (icalStr: string) => {
                         event.participants = [formatICAttendee(ev.attendee)];
                     }
                 }
+
+                // TODO: remove participants that do not have an account?
+
                 // repetition
                 if(ev.rrule){
                     const recRule = getRepcurrenceRule(icalStr);
@@ -145,7 +146,15 @@ const convertICalendarToEvent = async (icalStr: string) => {
             }
         }
         return event;
-    } catch (error: any) {
+}
+
+const getEventFromIcal = async (icalStr: string) : Promise<any> => {
+    try {
+        const response = await axios.put(`${API_URL}/import`, {icalStr}, { withCredentials: true });
+        return response.data;
+    }
+    catch (error: any) {
+        console.log(error);
         throw error.response.data;
     }
 }
@@ -168,14 +177,17 @@ const getRepcurrenceRule = (icalStr: string) => {
 }
 
 const formatICAttendee = (attendee: any) => {
+    const authStore = useAuthStore();
     const mailtoPrefix = "MAILTO:";
+
     if (attendee.val.startsWith(mailtoPrefix)) {
         attendee.val = attendee.val.substring(mailtoPrefix.length);
     }
+
     return {
         username: attendee.params.CN,
         email: attendee.val,
-        status: 'pending'
+        status: attendee.val === authStore.user.email ? 'accepted' : 'pending'
     };
 }
 
@@ -189,5 +201,6 @@ export default {
     convertOptionsToYahoo,
     convertOptionsToGoogle,
     convertOptionsToOutlook,
-    convertICalendarToEvent
+    convertICalendarToEvent,
+    getEventFromIcal
 };

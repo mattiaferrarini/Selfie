@@ -49,6 +49,7 @@ export default defineComponent({
         return {
             newParticipants: [...this.participants],
             yourself: useAuthStore().user.username,
+            yourEmail: useAuthStore().user.email
         };
     },
     methods: {
@@ -66,7 +67,7 @@ export default defineComponent({
             this.$emit('closeParticipantsForm', this.newParticipants);
         },
         addYoursef() {
-            this.newParticipants.push({ username: this.yourself, status: 'accepted' });
+            this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
         }
     },
     computed: {

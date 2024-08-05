@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { Activity } from '@/models/Activity';
+import eventService from './eventService';
+import timeService from './timeService';
 
 const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
 
@@ -9,7 +11,6 @@ const getActivitiesByUser = async (username: string) => {
         const transformedData = response.data.map((activity: any) => formatActivity(activity));
         return transformedData;
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -56,10 +57,21 @@ const formatActivity = (activity: any) => {
     }
 }
 
+const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> => {
+    const event = await eventService.convertICalendarToEvent(icalStr);
+    const activity = new Activity();
+    activity.title = event.title;
+    activity.deadline = timeService.getEndOfDay(event.end);
+    activity.participants = event.participants;
+
+    return activity;
+}
+
 export default {
     getActivitiesByUser,
     getActivityById,
     addActivity,
     modifyActivity,
-    deleteActivity
+    deleteActivity,
+    convertICalendarToActivity
 }

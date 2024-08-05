@@ -11,6 +11,7 @@ interface IActivity extends Document{
     };
     participants: {
         username: string;
+        email: string;
         status: string;
     }[];
     subActivitiesIDs: string[];
@@ -49,6 +50,10 @@ const ActivitySchema = new Schema({
                 type: String,
                 required: true
             },
+            email: {
+                type: String,
+                required: true
+            },  
             status: {
                 type: String,
                 required: true

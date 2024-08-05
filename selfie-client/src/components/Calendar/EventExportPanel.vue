@@ -1,7 +1,8 @@
 <template>
-    <div class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll flex flex-col justify-center">
+    <div class="absolute inset-0 bg-white rounded-lg w-full h-full overflow-scroll">
 
-        <div class="flex flex-col justify-stretch text-center mb-4">
+        <div class="p-4 flex flex-col justify-center">
+            <div class="flex flex-col justify-stretch text-center mb-4">
             <button @click="downloadICalendar" class="export-option">Download iCalendar File</button>
             <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
             <a :href="googleLink" target="_blank" class="export-option">Open in Google Calendar</a>
@@ -10,6 +11,7 @@
         </div>
 
         <button @click="closePanel" class="w-full p-1 rounded-lg bg-gray-300">Done</button>
+        </div>
     </div>
 </template>
 
@@ -46,6 +48,7 @@ export default defineComponent({
             this.$emit('closePanel');
         },
         sendAllToEmail() {
+            // TODO: implement sendAllToEmail
             console.log('sendAllToEmail');
         }
     },

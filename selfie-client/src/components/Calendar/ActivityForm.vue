@@ -74,15 +74,27 @@
                 </label>
             </div>
             <hr>
-            <div class="flex w-full space-x-1">
-                <button v-if="modifying" type="button" @click="deleteActivity"
-                    class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-                <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+            <div class="flex-col space-y-1 w-full mt-4">
+                <button v-if="modifying" type="button" @click="openExportPanel"
+                    class="w-full p-1 rounded-lg bg-gray-300">Export
+                    as event</button>
+                <div v-else class="text-center">
+                    <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import
+                        activity</label>
+                    <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
+                </div>
+                <div class="flex w-full space-x-1">
+                    <button v-if="modifying" type="button" @click="deleteActivity"
+                        class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+                </div>
             </div>
         </form>
 
         <ParticipantsForm v-if="showParticipantsForm" :participants="newActivity.participants"
             @closeParticipantsForm="handleCloseParticipantsForm" />
+
+        <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel" />
 
     </div>
 </template>
@@ -90,15 +102,18 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import ParticipantsForm from './ParticipantsForm.vue';
+import EventExportPanel from './EventExportPanel.vue';
 import { Activity } from '@/models/Activity';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import activityService from '@/services/activityService';
+import { CalendarEvent } from '@/models/Event';
 
 
 export default defineComponent({
     components: {
-        ParticipantsForm
+        ParticipantsForm,
+        EventExportPanel
     },
     props: {
         activity: {
@@ -125,7 +140,8 @@ export default defineComponent({
                 whatsapp: this.activity.notification.method.includes('whatsapp')
             },
             showParticipantsForm: false,
-            showSubActivitiesForm: false
+            showSubActivitiesForm: false,
+            showExportPanel: false
         }
     },
     mounted() {
@@ -136,7 +152,10 @@ export default defineComponent({
             if (!this.modifying) {
                 // default initialization for new activity
                 this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
-                this.newActivity.participants = [{ username: this.authStore.user.username, status: 'accepted' }];
+                this.newActivity.participants = [
+                    { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
+                    { username: 'user2', email: 'email2', status: 'accepted' }
+                ]
             }
         },
         closeForm() {
@@ -144,23 +163,23 @@ export default defineComponent({
         },
         async handleSubmit(event: Event) {
             event.preventDefault();
-        
+
             this.newActivity.notification.method = [];
             if (this.newNotificationOptions.os)
                 this.newActivity.notification.method.push('os');
-        
+
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
-        
+
             if (this.newNotificationOptions.whatsapp)
                 this.newActivity.notification.method.push('whatsapp');
-        
+
             let res = null;
-            if(this.modifying) 
+            if (this.modifying)
                 res = await activityService.modifyActivity(this.newActivity);
             else
                 res = await activityService.addActivity(this.newActivity);
-        
+
             this.$emit('saveActivity', res);
         },
         deleteActivity() {
@@ -186,20 +205,53 @@ export default defineComponent({
         handleCloseSubActivitiesForm(subActivitiesIDs: string[]) {
             this.newActivity.subActivitiesIDs = subActivitiesIDs;
             this.closeSubActivitiesForm();
+        },
+        openExportPanel() {
+            this.showExportPanel = true;
+        },
+        closeExportPanel() {
+            this.showExportPanel = false;
+        },
+        handleEventUpload(event: Event) {
+            const file = (event.target as HTMLInputElement)?.files?.[0] || null;
+
+            if (file && file.type === 'text/calendar') {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    const fileContent = e.target?.result;
+                    this.setUploadedFile(fileContent as string);
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please upload a valid .ics file.');
+            }
+        },
+        async setUploadedFile(fileContent: string) {
+            this.newActivity = await activityService.convertICalendarToActivity(fileContent);
         }
     },
     computed: {
-        notifyAfterDeadline() : boolean {
+        notifyAfterDeadline(): boolean {
             return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
         },
         formattedEndDate: {
-            get() : string{
+            get(): string {
                 return this.newActivity.deadline.toISOString().split('T')[0];
             },
             set(value: string) {
                 this.newActivity.deadline = new Date(value);
             }
         },
+        associatedEvent(): CalendarEvent {
+            const event = new CalendarEvent();
+            event.title = this.newActivity.title;
+            event.start = timeService.getStartOfDay(this.newActivity.deadline);
+            event.end = timeService.getEndOfDay(this.newActivity.deadline);
+            event.allDay = true;
+            event.participants = this.newActivity.participants;
+            return event;
+        }
     }
 });
 </script>
