@@ -1,32 +1,38 @@
 <template>
-    <div class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll">
-        <h2 class="text-lg font-semibold mb-2">Participants</h2>
-        <div class="mb-3">
-            <h3 class="font-semibold mb-1">Add participants</h3>
-            <div class="flex w-full">
-                <input type="text" placeholder="Add usernames" class="border border-gray-300 p-1 flex-grow">
-                <button class="px-2 bg-gray-300"><v-icon name="md-add"></v-icon></button>
-            </div>
-            <button v-if="yourselfMissing" @click="addYoursef"
-                class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
-        </div>
+    <div class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll flex flex-col justify-between">
         <div>
-            <h3 class="font-semibold">Invited</h3>
-            <ul>
-                <li v-for="(participant, index) in sortedParticipants" :key="index"
-                    class="flex justify-between items-center">
-                    <p>{{ participant.username }} </p>
-                    <div class="flex items-center">
-                        <v-icon name="bi-circle-fill" class="mr-2" :class="participant.status"></v-icon>
-                        <button @click="removeParticipant(index)"><v-icon
-                                name="md-removecircleoutline"></v-icon></button>
-                    </div>
-                </li>
-            </ul>
+            <h2 class="text-lg font-semibold mb-2">Participants</h2>
+            <div class="mb-3">
+                <h3 class="font-semibold mb-1">Add participants</h3>
+                <div class="flex w-full">
+                    <input type="text" placeholder="Add username" v-model="newUsername"
+                        class="border border-gray-300 p-1 flex-grow">
+                    <button @click="addParticipant" class="px-2 bg-gray-300"><v-icon name="md-add"></v-icon></button>
+                </div>
+                <p v-if="noMessagesDisplayed" class="mt-2 text-gray-600">Save to invite all participants.</p>
+                <p v-if="successfulAdd" class="mt-2 text-gray-600">The user was added.</p>
+                <p v-if="failureAdd" class="mt-2 text-red-600">{{ failureText }}</p>
+                <button v-if="yourselfMissing" @click="addYoursef"
+                    class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add yourself</button>
+            </div>
+            <div>
+                <h3 class="font-semibold">Invited</h3>
+                <ul>
+                    <li v-for="(participant, index) in sortedParticipants" :key="index"
+                        class="flex justify-between items-center">
+                        <p>{{ participant.username }} </p>
+                        <div class="flex items-center">
+                            <v-icon name="bi-circle-fill" class="mr-2" :class="participant.status"></v-icon>
+                            <button @click="removeParticipant(participant)"><v-icon
+                                    name="md-removecircleoutline"></v-icon></button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class="flex w-full space-x-1 mt-8">
+        <div class="justify-self-end flex w-full space-x-1 mt-8">
             <button type="button" @click="cancelChanges"
-                class="flex-1 bg-red-600 text-white p-1 rounded-lg">Back</button>
+                class="flex-1 bg-gray-400 text-white p-1 rounded-lg">Back</button>
             <button type="submit" @click="saveChanges"
                 class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
         </div>
@@ -36,6 +42,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
+import userService from '@/services/userService';
+import unavailabilityService from '@/services/unavailabilityService';
+import { CalendarEvent } from '@/models/Event';
+import { Activity } from '@/models/Activity';
 
 export default defineComponent({
     emits: ['closeParticipantsForm'],
@@ -43,18 +53,31 @@ export default defineComponent({
         participants: {
             type: Array,
             required: true,
+        },
+        event: {
+            type: Object as () => CalendarEvent,
+            required: false,
+        },
+        activity: {
+            type: Object as () => Activity,
+            required: false,
         }
     },
     data() {
         return {
             newParticipants: [...this.participants],
             yourself: useAuthStore().user.username,
-            yourEmail: useAuthStore().user.email
+            yourEmail: useAuthStore().user.email,
+            newUsername: '',
+            successfulAdd: false,
+            failureAdd: false,
+            failureText: '',
+            timeoutId: null as number | null,
         };
     },
     methods: {
-        removeParticipant(index: number) {
-            this.newParticipants.splice(index, 1);
+        removeParticipant(participant: any) {
+            this.newParticipants = this.newParticipants.filter((p: any) => p.username !== participant.username);
         },
         cancelChanges() {
             this.newParticipants = this.participants;
@@ -68,6 +91,59 @@ export default defineComponent({
         },
         addYoursef() {
             this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
+        },
+        async addParticipant() {
+            const userData = await userService.checkUserExists(this.newUsername);
+            if (userData.exists) {
+                if (!this.userAlreadyAdded(userData.username)) {
+                    const unavailabilities = unavailabilityService.getUnavailabilitiesByUser(userData.username);
+                    this.newParticipants.push({
+                        username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'
+                    });
+                    this.onAddSuccess();
+                }
+                else
+                    this.onAddSuccess();
+            } else {
+                this.onUserNotExisting();
+            }
+            this.newUsername = '';
+        },
+        userAlreadyAdded(username: string): boolean {
+            return this.newParticipants.some((participant: any) => participant.username === username);
+        },
+        onAddSuccess() {
+            this.clearAllMessages();
+            this.successfulAdd = true;
+            this.timeoutId = setTimeout(() => {
+                this.successfulAdd = false;
+                this.timeoutId = null;
+            }, 3000);
+        },
+        onUserNotExisting() {
+            this.failureText = 'User does not exist.';
+            this.onAddFailure();
+        },
+        onUnavailableUser() {
+            this.failureText = `${this.newUsername} was added, but might be unavailable at the selected time.`;
+            this.onAddFailure();
+        },
+        onAddFailure() {
+            this.clearAllMessages();
+            this.failureAdd = true;
+            this.timeoutId = setTimeout(() => {
+                this.failureAdd = false;
+                this.timeoutId = null;
+            }, 5000);
+        },
+        clearAllMessages() {
+            if (this.timeoutId) {
+                clearTimeout(this.timeoutId);
+                this.timeoutId = null;
+
+                this.successfulAdd = false;
+                this.failureAdd = false;
+            }
         }
     },
     computed: {
@@ -87,7 +163,10 @@ export default defineComponent({
             });
         },
         yourselfMissing(): boolean {
-            return !this.newParticipants.some((participant: any) => participant.username === this.yourself);
+            return !this.userAlreadyAdded(this.yourself);
+        },
+        noMessagesDisplayed(): boolean{
+            return !this.successfulAdd && !this.failureAdd;
         }
     }
 });
