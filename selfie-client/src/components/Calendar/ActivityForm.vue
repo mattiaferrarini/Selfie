@@ -33,7 +33,7 @@
                 </div>
             </div>
             <hr>
-            <div>
+            <div v-if="!newActivity.pomodoro">
                 <div class="flex items-center justify-between w-full gap-4">
                     Sub-activities
                     <button type="button" @click="openSubActivitiesForm" @click.stop>
@@ -41,6 +41,16 @@
                         <v-icon name="md-navigatenext" />
                     </button>
                 </div>
+            <hr>
+            </div>
+            <div>
+                <div class="flex items-center justify-between w-full gap-4">
+                    <label> <input type="checkbox" v-model="newActivity.pomodoro" /> Pomodoro</label>
+                </div>
+                <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
+                    Cycles
+                    <input type="number" v-model="newActivity.pomodoroCycles" min="1" required />
+                </label>
             </div>
             <hr>
             <div>
@@ -144,23 +154,23 @@ export default defineComponent({
         },
         async handleSubmit(event: Event) {
             event.preventDefault();
-        
+
             this.newActivity.notification.method = [];
             if (this.newNotificationOptions.os)
                 this.newActivity.notification.method.push('os');
-        
+
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
-        
+
             if (this.newNotificationOptions.whatsapp)
                 this.newActivity.notification.method.push('whatsapp');
-        
+
             let res = null;
-            if(this.modifying) 
+            if(this.modifying)
                 res = await activityService.modifyActivity(this.newActivity);
             else
                 res = await activityService.addActivity(this.newActivity);
-        
+
             this.$emit('saveActivity', res);
         },
         deleteActivity() {

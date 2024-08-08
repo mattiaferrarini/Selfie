@@ -186,6 +186,7 @@
 import {defineComponent} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
+import router from "@/router";
 
 export default defineComponent({
   data() {
@@ -214,7 +215,7 @@ export default defineComponent({
     if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
-      this.numberOfCycles = pomodoroPreferences.numberOfCycles;
+      this.numberOfCycles = router.currentRoute.value.params.cycles || pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
   },

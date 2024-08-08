@@ -8,7 +8,9 @@ const formatActivity = (activity: any) => {
         deadline: activity.deadline,
         notification: activity.notification,
         participants: activity.participants,
-        subActivitiesIDs: activity.subActivitiesIDs
+        subActivitiesIDs: activity.subActivitiesIDs,
+        pomodoro: activity.pomodoro,
+        pomodoroCycles: activity?.pomodoroCycles
     };
 }
 
@@ -50,7 +52,9 @@ export const addActivity = async (req: any, res: any) => {
         deadline: req.body.deadline,
         notification: req.body.notification,
         participants: req.body.participants,
-        subActivitiesIDs: req.body.subActivitiesIDs
+        subActivitiesIDs: req.body.subActivitiesIDs,
+        pomodoro: req.body.pomodoro,
+        pomodoroCycles: req.body?.pomodoroCycles
     });
 
     try {
@@ -63,9 +67,9 @@ export const addActivity = async (req: any, res: any) => {
 
 export const modifyActivity = async (req: any, res: any) => {
     const { id } = req.params;
-    const { title, done, deadline, notification, participants } = req.body;
+    const { title, done, deadline, notification, participants, pomodoro, pomodoroCycles } = req.body;
     try {
-        const updatedActivity = await Activity.findByIdAndUpdate(id, { title, done, deadline, notification, participants }, { new: true });
+        const updatedActivity = await Activity.findByIdAndUpdate(id, { title, done, deadline, notification, participants, pomodoro, pomodoroCycles }, { new: true });
         res.status(200).send(formatActivity(updatedActivity));
     } catch (error) {
         res.status(404).send({ error: "Activity doesn't exist!" });
