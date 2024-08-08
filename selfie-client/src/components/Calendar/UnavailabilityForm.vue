@@ -39,6 +39,7 @@
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
           </select>
         </label>
         <label v-if="repeatNew" class="flex items-center justify-between w-full gap-4">

@@ -1,4 +1,6 @@
 import Unavailability from "../models/Unavailability";
+import eventService from "../services/eventService";
+import Event from "../models/Event";
 
 const formatUnavailability = (unavailability: any) => {
     return {
@@ -14,14 +16,26 @@ const formatUnavailability = (unavailability: any) => {
 
 export const getUnavailabilitiesByUser = async (req: any, res: any) => {
     const { username } = req.params;
+    const { start, end } = req.query;
+
+    // the event representing the selected period of time
+    const periodEven = new Event();
+    periodEven.start = start;
+    periodEven.end = end;
+
     try {
-        const unavailabilities = await Unavailability.find({ username: username });
+        let unavailabilities = await Unavailability.find({ username: username });
+
+        if(start && end) {
+            unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, periodEven));
+        }
         const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
+        
         res.status(200).send(formattedUnavailabilities);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving unavailabilities' });
     }
-};
+}
 
 export const deleteUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
@@ -31,7 +45,7 @@ export const deleteUnavailability = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({ error: "Unavailability doesn't exist!" });
     }
-};
+}
 
 export const addUnavailability = async (req: any, res: any) => {
     const newUnavailability = new Unavailability({
@@ -49,7 +63,7 @@ export const addUnavailability = async (req: any, res: any) => {
     } catch (error) {
         res.status(400).send({ error: 'Error adding unavailability' });
     }
-};
+}
 
 export const modifyUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
@@ -60,4 +74,19 @@ export const modifyUnavailability = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({ error: "Unavailability doesn't exist!" });
     }
-};
+}
+
+export const getOverlappingUnavailabilities = async (req: any, res: any) => {
+    const { username } = req.params;
+    const { event } = req.body;
+
+    try {
+        let unavailabilities = await Unavailability.find({ username: username });
+        unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, event));
+        const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
+        
+        res.status(200).send(formattedUnavailabilities);
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving unavailabilities' });
+    }
+}

@@ -154,7 +154,7 @@ export default defineComponent({
                 return this.filterAndSortForDay(this.allUnavailabilities, date);
         },
         filterAndSortForDay(events: any[], date:Date) :any[]{
-            // get the period of the next repetition
+            // get the period of the next repetition (relative to this date)
             let withDates = events.map((event: any) => {
                 return {event: event, dates: this.getNextRepetition(event, date)};
             });
@@ -248,6 +248,7 @@ export default defineComponent({
 
             return {start: nextRepetition, end: nextRepetitionEnd};
         },
+        // this assumes that the provided dates were obtained from the getNextRepetition method
         isValidRepetition(event: any, repStart: Date, repEnd: Date) : boolean{
             if(event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
                 return true;

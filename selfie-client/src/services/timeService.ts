@@ -127,11 +127,11 @@ const roundTime = (date: Date): Date => {
 
 const moveAheadByHours = (date: Date, hours: number): Date => {
     return new Date(date.getTime() + hours * 60 * 60 * 1000);
-};
+}
 
 const moveAheadByDays = (date: Date, days: number): Date => {
     return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-};
+}
 
 const moveAheadByMonths = (date: Date, months: number): Date => {
     let new_month = date.getMonth() + months;
@@ -139,7 +139,7 @@ const moveAheadByMonths = (date: Date, months: number): Date => {
     new_month = new_month % 12;
 
     return cropDate(new_year, new_month, date.getDate());
-};
+}
 
 const moveAheadByYears = (date: Date, years: number): Date => {
     if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)

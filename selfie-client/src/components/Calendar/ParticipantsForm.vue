@@ -93,18 +93,33 @@ export default defineComponent({
             this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
         },
         async addParticipant() {
-            const userData = await userService.checkUserExists(this.newUsername);
-            if (userData.exists) {
+            const userData = await userService.getUserBasicInfo(this.newUsername);
+            if (userData) {
                 if (!this.userAlreadyAdded(userData.username)) {
-                    const unavailabilities = unavailabilityService.getUnavailabilitiesByUser(userData.username);
-                    this.newParticipants.push({
-                        username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'
-                    });
-                    this.onAddSuccess();
+                    if(this.event){
+                        // event case: check if user is available
+                        const unavailabilities = await unavailabilityService.getOverlappingUnavailabilities(userData.username, this.event);
+                        if(unavailabilities.length > 0){
+                            this.onUnavailableUser();
+                        }
+                        else{
+                            this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
+                            this.onAddSuccess();
+                        }
+                    }
+                    else{
+                        // activity case: add user
+                        this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
+                        this.onAddSuccess();
+                    }
                 }
                 else
                     this.onAddSuccess();
-            } else {
+            } 
+            else if(false){
+                //check if user is a resource and add it if free    
+            }
+            else {
                 this.onUserNotExisting();
             }
             this.newUsername = '';
@@ -121,11 +136,11 @@ export default defineComponent({
             }, 3000);
         },
         onUserNotExisting() {
-            this.failureText = 'User does not exist.';
+            this.failureText = `${this.newUsername} does not exist.`;
             this.onAddFailure();
         },
         onUnavailableUser() {
-            this.failureText = `${this.newUsername} was added, but might be unavailable at the selected time.`;
+            this.failureText = `${this.newUsername} is unavailable at the time of the event.`;
             this.onAddFailure();
         },
         onAddFailure() {
