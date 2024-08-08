@@ -10,6 +10,7 @@ import activityRoutes from './routes/activity';
 import unavailabilityRoutes from './routes/unavailability';
 import notificationRoutes from './routes/notification';
 import userRoutes from './routes/user';
+import resourceRoutes from './routes/resource';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -68,6 +69,7 @@ app.use('/event', ensureAuthenticated, eventRoutes);
 app.use('/activity', ensureAuthenticated, activityRoutes);
 app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 app.use('/user', ensureAuthenticated, userRoutes);
+app.use('/resource', ensureAuthenticated, resourceRoutes);
 
 const server = http.createServer(app);
 
