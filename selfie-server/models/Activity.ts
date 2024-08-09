@@ -14,8 +14,10 @@ interface IActivity extends Document{
         status: string;
     }[];
     subActivitiesIDs: string[];
-    pomodoro?: boolean;
-    pomodoroCycles?: number;
+    pomodoro?: {
+        cycles: number;
+        completedCycles: number;
+    };
 }
 
 const ActivitySchema = new Schema({
@@ -63,11 +65,17 @@ const ActivitySchema = new Schema({
         required: true
     },
     pomodoro: {
-        type: Boolean,
+        type: {
+            cycles: {
+                type: Number,
+                required: true
+            },
+            completedCycles: {
+                type: Number,
+                required: true
+            },
+        },
     },
-    pomodoroCycles: {
-        type: Number,
-    }
 });
 
 export default model<IActivity>('Activity', ActivitySchema);

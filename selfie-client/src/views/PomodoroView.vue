@@ -187,6 +187,7 @@ import {defineComponent} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
 import router from "@/router";
+import activityService from "@/services/activityService";
 
 export default defineComponent({
   data() {
@@ -215,8 +216,14 @@ export default defineComponent({
     if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
-      this.numberOfCycles = router.currentRoute.value.params.cycles || pomodoroPreferences.numberOfCycles;
+      this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
+    }
+    if (router.currentRoute.value.params.activityId) {
+      activityService.getActivityById(router.currentRoute.value.params.activityId as string).then((activity) => {
+        this.numberOfCycles = activity.pomodoro.cycles;
+        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
+      });
     }
   },
   computed: {

@@ -40,7 +40,7 @@ export default defineComponent({
     emits: ['modifyActivity', 'markAsDone', 'undoActivity'],
     methods: {
         goPomodoro(activity: any) {
-          router.push({name: "pomodoro", params: {cycles: activity.pomodoroCycles}});
+          router.push({name: "pomodoro", params: {activityId: activity.id}});
         },
         modifyActivity(activity: any) {
             this.$emit('modifyActivity', activity);

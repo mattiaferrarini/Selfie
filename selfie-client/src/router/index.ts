@@ -42,7 +42,7 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/pomodoro/:cycles?',
+    path: '/pomodoro/:activityId?',
     name: 'pomodoro',
     component: PomodoroView,
     meta: {
