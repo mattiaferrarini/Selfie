@@ -198,6 +198,7 @@ export default defineComponent({
       showEditModal: false,
       videoUrl: '',
       inputVideoUrl: '',
+      activityId: '',
       workDuration: 30,
       pauseDuration: 5,
       numberOfCycles: 5,
@@ -220,7 +221,8 @@ export default defineComponent({
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
     if (router.currentRoute.value.params.activityId) {
-      activityService.getActivityById(router.currentRoute.value.params.activityId as string).then((activity) => {
+      this.activityId = router.currentRoute.value.params.activityId as string;
+      activityService.getActivityById(this.activityId).then((activity) => {
         this.numberOfCycles = activity.pomodoro.cycles;
         this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
       });
@@ -253,11 +255,22 @@ export default defineComponent({
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
+          if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
+            activityService.modifyActivity({id: this.activityId,
+              pomodoro: {
+                cycles: this.numberOfCycles,
+                completedCycles: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+              }
+            });
+          }
           // TODO: check and notify the user
           if (this.counter <= 0) {
             clearInterval(this.intervalRef);
             this.counter = 0;
             this.timing = false;
+            if (this.activityId) {
+              activityService.modifyActivity({id: this.activityId, done: true});
+            }
           }
         }, 1000);
       }
