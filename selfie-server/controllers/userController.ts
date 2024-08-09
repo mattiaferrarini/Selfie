@@ -11,6 +11,6 @@ export const getUserBasicInfo = async (req: Request, res: Response) => {
     if (user) {
         res.status(200).json({ username: user.username, email: user.email });
     } else {
-        res.status(200).json(null);
+        res.status(404).send({ error: "User doesn't exist!" });
     }
 };

@@ -17,6 +17,25 @@ const getEventsByUser = async (username: string) => {
     }
 }
 
+const getEventById = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
+        return formatEvent(response.data);
+    } catch (error: any) {
+        throw error.response.data;
+    }
+}
+
+const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
+    try {
+        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
+        const transformedData = response.data.map((event: any) => formatEvent(event));
+        return transformedData;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+}
+
 const addEvent = async (event: CalendarEvent) => {
     try {
         const response = await axios.post(`${API_URL}`, event, { withCredentials: true });
@@ -203,6 +222,8 @@ const sendExportViaEmail = async (formData: FormData) => {
 
 export default {
     getEventsByUser,
+    getEventById,
+    getOverlappingEvents,
     addEvent,
     modifyEvent,
     deleteEvent,

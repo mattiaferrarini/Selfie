@@ -44,8 +44,8 @@ import { defineComponent } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import userService from '@/services/userService';
 import unavailabilityService from '@/services/unavailabilityService';
+import resourceService from '@/services/resourceService';
 import { CalendarEvent } from '@/models/Event';
-import { Activity } from '@/models/Activity';
 
 export default defineComponent({
     emits: ['closeParticipantsForm'],
@@ -56,10 +56,6 @@ export default defineComponent({
         },
         event: {
             type: Object as () => CalendarEvent,
-            required: false,
-        },
-        activity: {
-            type: Object as () => Activity,
             required: false,
         }
     },
@@ -95,6 +91,7 @@ export default defineComponent({
         async addParticipant() {
             const userData = await userService.getUserBasicInfo(this.newUsername);
             if (userData) {
+                console.log('user');
                 if (!this.userAlreadyAdded(userData.username)) {
                     if(this.event){
                         // event case: check if user is available
@@ -116,8 +113,17 @@ export default defineComponent({
                 else
                     this.onAddSuccess();
             } 
-            else if(false){
-                //check if user is a resource and add it if free    
+            else if(this.event){
+                console.log('resource');
+                //check if user is a resource
+                const resource = await resourceService.getResource(this.newUsername);
+                if(resource){
+                    this.newParticipants.push({ username: resource.username, status: 'pending'});
+                    this.onAddSuccess();
+                }
+                else {
+                    this.onUserNotExisting();
+                }
             }
             else {
                 this.onUserNotExisting();

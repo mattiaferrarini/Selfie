@@ -12,6 +12,15 @@ const getAllResources = async () => {
     }
 }
 
+const getResource = async (username: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/${username}`, { withCredentials: true });
+        return response.data;
+    } catch (error: any) {
+        return null;
+    }
+}
+
 const addResource = async (name: string, username: string) => {
     try {
         const response = await axios.post(API_URL, { name, username }, { withCredentials: true });
@@ -32,5 +41,6 @@ const deleteResource = async (resource: Resource) => {
 export default {
     getAllResources,
     addResource,
-    deleteResource
+    deleteResource,
+    getResource
 }

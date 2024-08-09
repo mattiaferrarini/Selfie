@@ -20,8 +20,8 @@ export const getUnavailabilitiesByUser = async (req: any, res: any) => {
 
     // the event representing the selected period of time
     const periodEven = new Event();
-    periodEven.start = start;
-    periodEven.end = end;
+    periodEven.start = new Date(start);
+    periodEven.end = new Date(end);
 
     try {
         let unavailabilities = await Unavailability.find({ username: username });

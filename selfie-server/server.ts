@@ -11,6 +11,7 @@ import unavailabilityRoutes from './routes/unavailability';
 import notificationRoutes from './routes/notification';
 import userRoutes from './routes/user';
 import resourceRoutes from './routes/resource';
+import inviteRoutes from './routes/invite';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -70,6 +71,7 @@ app.use('/activity', ensureAuthenticated, activityRoutes);
 app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 app.use('/user', ensureAuthenticated, userRoutes);
 app.use('/resource', ensureAuthenticated, resourceRoutes);
+app.use('/invite', ensureAuthenticated, inviteRoutes);
 
 const server = http.createServer(app);
 

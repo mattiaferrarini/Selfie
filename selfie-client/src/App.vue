@@ -71,6 +71,14 @@
               </button>
             </div>
           </div>
+          <router-link to="/admin"
+                       class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Admin</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="hi-view-grid-add" class="h-full w-full"/>
+            </div>
+          </router-link>
           <router-link to="/profile"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">

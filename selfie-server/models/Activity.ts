@@ -1,6 +1,6 @@
 import { model, Schema, Document } from 'mongoose';
 
-interface IActivity extends Document{
+export interface IActivity extends Document{
     title: string;
     done: boolean;
     deadline: Date;
@@ -52,7 +52,7 @@ const ActivitySchema = new Schema({
             },
             email: {
                 type: String,
-                required: true
+                required: false
             },  
             status: {
                 type: String,
@@ -67,4 +67,5 @@ const ActivitySchema = new Schema({
     }
 });
 
-export default model<IActivity>('Activity', ActivitySchema);
+const Activity = model<IActivity>('Activity', ActivitySchema);
+export default Activity;

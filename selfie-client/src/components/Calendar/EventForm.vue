@@ -120,7 +120,7 @@
       </div>
     </form>
 
-    <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants"
+    <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants" :event="newEvent"
       @closeParticipantsForm="handleCloseParticipantsForm" />
 
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
@@ -184,7 +184,6 @@ export default defineComponent({
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
         this.newEvent.participants = [
           { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
-          { username: 'user2', email: 'email2', status: 'accepted' }
         ];
       }
 
