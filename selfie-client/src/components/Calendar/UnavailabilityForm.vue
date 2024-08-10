@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg w-4/5" @click.stop>
+  <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -175,5 +175,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Your component's styles go here */
+hr {
+  margin: 0.5rem 0;
+}
 </style>

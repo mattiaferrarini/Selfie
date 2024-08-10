@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" @click.stop>
+  <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -16,7 +16,7 @@
 
         <div class="flex items-center justify-between w-full gap-4">
           <label> Start </label>
-          <div class="flex gap-1" style="height: 20px;">
+          <div class="flex gap-1">
             <input type="date" v-model="formattedStartDate">
             <input type="time" v-if="!newEvent.allDay" v-model="newStartTime">
           </div>
@@ -52,7 +52,7 @@
         </label>
         <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4">
           Number of repetitions
-          <input type="number" min="0" v-model="newEvent.repetition.numberOfRepetitions"
+          <input type="number" min="1" v-model="newEvent.repetition.numberOfRepetitions"
             style="max-width: 4em; text-align: center">
         </label>
         <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
@@ -63,6 +63,9 @@
       <hr>
       <div>
         <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full"></label><br>
+      </div>
+      <hr>
+      <div>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
           <button type="button" @click="openParticipantsForm" @click.stop>
@@ -301,5 +304,8 @@ export default defineComponent({
 <style scoped>
 #event-upload {
   cursor: pointer;
+}
+hr {
+  margin: 0.5rem 0;
 }
 </style>

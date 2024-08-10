@@ -256,4 +256,8 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+hr {
+  margin: 0.5rem 0;
+}
+</style>

@@ -353,13 +353,13 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" class="bg-white p-4 rounded-lg shadow-lg m-4"/>
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" class="m-4"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
-        :current-date="currentDate" />
+        :current-date="currentDate" class="m-4"/>
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
         @delete-unavailability="deleteUnavailability" @save-unavailability="saveUnavailability"
-        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" />
+        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" class="m-4" />
     </div>
 
     <div v-if="showInviteList" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
@@ -372,7 +372,7 @@ export default defineComponent({
   </div>
 </template>
 
-<style>
+<style scoped>
 .button-group button {
   border: 1px solid #ccc;
   border-radius: 5px;

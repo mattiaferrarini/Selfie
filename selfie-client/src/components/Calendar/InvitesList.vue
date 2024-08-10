@@ -139,7 +139,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 .action-button {
     padding: 0.3rem 0.3rem;
     border-radius: 0.5rem;
