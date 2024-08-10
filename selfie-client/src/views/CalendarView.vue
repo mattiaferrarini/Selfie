@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, computed, nextTick, defineComponent, Ref, onMounted } from 'vue';
+import { ref, computed, defineComponent, onMounted } from 'vue';
 import EventForm from "@/components/Calendar/EventForm.vue";
 import ActivitiesList from "@/components/Calendar/ActivitiesList.vue";
 import AppointmentsCalendar from "@/components/Calendar/AppointmentsCalendar.vue";
@@ -88,6 +88,7 @@ export default defineComponent({
     };
     const resetCalendar = () => {
       currentDate.value = new Date();
+      document.getElementById(currentDate.value.toISOString().substring(0,10))?.scrollIntoView({ block: 'center',  behavior: 'smooth' });
     };
     const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);

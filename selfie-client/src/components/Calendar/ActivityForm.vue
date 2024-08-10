@@ -47,14 +47,13 @@
                 <div class="flex items-center justify-between w-full gap-4">
                     <label> <input type="checkbox" :checked="newActivity.pomodoro != null" @click="newActivity.pomodoro = newActivity.pomodoro == null ? {cycles:1, completedCycles: 0} : null" /> Pomodoro</label>
                 </div>
-                <!-- TODO: fixa il bug grafico assurdo per cui un input è più grande e l'altro è più corto (con lo stesso codice) -->
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
-                    Cycles
-                    <input type="number" v-model="newActivity.pomodoro.cycles" min="1" required />
+                    <span class="flex-1">Cycles</span>
+                    <input type="number" v-model="newActivity.pomodoro.cycles" min="1" class="flex-1" required />
                 </label>
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
-                    Completed Cycles
-                    <input type="number" v-model="newActivity.pomodoro.completedCycles" min="0" :max="newActivity.pomodoro.cycles" required />
+                    <span class="flex-1">Completed Cycles</span>
+                    <input type="number" v-model="newActivity.pomodoro.completedCycles" class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
                 </label>
             </div>
             <hr>
