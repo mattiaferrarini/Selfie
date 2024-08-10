@@ -91,6 +91,14 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const authStore = useAuthStore();
+
+    if (to.path === '/admin') {
+      if (!authStore.user.isAdmin) {
+          next({name: 'home'});
+          return;
+      }
+    }
+
     if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
         next({name: 'login'});
     } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {

@@ -19,6 +19,7 @@ export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
+    isAdmin: boolean;
     realName: string;
     birthday: Date;
     pushSubscriptions: IPushSubscription[];
@@ -61,6 +62,11 @@ const UserSchema: Schema = new Schema<IUser>({
     password: {
         type: String,
         required: true
+    },
+    isAdmin: {
+        type: Boolean,
+        required: true,
+        default: false
     },
     realName: {
         type: String,

@@ -71,7 +71,7 @@
               </button>
             </div>
           </div>
-          <router-link to="/admin"
+          <router-link to="/admin" v-if="isAdmin"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Admin</span>
@@ -113,6 +113,7 @@ export default defineComponent({
   setup() {
     const authStore = useAuthStore();
     const isAuthenticated = storeToRefs(authStore).isAuthenticated;
+    const isAdmin = storeToRefs(authStore).isAdmin;
     const wsStore = useWebSocketStore();
     const unread = storeToRefs(wsStore).unread;
     const dateStore = useDateStore();
@@ -151,6 +152,7 @@ export default defineComponent({
 
     return {
       isAuthenticated,
+      isAdmin,
       unread,
       logout,
       showTooltip,
