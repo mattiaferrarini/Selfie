@@ -2,7 +2,7 @@
     <div class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll flex flex-col justify-between">
         <div>
             <h2 class="text-lg font-semibold mb-2">Participants</h2>
-            <div class="mb-3">
+            <div class="mb-3" v-if="modificationAllowed">
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
                     <input type="text" placeholder="Add username" v-model="newUsername"
@@ -23,7 +23,7 @@
                         <p>{{ participant.username }} </p>
                         <div class="flex items-center">
                             <v-icon name="bi-circle-fill" class="mr-2" :class="participant.status"></v-icon>
-                            <button @click="removeParticipant(participant)"><v-icon
+                            <button @click="removeParticipant(participant)" v-if="modificationAllowed"><v-icon
                                     name="md-removecircleoutline"></v-icon></button>
                         </div>
                     </li>
@@ -33,7 +33,7 @@
         <div class="justify-self-end flex w-full space-x-1 mt-8">
             <button type="button" @click="cancelChanges"
                 class="flex-1 bg-gray-400 text-white p-1 rounded-lg">Back</button>
-            <button type="submit" @click="saveChanges"
+            <button type="submit" @click="saveChanges" v-if="modificationAllowed"
                 class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
         </div>
     </div>
@@ -57,6 +57,10 @@ export default defineComponent({
         event: {
             type: Object as () => CalendarEvent,
             required: false,
+        },
+        modificationAllowed: {
+            type: Boolean,
+            default: true,
         }
     },
     data() {

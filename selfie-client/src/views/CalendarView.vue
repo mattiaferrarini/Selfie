@@ -251,6 +251,12 @@ export default defineComponent({
     const currentDisplayedPeriodString = computed(() => {
       return timeMethods.formatPeriodString(currentDate.value, view.value);
     });
+    const showAddButton = computed(() => {
+      return content.value !== 'resources' || authStore.isAdmin;
+    });
+    const eventModificationAllowd = computed(() => {
+      return content.value !== 'resources' || authStore.isAdmin;
+    });
 
     /* Lifecycle hooks */
     onMounted(async () => {
@@ -273,7 +279,7 @@ export default defineComponent({
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
       modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
-      showInviteList, openInviteList, closeInviteList, authStore, hasPendingInvites
+      showInviteList, openInviteList, closeInviteList, authStore, hasPendingInvites, showAddButton, eventModificationAllowd
     };
   },
 });
@@ -338,7 +344,7 @@ export default defineComponent({
         <li><button class="add-button" @click.stop="openAddActivityForm">Activity</button></li>
         <li><button class="add-button" @click.stop="openUnavailabilityForm">Unavailability</button></li>
       </ul>
-      <button @click.stop="openAddOptions" id="open-add-form-btn"
+      <button @click.stop="openAddOptions" id="open-add-form-btn" v-if="showAddButton"
         class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
         <v-icon name="md-add" class="w-full h-full"></v-icon>
       </button>
@@ -353,7 +359,7 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" class="m-4"/>
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" :modification-allowed="eventModificationAllowd" class="m-4"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
         :current-date="currentDate" class="m-4"/>
@@ -379,7 +385,7 @@ export default defineComponent({
 }
 
 :root {
-  --dp-input-icon-padding: 0px;
+  --dp-input-icon-padding: 10px;
 }
 
 .dp__active_date, .dp__today, .dp__overlay_cell_active {

@@ -8,25 +8,25 @@
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
         <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title"
-            class="w-full"></label><br>
+            class="w-full" :disabled="!modificationAllowed"></label>
       </div>
       <hr>
       <div>
-        <label><input type="checkbox" v-model="newEvent.allDay"> All-day</label><br>
+        <label><input type="checkbox" v-model="newEvent.allDay" :disabled="!modificationAllowed"> All-day</label><br>
 
         <div class="flex items-center justify-between w-full gap-4">
           <label> Start </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedStartDate">
-            <input type="time" v-if="!newEvent.allDay" v-model="newStartTime">
+            <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
+            <input type="time" v-if="!newEvent.allDay" v-model="newStartTime" :disabled="!modificationAllowed">
           </div>
         </div>
 
         <div class="flex items-center justify-between w-full gap-4">
           <label> End </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedEndDate">
-            <input type="time" v-if="!newEvent.allDay" v-model="newEndTime">
+            <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed">
+            <input type="time" v-if="!newEvent.allDay" v-model="newEndTime" :disabled="!modificationAllowed">
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
       <div>
         <label class="flex items-center justify-between w-full gap-4">
           Repeat
-          <select name="repeat" v-model="newEvent.repetition.frequency">
+          <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed">
             <option value="never">Never</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
@@ -44,7 +44,7 @@
         </label>
         <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
           Until
-          <select name="until" v-model="newEvent.repetition.until">
+          <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed">
             <option value="infinity">Infinity</option>
             <option value="n-reps">N repetitions</option>
             <option value="date">Date</option>
@@ -53,16 +53,16 @@
         <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4">
           Number of repetitions
           <input type="number" min="1" v-model="newEvent.repetition.numberOfRepetitions"
-            style="max-width: 4em; text-align: center">
+            style="max-width: 4em; text-align: center" :disabled="!modificationAllowed">
         </label>
         <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
           End date
-          <input type="date" v-model="formattedRepeatEndDate">
+          <input type="date" v-model="formattedRepeatEndDate" :disabled="!modificationAllowed">
         </label>
       </div>
       <hr>
       <div>
-        <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full"></label><br>
+        <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full" :disabled="!modificationAllowed"></label><br>
       </div>
       <hr>
       <div>
@@ -79,14 +79,14 @@
         <div class="flex items-center justify-between w-full gap-4">
           Notification
           <div class="flex flex-wrap justify-end space-x-4">
-            <label> <input type="checkbox" v-model="newNotificationOptions.os" /> OS</label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.email" /> Email </label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.os" :disabled="!modificationAllowed" /> OS</label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed" /> Email </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" :disabled="!modificationAllowed" /> Whatsapp </label>
           </div>
         </div>
         <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
           When
-          <select name="whenNotify" v-model="newEvent.notification.when">
+          <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed">
             <option value="atEvent">Time of event</option>
             <option value="5min">5 min before</option>
             <option value="30min">30 min before</option>
@@ -98,7 +98,7 @@
         </label>
         <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
           Repeat
-          <select name="repeatNotify" v-model="newEvent.notification.repeat">
+          <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed">
             <option value="never">Never</option>
             <option value="3times">3 times</option>
             <option value="minute">Every minute</option>
@@ -108,7 +108,7 @@
         </label>
       </div>
       <hr>
-      <div class="flex-col space-y-1 w-full mt-4">
+      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-4">
         <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-1 rounded-lg bg-gray-300">Export
           event</button>
         <div v-else class="text-center">
@@ -121,10 +121,13 @@
           <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
         </div>
       </div>
+      <div v-else class="mt-4"> 
+        <p class="text-center text-red-600">You cannot modify this event.</p>
+      </div>
     </form>
 
     <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants" :event="newEvent"
-      @closeParticipantsForm="handleCloseParticipantsForm" />
+      @closeParticipantsForm="handleCloseParticipantsForm" :modification-allowed="modificationAllowed"/>
 
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
@@ -157,6 +160,10 @@ export default defineComponent({
     currentDate: {
       type: Date,
       required: true
+    },
+    modificationAllowed: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['closeForm', 'saveEvent', 'deleteEvent'],
