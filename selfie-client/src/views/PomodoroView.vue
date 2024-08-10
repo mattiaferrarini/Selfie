@@ -279,6 +279,12 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
+      activityService.modifyActivity({id: this.activityId,
+        pomodoro: {
+          cycles: this.numberOfCycles,
+          completedCycles: this.numberOfCycles - cycle
+        }
+      });
     },
     restartCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
@@ -306,8 +312,13 @@ export default defineComponent({
       this.showEditModal = true
     },
     saveEditChanges() {
-      // TODO: update?
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
+      activityService.modifyActivity({id: this.activityId,
+        pomodoro: {
+          cycles: this.numberOfCycles,
+          completedCycles: this.setCycleNumber - 1
+        }
+      });
       this.showEditModal = false;
     },
     calculateNumber: function () {

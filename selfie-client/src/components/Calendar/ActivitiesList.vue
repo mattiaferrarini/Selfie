@@ -3,11 +3,12 @@
         <h3>Activities</h3>
         <ul>
             <li v-for="activity in sortedActivities" :key="activity.id">
-                <div class="flex align-center justify-between p-5" @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                <div class="flex align-center justify-between p-5 cursor-pointer" @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                         <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                         <div class="flex gap-4">
-                            {{timeMethods.formatDayMonth(activity.deadline)}}
+                            {{ activity.pomodoro ?  activity.pomodoro.completedCycles + '/' + activity.pomodoro.cycles + ' cicli' : '' }}
                             <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
+                            {{timeMethods.formatDayMonth(activity.deadline)}}
                             <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
                             <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
                         </div>
