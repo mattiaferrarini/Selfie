@@ -353,7 +353,7 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" />
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" class="bg-white p-4 rounded-lg shadow-lg m-4"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
         :current-date="currentDate" />
@@ -365,7 +365,7 @@ export default defineComponent({
     <div v-if="showInviteList" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
       <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
         <h2 class="text-lg font-bold mb-4">Pending invites</h2>
-        <InvitesList :username="authStore.user.username" :currentDate="currentDate" />
+        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="showInviteList=false"/>
       </div>
     </div>
 
@@ -379,7 +379,7 @@ export default defineComponent({
 }
 
 :root {
-  --dp-input-icon-padding: 10px;
+  --dp-input-icon-padding: 0px;
 }
 
 .dp__active_date, .dp__today, .dp__overlay_cell_active {

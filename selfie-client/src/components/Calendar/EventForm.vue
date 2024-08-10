@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg w-4/5 relative" @click.stop>
+  <div class="relative" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -16,7 +16,7 @@
 
         <div class="flex items-center justify-between w-full gap-4">
           <label> Start </label>
-          <div class="flex gap-1">
+          <div class="flex gap-1" style="height: 20px;">
             <input type="date" v-model="formattedStartDate">
             <input type="time" v-if="!newEvent.allDay" v-model="newStartTime">
           </div>

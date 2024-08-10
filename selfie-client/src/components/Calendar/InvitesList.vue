@@ -52,6 +52,7 @@ export default defineComponent({
             immediate: true
         }
     },
+    emits: ['no-invites'],
     methods: {
         formattedDescription(description: string) :string {
         return description.replace(/\n/g, '<br>');
@@ -95,6 +96,9 @@ export default defineComponent({
         },
         removeInvite(invite: Invite) {
             this.inviteInfos = this.inviteInfos.filter(inviteInfo => inviteInfo.invite.id !== invite.id);
+            if(this.inviteInfos.length === 0) {
+                this.$emit('no-invites');
+            }
         },
         formatEventInvite(invite: Invite, event: CalendarEvent): {invite: Invite, title: string, description: string } {
 
