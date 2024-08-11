@@ -47,7 +47,7 @@
           <div v-if="showPomodoroTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
             <select v-model="pomodoroType" @change="updatePreferences">
-              <option value="last">Ultimo</option>
+              <option value="settings">Impostazioni</option>
               <option value="stats">Statistiche</option>
             </select>
           </div>

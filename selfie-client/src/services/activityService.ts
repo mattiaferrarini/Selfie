@@ -13,6 +13,16 @@ const getActivitiesByUser = async (username: string) => {
     }
 }
 
+const getPomodoroStats = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/pomodoro/stats`, { withCredentials: true });
+        return response.data;
+    } catch (error: any) {
+        console.log(error);
+        throw error.response.data;
+    }
+}
+
 const getActivityById = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
@@ -57,6 +67,7 @@ const formatActivity = (activity: any) => {
 
 export default {
     getActivitiesByUser,
+    getPomodoroStats,
     getActivityById,
     addActivity,
     modifyActivity,

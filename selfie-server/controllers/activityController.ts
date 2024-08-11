@@ -24,6 +24,22 @@ export const getActivitiesByUser = async (req: any, res: any) => {
     }
 }
 
+export const getPomodoroStats = async (req: any, res: any) => {
+    try {
+        const completedActivities = await Activity.find({ "participants.username": req.user.username, done: true });
+        const missingActivities = await Activity.find({ "participants.username": req.user.username, done: false, deadline: { $lt: new Date() } });
+        res.status(200).json({
+            completed: completedActivities.length,
+            completedCycles: completedActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles || 0), 0),
+            missing: missingActivities.length,
+            missingTotalCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.cycles || 0), 0),
+            missingCompletedCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles || 0), 0)
+        });
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving activities' });
+    }
+}
+
 export const getActivityById = async (req: any, res: any) => {
     const { id } = req.params;
     try {
