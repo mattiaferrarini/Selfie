@@ -2,7 +2,7 @@
     <div class="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <template v-for="(date, index) in datesToDisplayWithPlaceholders" :key="index">
             <div v-if="date" class="m-4 sm:m-8 grid-item">
-                <div class="flex align-center justify-between border-t-2 border-b-2 border-gray-300 mb-2"
+                <div class="flex align-center justify-between border-t-2 border-b-2 border-gray-300 mb-2" :id="String(date.toISOString().substring(0,10))"
                     :class="{ 'bg-emerald-500': timeMethods.isWeekend(date), 'bg-white': !timeMethods.isWeekend(date) }">
                     <h3>{{ String(date.getDate()).padStart(2, '0') }}/{{ String(date.getMonth() + 1).padStart(2, '0') }}</h3>
                     <h3>{{ timeMethods.getDayOfWeek(date) }}</h3>
@@ -23,10 +23,14 @@
                     <h4 class="font-bold">Activities</h4>
                     <ul>
                         <li v-for="activity in activitiesForTheDay(date)" :key="activity.id" class="clickable-item">
-                            <div class="flex align-center justify-between" @click="modifyActivity(activity)">
+                            <div class="flex align-center justify-between" @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
-                                <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
-                                <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
+                                <div class="flex flex-wrap justify-end space-x-4">
+                                    <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles + '/' + activity.pomodoro.cycles + ' cicli' : '' }}</span>
+                                    <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
+                                    <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
+                                    <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
+                                </div>
                             </div>
                         </li>
                     </ul>
@@ -55,6 +59,7 @@ import { defineComponent, PropType } from 'vue';
 import timeMethods from '../../services/timeService';
 import { CalendarEvent } from '@/models/Event';
 import { Unavailability } from '@/models/Unavailability';
+import router from "@/router";
 export default defineComponent({
     name: 'AppointmentsCalendar',
     props: {
@@ -99,8 +104,7 @@ export default defineComponent({
     },
     methods: {
         eventsForDay(date: Date): any[] {
-            const res = this.filterAndSortForDay(this.allEvents, date);
-            return res;
+            return this.filterAndSortForDay(this.allEvents, date);
         },
         formatEventTime(event: {event: any, dates: {start: Date, end: Date}}, date: Date) : string{
             let startOfDay: Date = timeMethods.getStartOfDay(date);
@@ -137,6 +141,9 @@ export default defineComponent({
             else {
                 return [];
             }
+        },
+        goPomodoro(activity: any) {
+            router.push({name: "pomodoro", params: {activityId: activity.id}});
         },
         modifyActivity(activity: any) {
             this.$emit('modifyActivity', activity);

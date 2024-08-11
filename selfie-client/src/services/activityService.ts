@@ -1,13 +1,12 @@
 import axios from 'axios';
-import { Activity } from '@/models/Activity';
+import {Activity} from '@/models/Activity';
 
 const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
 
 const getActivitiesByUser = async (username: string) => {
     try {
         const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
-        const transformedData = response.data.map((activity: any) => formatActivity(activity));
-        return transformedData;
+        return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
         console.log(error);
         throw error.response.data;
@@ -32,7 +31,7 @@ const addActivity = async (activity: Activity) => {
     }
 }
 
-const modifyActivity = async (activity: Activity) => {
+const modifyActivity = async (activity: Partial<Activity>) => {
     try {
         const response = await axios.put(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
         return formatActivity(response.data);

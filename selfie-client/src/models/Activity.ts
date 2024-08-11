@@ -13,6 +13,10 @@ export class Activity {
         status: string;
     }[];
     subActivitiesIDs: string[];
+    pomodoro: null | undefined | {
+        cycles: number;
+        completedCycles: number;
+    };
 
     constructor(
         title = '',
@@ -28,7 +32,8 @@ export class Activity {
             repeat: 'never'
         },
         participants = [],
-        subActivitiesIDs = []
+        subActivitiesIDs = [],
+        pomodoro = null
     ) {
         this.title = title;
         this.done = done;
@@ -36,5 +41,6 @@ export class Activity {
         this.notification = notification;
         this.participants = participants;
         this.subActivitiesIDs = subActivitiesIDs;
+        this.pomodoro = pomodoro;
     }
 }

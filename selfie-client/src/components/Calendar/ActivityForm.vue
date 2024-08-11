@@ -33,7 +33,7 @@
                 </div>
             </div>
             <hr>
-            <div>
+            <div v-if="!newActivity.pomodoro">
                 <div class="flex items-center justify-between w-full gap-4">
                     Sub-activities
                     <button type="button" @click="openSubActivitiesForm" @click.stop>
@@ -41,6 +41,20 @@
                         <v-icon name="md-navigatenext" />
                     </button>
                 </div>
+            <hr>
+            </div>
+            <div>
+                <div class="flex items-center justify-between w-full gap-4">
+                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null" @click="newActivity.pomodoro = newActivity.pomodoro == null ? {cycles:1, completedCycles: 0} : null" /> Pomodoro</label>
+                </div>
+                <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
+                    <span class="flex-1">Cycles</span>
+                    <input type="number" v-model="newActivity.pomodoro.cycles" min="1" class="flex-1" required />
+                </label>
+                <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
+                    <span class="flex-1">Completed Cycles</span>
+                    <input type="number" v-model="newActivity.pomodoro.completedCycles" class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
+                </label>
             </div>
             <hr>
             <div>
@@ -144,23 +158,23 @@ export default defineComponent({
         },
         async handleSubmit(event: Event) {
             event.preventDefault();
-        
+
             this.newActivity.notification.method = [];
             if (this.newNotificationOptions.os)
                 this.newActivity.notification.method.push('os');
-        
+
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
-        
+
             if (this.newNotificationOptions.whatsapp)
                 this.newActivity.notification.method.push('whatsapp');
-        
+
             let res = null;
-            if(this.modifying) 
+            if(this.modifying)
                 res = await activityService.modifyActivity(this.newActivity);
             else
                 res = await activityService.addActivity(this.newActivity);
-        
+
             this.$emit('saveActivity', res);
         },
         deleteActivity() {
