@@ -63,3 +63,11 @@ export const deleteResource = async (req: any, res: any) => {
         res.status(404).send({ error: "Resource doesn't exist!" });
     }
 }
+
+export const isResource = async (username: string) => {
+    const resource = await Resource.findOne({ username });
+    if (resource) 
+        return true;
+    else
+        return false;
+}

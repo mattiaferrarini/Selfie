@@ -1,5 +1,5 @@
 // Import the Event model
-import Event from '../models/Event';
+import Event, {IEvent} from '../models/Event';
 import ical from 'node-ical';
 import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
@@ -189,5 +189,16 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
         }
     } catch (error) {
         throw new Error("Error changing participant status");
+    }
+}
+
+export const otherEventsOverlap = async (username: string, event: IEvent) => {
+    try{
+        let events = await Event.find({ username: username });
+        events = events.filter((e: any) => eventService.eventsOverlap(e, event));
+        return events.length > 0;
+    }
+    catch{
+        return false; // TODO: handle error
     }
 }

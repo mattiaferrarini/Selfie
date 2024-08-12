@@ -1,6 +1,6 @@
 import Unavailability from "../models/Unavailability";
 import eventService from "../services/eventService";
-import Event from "../models/Event";
+import Event, { IEvent } from "../models/Event";
 import timeService from "../services/timeService";
 
 const formatUnavailability = (unavailability: any) => {
@@ -86,5 +86,16 @@ export const getOverlappingUnavailabilities = async (req: any, res: any) => {
         res.status(200).send(formattedUnavailabilities);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving unavailabilities' });
+    }
+}
+
+export const isUserFreeForEvent = async (username: string, event: IEvent) => {
+    try{
+        let unavailabilities = await Unavailability.find({ username: username });
+        unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, event));
+        return unavailabilities.length === 0;
+    }
+    catch{
+        return false; // TODO: handle this
     }
 }

@@ -4,6 +4,8 @@ import * as activityController from "./activityController";
 import timeService from "../services/timeService";
 import Event, {IEvent} from "../models/Event";
 import { IActivity } from "../models/Activity";
+import * as resourceController from "./resourceController";
+import * as unavailabilityController from "./unavailabilityController";
 
 const formatInvite = (invite: IInvite) => {
     return {
@@ -37,14 +39,25 @@ export const getPendingInvitesByUser = async (req: any, res: any) => {
 
 export const createInvitesForEvent = async (event: IEvent) => {
     const participants = event.participants;
-    const answerDate = new Date();
+    const answerDate = new Date(); // TODO: change to current date
     const eventId = event._id as string;
 
     for(let i = 0; i < participants.length; i++) {
         const participant = participants[i];
         try{
-            if(participant.status === 'pending' && !await inviteAlreadyExists(participant.username, eventId)) {
-                await addInvite(participant.username, answerDate, eventId);
+            if(participant.status === 'pending') {
+                if(await resourceController.isResource(participant.username)){
+                    if(!await eventController.otherEventsOverlap(participant.username, event))
+                        participant.status = 'accepted';
+                    else if(!await inviteAlreadyExists(participant.username, eventId))
+                        await addInvite(participant.username, answerDate, eventId);
+                }
+                else{ // user
+                    if(!await unavailabilityController.isUserFreeForEvent(participant.username, event))
+                        participant.status = 'declined';
+                    else if(!await inviteAlreadyExists(participant.username, eventId))
+                        await addInvite(participant.username, answerDate, eventId);
+                }
             }
         }
         catch{
