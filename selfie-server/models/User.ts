@@ -15,6 +15,11 @@ enum NotificationType {
     BOTH = "both"
 }
 
+enum PomodoroType {
+    SETTINGS = "settings",
+    STATS = "stats"
+}
+
 export interface IUser extends Document {
     username: string;
     email: string;
@@ -26,7 +31,7 @@ export interface IUser extends Document {
         home: {
             calendarWeekly: boolean;
             notesDescription: boolean;
-            pomodoroType: string;
+            pomodoroType: PomodoroType;
         };
         notificationType: NotificationType;
         notes: Object; // Adjust the type based on your requirements
@@ -86,7 +91,8 @@ const UserSchema: Schema = new Schema<IUser>({
             },
             pomodoroType: {
                 type: String,
-                required: true
+                required: true,
+                enum: ['settings', 'stats']
             }
         },
         notificationType: {
