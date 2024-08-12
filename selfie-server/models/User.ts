@@ -23,8 +23,12 @@ export interface IUser extends Document {
     birthday: Date;
     pushSubscriptions: IPushSubscription[];
     preferences: {
-        notificationType: NotificationType
-        homeView: Object; // Adjust the type based on your requirements
+        home: {
+            calendarWeekly: boolean;
+            notesDescription: boolean;
+            pomodoroType: string;
+        };
+        notificationType: NotificationType;
         notes: Object; // Adjust the type based on your requirements
         pomodoro: {
             workDuration: number;
@@ -71,14 +75,24 @@ const UserSchema: Schema = new Schema<IUser>({
         default: []
     },
     preferences: {
+        home: {
+            calendarWeekly: {
+                type: Boolean,
+                required: true
+            },
+            notesDescription: {
+                type: Boolean,
+                required: true
+            },
+            pomodoroType: {
+                type: String,
+                required: true
+            }
+        },
         notificationType: {
             type: String,
             enum: Object.values(NotificationType),
             required: true
-        },
-        homeView: {
-            type: Object,
-            required: false
         },
         notes: {
             type: Object,

@@ -2,7 +2,7 @@
   <div class="max-h-screen h-screen flex sm:flex-row flex-col items-center justify-center bg-emerald-400">
     <div class="sm:h-full relative">
       <div class="aspect-square w-full sm:h-full sm:w-min">
-        <img src="@/assets/sloth_timer.png"/>
+        <img src="@/assets/sloth_timer.png" alt="A sloth holding a timer in his paws"/>
         <div
             :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', timing && pauseOrWork == 'Pause'  ? 'animate-timer' : '']">
           <div class="font-bold w-full h-full content-center text-center relative">
@@ -186,6 +186,8 @@
 import {defineComponent} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
+import router from "@/router";
+import activityService from "@/services/activityService";
 
 export default defineComponent({
   data() {
@@ -196,6 +198,7 @@ export default defineComponent({
       showEditModal: false,
       videoUrl: '',
       inputVideoUrl: '',
+      activityId: '',
       workDuration: 30,
       pauseDuration: 5,
       numberOfCycles: 5,
@@ -210,13 +213,19 @@ export default defineComponent({
     };
   },
   created() {
-    const authStore = useAuthStore();
-    const pomodoroPreferences = authStore.user.preferences.pomodoro;
+    const pomodoroPreferences = useAuthStore().user.preferences.pomodoro;
     if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
+    }
+    if (router.currentRoute.value.params.activityId) {
+      this.activityId = router.currentRoute.value.params.activityId as string;
+      activityService.getActivityById(this.activityId).then((activity) => {
+        this.numberOfCycles = activity.pomodoro.cycles;
+        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
+      });
     }
   },
   computed: {
@@ -246,11 +255,22 @@ export default defineComponent({
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
+          if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
+            activityService.modifyActivity({id: this.activityId,
+              pomodoro: {
+                cycles: this.numberOfCycles,
+                completedCycles: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+              }
+            });
+          }
           // TODO: check and notify the user
           if (this.counter <= 0) {
             clearInterval(this.intervalRef);
             this.counter = 0;
             this.timing = false;
+            if (this.activityId) {
+              activityService.modifyActivity({id: this.activityId, done: true});
+            }
           }
         }, 1000);
       }
@@ -259,6 +279,12 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
+      activityService.modifyActivity({id: this.activityId,
+        pomodoro: {
+          cycles: this.numberOfCycles,
+          completedCycles: this.numberOfCycles - cycle
+        }
+      });
     },
     restartCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
@@ -286,8 +312,13 @@ export default defineComponent({
       this.showEditModal = true
     },
     saveEditChanges() {
-      // TODO: update?
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
+      activityService.modifyActivity({id: this.activityId,
+        pomodoro: {
+          cycles: this.numberOfCycles,
+          completedCycles: this.setCycleNumber - 1
+        }
+      });
       this.showEditModal = false;
     },
     calculateNumber: function () {

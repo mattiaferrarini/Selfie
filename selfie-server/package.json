@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.15",
+    "@types/ws": "^8.5.11",
     "bcryptjs": "^2.4.3",
     "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",
@@ -46,6 +47,7 @@
     "pinia": "^2.1.7",
     "rimraf": "^5.0.7",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "ws": "^8.18.0"
   }
 }
