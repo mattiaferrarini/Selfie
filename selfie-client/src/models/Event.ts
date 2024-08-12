@@ -35,7 +35,7 @@ export class CalendarEvent {
         } = {
             frequency: 'never',
             until: 'infinity',
-            numberOfRepetitions: 0,
+            numberOfRepetitions: 1,
             endDate: new Date()
         },
         location = '',

@@ -1,4 +1,5 @@
 import Activity from "../models/Activity";
+import timeService from "../services/timeService";
 import * as inviteController from './inviteController';
 
 const formatActivity = (activity: any) => {
@@ -15,8 +16,20 @@ const formatActivity = (activity: any) => {
 
 export const getActivitiesByUser = async (req: any, res: any) => {
     const { username } = req.params;
+    const { start, end } = req.query;
+
     try {
-        const activities = await Activity.find({ "participants.username": username });
+        let activities = await Activity.find({ "participants.username": username });
+
+        if (start && end) {
+            // filter activities whose deadline is in the selected period of time
+            // or activities that are not done and whose deadline is before the selected period of time
+            activities = activities.filter((activity: any) => {
+                return timeService.inRange(activity.deadline, new Date(start), new Date(end)) ||
+                    (!activity.done && activity.deadline < timeService.getStartOfDay(new Date(start))); 
+            });
+        }
+
         const formattedActivities = activities.map((activity: any) => formatActivity(activity));
         res.status(200).send(formattedActivities);
     } catch (error) {

@@ -6,9 +6,13 @@ import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = process.env.VUE_APP_API_URL + '/event'; // Change this URL to match your backend API
 
-const getEventsByUser = async (username: string) => {
+const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
     try {
-        const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
+        let url = `${API_URL}/user/${username}`;
+        if (start && end) {
+            url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
+        }
+        const response = await axios.get(url, { withCredentials: true });
         const transformedData = response.data.map((event: any) => formatEvent(event));
         return transformedData;
     } catch (error: any) {

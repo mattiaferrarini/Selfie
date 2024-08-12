@@ -17,7 +17,7 @@ export interface IEvent extends Document {
         when: string;
         repeat: string;
     };
-    participants:{
+    participants: {
         username: string;
         email: string;
         status: string;
@@ -25,21 +25,66 @@ export interface IEvent extends Document {
 }
 
 const EventSchema = new Schema({
-    title: { type: String, required: true },
-    allDay: { type: Boolean, required: true },
-    start: { type: Date, required: true },
-    end: { type: Date, required: true },
-    repetition: {
-        frequency: { type: String, required: true },
-        until: { type: String, required: true },
-        numberOfRepetitions: { type: Number, required: true },
-        endDate: { type: Date, required: true }
+    title: { 
+        type: String, 
+        required: true 
     },
-    location: { type: String },
+    allDay: { 
+        type: Boolean, 
+        required: true, 
+        default: false 
+    },
+    start: { 
+        type: Date, 
+        required: true,
+        default: Date.now 
+    },
+    end: { 
+        type: Date, 
+        required: true,
+        default: Date.now 
+    },
+    repetition: {
+        frequency: { 
+            type: String, 
+            required: true,
+            default: 'never' 
+        },
+        until: { 
+            type: String, 
+            required: true,
+            default: 'infinity' 
+        },
+        numberOfRepetitions: { 
+            type: Number, 
+            required: true,
+            default: 1 
+        },
+        endDate: { 
+            type: Date, 
+            required: true,
+            default: Date.now 
+        }
+    },
+    location: { 
+        type: String 
+    },
     notification: {
-        method: { type: [String], required: true },
-        when: { type: String, required: true },
-        repeat: { type: String, required: true }
+        method: { 
+            type: [String], 
+            required: true,
+            default: [] 
+        },
+        when: { 
+            type: String, 
+            required: true,
+            default: 'atEvent' 
+        },
+        repeat: { 
+            type: String, 
+            required: true,
+            default: 'never' 
+        }
     },
     participants: [{
         username: { type: String, required: true },

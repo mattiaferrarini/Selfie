@@ -1,5 +1,14 @@
 import timeService from "./timeService";
-import { IEvent } from "../models/Event";
+import Event from "../models/Event";
+
+const eventInRange = (event:any, start:Date, end:Date): boolean => {
+    // the event representing the selected period of time
+    const periodEvent = new Event();
+    periodEvent.start = new Date(start);
+    periodEvent.end = new Date(end);
+
+    return eventsOverlap(event, periodEvent);
+}
 
 const eventsOverlap = (event1: any, event2: any) => {
     if(event1.repetition.frequency === 'never')
@@ -186,5 +195,6 @@ const isValidRepetition = (event: any, repStart: Date, repEnd: Date) : boolean =
 }
 
 export default {
-    eventsOverlap
+    eventsOverlap,
+    eventInRange
 }

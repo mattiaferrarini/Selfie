@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, computed, nextTick, defineComponent, Ref, onMounted } from 'vue';
+import { ref, computed, nextTick, defineComponent, Ref, onMounted, watch } from 'vue';
 import EventForm from "@/components/Calendar/EventForm.vue";
 import ActivitiesList from "@/components/Calendar/ActivitiesList.vue";
 import AppointmentsCalendar from "@/components/Calendar/AppointmentsCalendar.vue";
@@ -58,42 +58,61 @@ export default defineComponent({
     const showEventForm = ref(false);
     const showActivityForm = ref(false);
     const showUnavailabilityForm = ref(false);
+    const showInviteList = ref(false);
+    const hasPendingInvites = ref(false);
     const modifying = ref(false);
     const resource = ref('');
 
     /* Fetch content of the view */
     const fetchUserEvents = async () => {
-      rangeUserEvents.value = await eventService.getEventsByUser(authStore.user.username);
+      rangeUserEvents.value = await eventService.getEventsByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      if(content.value === 'appointments' || content.value === 'events')
+        rangeEvents.value = rangeUserEvents.value;
     };
     const fetchActivities = async () => {
-      rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username);
+      rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
     };
     const fetchUnavailabilities = async () => {
-      rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username);
+      rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
     };
     const fetchResources = async () => {
       allResources.value = await resourceService.getAllResources();
       if(allResources.value.length > 0)
         resource.value = allResources.value[0].name;
     };
-    const fetchResourceEvents = async (username: string) => {
-      return await eventService.getEventsByUser(username);
-    }
-
-    /* TODO */
-    const setRangeDates = () => {
-      const firstDayOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1);
-      const lastDayOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0);
-
-      const firstDayOfWeek = new Date(firstDayOfMonth);
-      firstDayOfWeek.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
-
-      const lastDayOfWeek = new Date(lastDayOfMonth);
-      lastDayOfWeek.setDate(lastDayOfMonth.getDate() + (6 - lastDayOfMonth.getDay()));
-
-      rangeStartDate.value = firstDayOfWeek;
-      rangeEndDate.value = lastDayOfWeek;
+    const fetchResourceEvents = async () => {
+      return await eventService.getEventsByUser(resource.value, rangeStartDate.value, rangeEndDate.value);
     };
+    const reFetchCalendarContent = async () => {
+      await fetchUserEvents();
+      fetchActivities();
+      fetchUnavailabilities();
+      fetchResourceEvents();
+      // Note: resources are not fetched, but only the events for the selected resource
+    };
+
+    /* Dynamic loading of content based of the period currentDate falls into */
+    const getRangeDates = () => {
+      const firstDayOfMonth = timeMethods.getFirstDayOfMonth(currentDate.value);
+      const lastDayOfMonth = timeMethods.getLastDayOfMonth(currentDate.value);
+
+      const firstDayOfWeek = timeMethods.getFirstDayOfWeek(firstDayOfMonth);
+      const lastDayOfWeek = timeMethods.getLastDayOfWeek(lastDayOfMonth);
+
+      return [timeMethods.getStartOfDay(firstDayOfWeek), timeMethods.getEndOfDay(lastDayOfWeek)];
+    };
+    const updateRangeAndFetchCalendarIfNecessary = async () => {
+      const [start, end] = getRangeDates();
+    
+      if (start.getTime() !== rangeStartDate.value.getTime() || end.getTime() !== rangeEndDate.value.getTime()) {
+        rangeStartDate.value = start;
+        rangeEndDate.value = end;
+        await reFetchCalendarContent();
+      }
+    };
+    watch(currentDate, async () => {
+      await updateRangeAndFetchCalendarIfNecessary();
+    });
 
     /* Navigation and date handling */
     const nextPeriod = () => {
@@ -110,12 +129,12 @@ export default defineComponent({
     };
     const onContentChange = async () => {
       if(content.value === 'resources' && allResources.value.length > 0)
-        rangeEvents.value = await fetchResourceEvents(resource.value);
+        rangeEvents.value = await fetchResourceEvents();
       else
         rangeEvents.value = rangeUserEvents.value;
     };
     const onResourceChange = async () => {
-      rangeEvents.value = await fetchResourceEvents(resource.value);
+      rangeEvents.value = await fetchResourceEvents();
     };
 
     /* Open forms to add events, activities, and unavailabilities */
@@ -232,8 +251,6 @@ export default defineComponent({
     };
 
     /* Manage the invite list */
-    const hasPendingInvites = ref(false);
-    const showInviteList = ref(false);
     const openInviteList = () => {
       showInviteList.value = true;
     };
@@ -260,13 +277,17 @@ export default defineComponent({
 
     /* Lifecycle hooks */
     onMounted(async () => {
-      setRangeDates();
-      await fetchUserEvents();
-      rangeEvents.value = rangeUserEvents.value;
+      // Set the time range for the current period
+      const [start, end] = getRangeDates();
+      rangeStartDate.value = start;
+      rangeEndDate.value = end;
 
+      // Fetch the content of the view
+      fetchUserEvents();
       fetchActivities();
       fetchUnavailabilities();
       fetchResources();
+      // Note: events for resource are fetched when the resource is changed
 
       // TODO: change
       hasPendingInvites.value = (await inviteService.getPendingInvitesByUser(authStore.user.username, currentDate.value)).length > 0;
@@ -274,7 +295,7 @@ export default defineComponent({
 
     return {
       next: nextPeriod, prev: prevPeriod, resetCalendar, closeAddForms, view, content, onViewChange, showEventForm,
-      showActivityForm, showUnavailabilityForm, currentDate, setRangeDates, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
+      showActivityForm, showUnavailabilityForm, currentDate, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,

@@ -1,6 +1,7 @@
 import Unavailability from "../models/Unavailability";
 import eventService from "../services/eventService";
 import Event from "../models/Event";
+import timeService from "../services/timeService";
 
 const formatUnavailability = (unavailability: any) => {
     return {
@@ -18,16 +19,13 @@ export const getUnavailabilitiesByUser = async (req: any, res: any) => {
     const { username } = req.params;
     const { start, end } = req.query;
 
-    // the event representing the selected period of time
-    const periodEven = new Event();
-    periodEven.start = new Date(start);
-    periodEven.end = new Date(end);
-
     try {
         let unavailabilities = await Unavailability.find({ username: username });
 
         if(start && end) {
-            unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, periodEven));
+            const startDate = timeService.getStartOfDay(new Date(start));
+            const endDate = timeService.getEndOfDay(new Date(end));
+            unavailabilities = unavailabilities.filter((unav: any) => eventService.eventInRange(unav, startDate, endDate));
         }
         const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
         

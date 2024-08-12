@@ -5,9 +5,13 @@ import timeService from './timeService';
 
 const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
 
-const getActivitiesByUser = async (username: string) => {
+const getActivitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {
-        const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
+        let url = `${API_URL}/user/${username}`;
+        if (start && end) {
+            url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
+        }
+        const response = await axios.get(url, { withCredentials: true });
         const transformedData = response.data.map((activity: any) => formatActivity(activity));
         return transformedData;
     } catch (error: any) {

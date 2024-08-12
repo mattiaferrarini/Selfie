@@ -67,6 +67,10 @@ const overlap = (start1: Date, end1: Date, start2: Date, end2: Date): boolean =>
     return start1 <= end2 && end1 >= start2;
 }
 
+const inRange = (date: Date, start: Date, end: Date): boolean => {
+    return date >= getStartOfDay(start) && date <= getEndOfDay(end);
+}
+
 export default {
     getStartOfDay,
     getEndOfDay,
@@ -77,5 +81,6 @@ export default {
     moveAheadByDays,
     moveAheadByMonths,
     moveAheadByYears,
-    overlap
+    overlap,
+    inRange
 };

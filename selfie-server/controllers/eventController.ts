@@ -4,6 +4,7 @@ import ical from 'node-ical';
 import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
+import timeService from '../services/timeService';
 
 const formatEvent = (event: any) => {
     return {
@@ -22,9 +23,10 @@ const formatEvent = (event: any) => {
 // Function to get all events with a specified user as a participant
 export const getEventsByUser = async (req: any, res: any) => {
     const { username } = req.params;
+    const { start, end } = req.query;
     
     try {
-        const events = await Event.find({
+        let events = await Event.find({
             participants: {
                 $elemMatch: {
                     username: username,
@@ -32,6 +34,13 @@ export const getEventsByUser = async (req: any, res: any) => {
                 }
             }
         });
+
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            events = events.filter((event: any) => eventService.eventInRange(event, startDate, endDate));
+        }
+
         const formattedEvents = events.map((event: any) => formatEvent(event));
 
         res.status(200).send(formattedEvents);
