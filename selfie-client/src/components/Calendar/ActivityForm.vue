@@ -154,7 +154,6 @@ export default defineComponent({
                 this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
                 this.newActivity.participants = [
                     { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
-                    { username: 'user2', email: 'email2', status: 'accepted' }
                 ]
             }
         },

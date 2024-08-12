@@ -20,11 +20,7 @@ export const getPendingInvitesByUser = async (req: any, res: any) => {
     const { date } = req.query;   
 
     try {
-        const i = await Invite.find();
-        console.log(i);
-
         let invites = await Invite.find({ inviteeUsername: username });
-        console.log(invites);
 
         if(date) {
             const cutoffDate = new Date(date);
@@ -48,7 +44,6 @@ export const createInvitesForEvent = async (event: IEvent) => {
         const participant = participants[i];
         try{
             if(participant.status === 'pending' && !await inviteAlreadyExists(participant.username, eventId)) {
-                console.log("Creating invite for " + participant.username);
                 await addInvite(participant.username, answerDate, eventId);
             }
         }
@@ -144,12 +139,10 @@ export const deleteInvite = async(id: string) => {
 }
 
 export const acceptInvite = async (req: any, res: any) => {
-    console.log("Accepting invite");
     await actOnInvite(req, res, 'accepted');
 }
 
 export const declineInvite = async (req: any, res: any) => {
-    console.log("Declining invite");
     await actOnInvite(req, res, 'declined');
 }
 

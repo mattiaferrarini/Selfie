@@ -7,7 +7,6 @@ const getUserBasicInfo = async (username: string) => {
         const response = await axios.get(`${API_URL}/info/${username}`, { withCredentials: true });
         return response.data;
     } catch (error: any) {
-        console.log('catch');
         return null;
     }
 }
