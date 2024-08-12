@@ -5,7 +5,7 @@
         <v-icon name="md-close" />
       </button>
     </div>
-    <form ref="eventForm" class="flex flex-col" @submit="handleSubmit">
+    <form class="flex flex-col" @submit="handleSubmit">
       <div>
         <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title" class="w-full"
             :disabled="!modificationAllowed"></label>
