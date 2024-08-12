@@ -80,6 +80,22 @@ const sameDate = (date1: Date, date2: Date): boolean => {
     return d1.toDateString() === d2.toDateString();
 };
 
+const sameDay = (date1: Date, date2: Date): boolean => {
+    return date1.getDate() === date2.getDate() && date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
+}
+
+const sameWeek = (date1: Date, date2: Date): boolean => {
+    return sameDay(getFirstDayOfWeek(date1), getFirstDayOfWeek(date2));
+}
+
+const sameMonth = (date1: Date, date2: Date): boolean => {
+    return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
+}
+
+const sameYear = (date1: Date, date2: Date): boolean => {
+    return date1.getFullYear() === date2.getFullYear();
+}
+
 const prevCurrentDate = (currentDate: Date, timeUnit: string): Date => {
     let newDate: Date;
     if (timeUnit === 'day') {
@@ -187,6 +203,10 @@ const included = (start1: Date, end1: Date, start2: Date, end2: Date): boolean =
     return start1 <= start2 && start2 <= end2 && end2 <= end1;
 }
 
+const formatTime = (date: Date): string => {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -213,5 +233,10 @@ export default {
     cropDate,
     moveAheadByMonths,
     yearDifference,
-    included
+    included,
+    formatTime,
+    sameDay,
+    sameWeek,
+    sameMonth,
+    sameYear
 };

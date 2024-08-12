@@ -5,10 +5,10 @@
         <v-icon name="md-close" />
       </button>
     </div>
-    <form class="flex flex-col" @submit="handleSubmit">
+    <form ref="eventForm" class="flex flex-col" @submit="handleSubmit">
       <div>
-        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title"
-            class="w-full" :disabled="!modificationAllowed"></label>
+        <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title" class="w-full"
+            :disabled="!modificationAllowed"></label>
       </div>
       <hr>
       <div>
@@ -25,8 +25,9 @@
         <div class="flex items-center justify-between w-full gap-4">
           <label> End </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed">
-            <input type="time" v-if="!newEvent.allDay" v-model="newEndTime" :disabled="!modificationAllowed">
+            <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed" :min="minEndDate">
+            <input type="time" v-if="!newEvent.allDay" v-model="newEndTime" :disabled="!modificationAllowed"
+              :min="minEndTime">
           </div>
         </div>
       </div>
@@ -36,10 +37,10 @@
           Repeat
           <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed">
             <option value="never">Never</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
+            <option v-if="dailyRepetitionAllowed" value="daily">Daily</option>
+            <option v-if="weeklyRepetitionAllowed" value="weekly">Weekly</option>
+            <option v-if="monthlyRepetitionAllowed" value="monthly">Monthly</option>
+            <option v-if="yearlyRepetitionAllowed" value="yearly">Yearly</option>
           </select>
         </label>
         <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
@@ -57,12 +58,13 @@
         </label>
         <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
           End date
-          <input type="date" v-model="formattedRepeatEndDate" :disabled="!modificationAllowed">
+          <input type="date" v-model="formattedRepeatEndDate" :disabled="!modificationAllowed" :min="minRepEndDate">
         </label>
       </div>
       <hr>
       <div>
-        <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full" :disabled="!modificationAllowed"></label><br>
+        <label><input type="text" placeholder="Add a place" v-model="newEvent.location" class="w-full"
+            :disabled="!modificationAllowed"></label><br>
       </div>
       <hr>
       <div>
@@ -79,9 +81,12 @@
         <div class="flex items-center justify-between w-full gap-4">
           Notification
           <div class="flex flex-wrap justify-end space-x-4">
-            <label> <input type="checkbox" v-model="newNotificationOptions.os" :disabled="!modificationAllowed" /> OS</label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed" /> Email </label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" :disabled="!modificationAllowed" /> Whatsapp </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.os" :disabled="!modificationAllowed" />
+              OS</label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed" />
+              Email </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" :disabled="!modificationAllowed" />
+              Whatsapp </label>
           </div>
         </div>
         <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
@@ -121,13 +126,13 @@
           <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
         </div>
       </div>
-      <div v-else class="mt-4"> 
+      <div v-else class="mt-4">
         <p class="text-center text-red-600">You cannot modify this event.</p>
       </div>
     </form>
 
     <ParticipantsForm v-if="showParticipantsForm" :participants="newEvent.participants" :event="newEvent"
-      @closeParticipantsForm="handleCloseParticipantsForm" :modification-allowed="modificationAllowed"/>
+      @closeParticipantsForm="handleCloseParticipantsForm" :modification-allowed="modificationAllowed" />
 
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
@@ -170,16 +175,16 @@ export default defineComponent({
   data() {
     return {
       newEvent: { ...this.event },
-      newStartTime: "",
-      newEndTime: "",
       newNotificationOptions: {
         os: this.event.notification.method.includes('os'),
         email: this.event.notification.method.includes('email'),
         whatsapp: this.event.notification.method.includes('whatsapp')
       },
+      newStartTime: '',
+      newEndTime: '',
       showParticipantsForm: false,
       authStore: useAuthStore(),
-      showExportPanel: false
+      showExportPanel: false,
     }
   },
   mounted() {
@@ -189,6 +194,7 @@ export default defineComponent({
     onFormVisible() {
       if (!this.modifying) {
         // intialize default values for new event
+        console.log(this.currentDate);
         this.newEvent.start = timeService.roundTime(this.currentDate);
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
@@ -196,12 +202,11 @@ export default defineComponent({
           { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
         ];
       }
-
       this.setTimes();
     },
-    setTimes(){
-      this.newStartTime = `${String(this.newEvent.start.getHours()).padStart(2, '0')}:${String(this.newEvent.start.getMinutes()).padStart(2, '0')}`;
-      this.newEndTime = `${String(this.newEvent.end.getHours()).padStart(2, '0')}:${String(this.newEvent.end.getMinutes()).padStart(2, '0')}`;
+    setTimes() {
+      this.newStartTime = timeService.formatTime(this.newEvent.start);
+      this.newEndTime = timeService.formatTime(this.newEvent.end);
     },
     closeForm() {
       this.$emit('closeForm');
@@ -218,8 +223,8 @@ export default defineComponent({
         this.newEvent.notification.method.push('whatsapp');
 
       if (this.newEvent.allDay) {
-        this.newEvent.start.setHours(0, 0);
-        this.newEvent.end.setHours(23, 59, 59);
+        this.newEvent.start.setHours(0, 0, 0, 0);
+        this.newEvent.end.setHours(23, 59, 59, 59);
       }
       else {
         this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
@@ -264,7 +269,22 @@ export default defineComponent({
     },
     async setUploadedFile(fileContent: string) {
       this.newEvent = await eventService.convertICalendarToEvent(fileContent);
-      this.setTimes();
+    },
+    enforceTemporalCoherence() {
+      if (this.newEvent.start > this.newEvent.end) {
+        this.newEvent.end = new Date(this.newEvent.start);
+      }
+      if (this.newEvent.repetition.endDate < this.newEvent.end) {
+        this.newEvent.repetition.endDate = new Date(this.newEvent.end);
+      }
+
+      const repFreq = this.newEvent.repetition.frequency;
+      if (repFreq === 'daily' && !this.dailyRepetitionAllowed ||
+        repFreq === 'weekly' && !this.weeklyRepetitionAllowed ||
+        repFreq === 'monthly' && !this.monthlyRepetitionAllowed ||
+        repFreq === 'yearly' && !this.yearlyRepetitionAllowed) {
+        this.newEvent.repetition.frequency = 'never';
+      }
     }
   },
   computed: {
@@ -285,7 +305,10 @@ export default defineComponent({
         return this.newEvent.start.toISOString().split('T')[0];
       },
       set(value: string) {
+        const time = this.newStartTime;
         this.newEvent.start = new Date(value);
+        this.newEvent.start.setHours(Number(time.split(':')[0]), Number(time.split(':')[1]));
+        this.enforceTemporalCoherence();
       }
     },
     formattedEndDate: {
@@ -293,7 +316,10 @@ export default defineComponent({
         return this.newEvent.end.toISOString().split('T')[0];
       },
       set(value: string) {
+        const time = this.newEndTime;
         this.newEvent.end = new Date(value);
+        this.newEvent.end.setHours(Number(time.split(':')[0]), Number(time.split(':')[1]));
+        this.enforceTemporalCoherence();
       }
     },
     formattedRepeatEndDate: {
@@ -302,7 +328,34 @@ export default defineComponent({
       },
       set(value: string) {
         this.newEvent.repetition.endDate = new Date(value);
+        this.enforceTemporalCoherence();
       }
+    },
+    minEndDate(): string {
+      return this.formattedStartDate;
+    },
+    minRepEndDate(): string {
+      return this.formattedEndDate;
+    },
+    minEndTime(): string {
+      if (timeService.sameDay(this.newEvent.start, this.newEvent.end)) {
+        return this.newStartTime;
+      }
+      else {
+        return '00:00';
+      }
+    },
+    dailyRepetitionAllowed(): boolean {
+      return timeService.sameDay(this.newEvent.start, this.newEvent.end);
+    },
+    weeklyRepetitionAllowed(): boolean {
+      return timeService.sameWeek(this.newEvent.start, this.newEvent.end);
+    },
+    monthlyRepetitionAllowed(): boolean {
+      return timeService.sameMonth(this.newEvent.start, this.newEvent.end);
+    },
+    yearlyRepetitionAllowed(): boolean {
+      return timeService.sameYear(this.newEvent.start, this.newEvent.end);
     }
   }
 });
@@ -312,6 +365,7 @@ export default defineComponent({
 #event-upload {
   cursor: pointer;
 }
+
 hr {
   margin: 0.5rem 0;
 }

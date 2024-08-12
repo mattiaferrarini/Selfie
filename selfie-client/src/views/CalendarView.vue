@@ -34,8 +34,9 @@ export default defineComponent({
     const authStore = useAuthStore();
     const dateStore = useDateStore();
 
-    /* to handle the time period for which events are loaded (TODO: implement) */
-    const currentDate = ref(dateStore.getCurrentDate());
+    /* to handle the time period for which events are loaded */
+    const currentDate = computed(() => dateStore.currentDate);
+    const focusDate = ref(new Date(dateStore.getCurrentDate()));
     const rangeStartDate = ref(new Date());
     const rangeEndDate = ref(new Date());
 
@@ -93,8 +94,8 @@ export default defineComponent({
 
     /* Dynamic loading of content based of the period currentDate falls into */
     const getRangeDates = () => {
-      const firstDayOfMonth = timeMethods.getFirstDayOfMonth(currentDate.value);
-      const lastDayOfMonth = timeMethods.getLastDayOfMonth(currentDate.value);
+      const firstDayOfMonth = timeMethods.getFirstDayOfMonth(focusDate.value);
+      const lastDayOfMonth = timeMethods.getLastDayOfMonth(focusDate.value);
 
       const firstDayOfWeek = timeMethods.getFirstDayOfWeek(firstDayOfMonth);
       const lastDayOfWeek = timeMethods.getLastDayOfWeek(lastDayOfMonth);
@@ -110,19 +111,24 @@ export default defineComponent({
         await reFetchCalendarContent();
       }
     };
-    watch(currentDate, async () => {
+    watch(focusDate, async () => {
+      console.log('Focus date changed');
       await updateRangeAndFetchCalendarIfNecessary();
+    });
+    watch(currentDate, async () => {
+      console.log('Current date changed');
+      focusDate.value = new Date(currentDate.value);
     });
 
     /* Navigation and date handling */
     const nextPeriod = () => {
-      currentDate.value = timeMethods.nextCurrentDate(currentDate.value, view.value);
+      focusDate.value = timeMethods.nextCurrentDate(focusDate.value, view.value);
     };
     const prevPeriod = () => {
-      currentDate.value = timeMethods.prevCurrentDate(currentDate.value, view.value);
+      focusDate.value = timeMethods.prevCurrentDate(focusDate.value, view.value);
     };
     const resetCalendar = () => {
-      currentDate.value = new Date();
+      focusDate.value = new Date();
     };
     const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);
@@ -266,7 +272,7 @@ export default defineComponent({
       return content.value === 'appointments' || content.value === 'events' || content.value === 'unavailabilities' || content.value === 'resources';
     });
     const currentDisplayedPeriodString = computed(() => {
-      return timeMethods.formatPeriodString(currentDate.value, view.value);
+      return timeMethods.formatPeriodString(focusDate.value, view.value);
     });
     const showAddButton = computed(() => {
       return content.value !== 'resources' || authStore.isAdmin;
@@ -290,12 +296,12 @@ export default defineComponent({
       // Note: events for resource are fetched when the resource is changed
 
       // TODO: change
-      hasPendingInvites.value = (await inviteService.getPendingInvitesByUser(authStore.user.username, currentDate.value)).length > 0;
+      hasPendingInvites.value = (await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value)).length > 0;
     });
 
     return {
       next: nextPeriod, prev: prevPeriod, resetCalendar, closeAddForms, view, content, onViewChange, showEventForm,
-      showActivityForm, showUnavailabilityForm, currentDate, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
+      showActivityForm, showUnavailabilityForm, currentDate: focusDate, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
@@ -340,12 +346,12 @@ export default defineComponent({
       </div>
     </nav>
 
-    <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false" class="cursor-pointer">
+    <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false" class="cursor-pointer z-0">
       <template #trigger>
-        <div class="clickable-text flex items-center justify-center">
-          <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
-          <v-icon name="bi-chevron-expand"></v-icon>
-        </div>
+      <div class="clickable-text flex items-center justify-center">
+        <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
+        <v-icon name="bi-chevron-expand"></v-icon>
+      </div>
       </template>
     </VueDatePicker>
 
