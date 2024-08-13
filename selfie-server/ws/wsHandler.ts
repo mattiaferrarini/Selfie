@@ -45,7 +45,6 @@ const handleMessage = async (message: string, ws: WebSocket, userConnections: Ma
                         title: user.username,
                         body: parsedMessage.text
                     });
-                });
             });
         }).catch((err) => ws.send('Error sending message', err));
     } catch (error) {
