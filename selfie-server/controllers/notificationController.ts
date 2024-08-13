@@ -21,7 +21,7 @@ const subscribe = async (req: any, res: any) => {
         }
 
         await user.save();
-        res.status(200).send();
+        res.status(200).send('Subscription added successfully');
     } catch (err) {
         console.error(err);
         res.status(500).send('Error sending push notification');
