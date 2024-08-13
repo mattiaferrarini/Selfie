@@ -130,6 +130,7 @@ export const changeParticipantStatus = async (id: string, username: string, newS
                     participant.status = newStatus;
                 }
             });
+            activity.save();
         }
         else {
             throw new Error("Activity doesn't exist!");

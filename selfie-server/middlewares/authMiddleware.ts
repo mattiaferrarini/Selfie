@@ -7,7 +7,7 @@ export function ensureAuthenticated(req: any, res: any, next: any) {
 }
 
 export function isAdmin(req: any, res: any, next: any) {
-    if (req.isAuthenticated() && req.user.role === 'admin') {
+    if (req.isAuthenticated() && req.user.isAdmin) {
         return next();
     }
     res.status(403).send('User not authorized');

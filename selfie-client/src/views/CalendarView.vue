@@ -264,6 +264,10 @@ export default defineComponent({
     const closeInviteList = () => {
       showInviteList.value = false;
     };
+    const noInvites = () => {
+      hasPendingInvites.value = false;
+      showInviteList.value = false;
+    }
 
     /* Computed properties */
     const showForm = computed(() => {
@@ -307,7 +311,7 @@ export default defineComponent({
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
       modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
-      showInviteList, openInviteList, closeInviteList, authStore, hasPendingInvites, showAddButton, eventModificationAllowd
+      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton, eventModificationAllowd
     };
   },
 });
@@ -399,7 +403,7 @@ export default defineComponent({
     <div v-if="showInviteList" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
       <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
         <h2 class="text-lg font-bold mb-4">Pending invites</h2>
-        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="showInviteList=false"/>
+        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"/>
       </div>
     </div>
 

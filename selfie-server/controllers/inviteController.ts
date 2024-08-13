@@ -179,8 +179,8 @@ const actOnInvite = async (req: any, res: any, response: string) => {
     
     try{
         const invite = await Invite.findById(id);
-        if(invite) {
-            if(invite.eventId)
+        if (invite) {
+            if (invite.eventId)
                 await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
             else if(invite.activityId)
                 await activityController.changeParticipantStatus(invite.activityId as string, invite.inviteeUsername, response);
