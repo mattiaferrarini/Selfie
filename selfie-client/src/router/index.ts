@@ -1,42 +1,50 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import {createRouter, createWebHashHistory, RouteRecordRaw} from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from "@/views/LoginView.vue";
 import {useAuthStore} from "@/stores/authStore";
 import RegisterView from "@/views/RegisterView.vue";
-import ChangePasswordView from "@/views/ChangePasswordView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
 import NoteView from "@/views/note/NoteView.vue";
 import NoteEditView from "@/views/note/NoteEditView.vue";
+import CalendarView from "@/views/CalendarView.vue";
+import AdminView from '@/views/AdminView.vue';
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView,
-    meta: {
-      requiresAuth: true
-    }
-  },
+    {
+        path: '/',
+        name: 'home',
+        component: HomeView,
+        meta: {
+            requiresAuth: true
+        }
+    },
   {
     path: '/login/:message?',
     name: 'login',
-    component: LoginView
+    component: LoginView,
+    meta: {
+      requiresNotAuth: true
+    }
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterView
+    component: RegisterView,
+    meta: {
+      requiresNotAuth: true
+    }
   },
   {
-    path: '/change-password',
-    name: 'change-password',
-    component: ChangePasswordView,
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView,
     meta: {
       requiresAuth: true
     }
   },
   {
-    path: '/pomodoro',
+    path: '/pomodoro/:activityId?',
     name: 'pomodoro',
     component: PomodoroView,
     meta: {
@@ -60,27 +68,53 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
+    path: '/calendar',
+    name: 'calendar',
+    component: CalendarView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: '/about',
     name: 'about',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminView,
+    meta: {
+      requiresAuth: true
+    }
   }
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+    history: createWebHashHistory(),
+    routes
 })
 
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
-  if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
+    const authStore = useAuthStore();
+
+    if (to.path === '/admin') {
+      if (!authStore.user.isAdmin) {
+          next({name: 'home'});
+          return;
+      }
+    }
+
+    if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+        next({name: 'login'});
+    } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {
+        next({name: 'home'})
+    } else {
+        next();
+    }
 })
 
 export default router

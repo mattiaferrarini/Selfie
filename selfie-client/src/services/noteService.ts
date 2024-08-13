@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.VUE_APP_API_URL + '/note'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/note';
 
 
 const getall = async () => {
