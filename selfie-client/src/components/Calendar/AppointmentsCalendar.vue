@@ -24,7 +24,7 @@
                     <h4 class="font-bold">Activities</h4>
                     <ul>
                         <li v-for="activity in activitiesForTheDay(date)" :key="activity.id" class="clickable-item">
-                            <div class="flex align-center justify-between" :class="{ late: isLateActivity(activity, date) }
+                            <div class="flex align-center justify-between" :class="{ late: isLateActivity(activity, date) }"
                                 @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                 <div class="flex flex-wrap justify-end space-x-4">

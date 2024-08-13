@@ -2,7 +2,7 @@ import Invite, { IInvite } from "../models/Invite";
 import * as eventController from "./eventController";
 import * as activityController from "./activityController";
 import timeService from "../services/timeService";
-import Event, {IEvent} from "../models/Event";
+import {IEvent} from "../models/Event";
 import { IActivity } from "../models/Activity";
 import * as resourceController from "./resourceController";
 import * as unavailabilityController from "./unavailabilityController";
@@ -102,10 +102,7 @@ export const addInvite = async(inviteeUsername: string, answerDate: Date, eventI
 export const inviteAlreadyExists = async(inviteeUsername: string, eventId?: string, activityId?: string) => {
     try {
         const invite = await Invite.findOne({ inviteeUsername: inviteeUsername, eventId: eventId, activityId: activityId });
-        if(invite)
-            return true;
-        else
-            return false;
+        return !!invite;
     } catch (error) {
         throw new Error("Error checking if invite exists");
     }

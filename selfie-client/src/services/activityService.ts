@@ -12,7 +12,7 @@ const getActivitiesByUser = async (username: string, start?: Date, end?: Date) =
             url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
         }
         const response = await axios.get(url, { withCredentials: true });
-        return = response.data.map((activity: any) => formatActivity(activity));
+        return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
         console.log(error);
         throw error.response.data;

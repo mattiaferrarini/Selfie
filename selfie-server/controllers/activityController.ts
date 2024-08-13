@@ -105,10 +105,9 @@ export const modifyActivity = async (req: any, res: any) => {
             const removedParticipants = activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username));
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
-            const { title, done, deadline, notification, participants, pomodoro } = req.body;
-            const updatedActivity = await Activity.findByIdAndUpdate(id, { title, done, deadline, notification, participants, pomodoro }, { new: true });
+            Object.assign(activity, req.body);
+            activity.save();
 
-            await activity.save();
             await inviteController.createInvitesForActivity(activity);
             await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
 
@@ -117,6 +116,9 @@ export const modifyActivity = async (req: any, res: any) => {
         else {
             res.status(404).send({ error: "Activity doesn't exist!" });
         }
+    } catch (error) {
+        res.status(404).send({ error: "Activity doesn't exist!" });
+    }
 }
 
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {

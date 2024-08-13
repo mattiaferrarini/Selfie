@@ -37,7 +37,7 @@ export class Activity {
             email: string;
             status: string;
         }[] = [],
-        subActivitiesIDs = []
+        subActivitiesIDs = [],
         pomodoro = null
     ) {
         this.title = title;

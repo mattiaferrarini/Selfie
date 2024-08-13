@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Invite } from '@/models/Invite';
+import {Invite} from '@/models/Invite';
 
 const API_URL = process.env.VUE_APP_API_URL + '/invite';
 
@@ -17,8 +17,7 @@ const getPendingInvitesByUser = async (username: string, date?: Date) => {
             url += `?date=${date.toISOString()}`;
         }
         const response = await axios.get(url, { withCredentials: true });
-        const transformedData = response.data.map((invite: any) => formatInvite(invite));
-        return transformedData;
+        return response.data.map((invite: any) => formatInvite(invite));
     } catch (error: any) {
         throw error.response.data;
     }

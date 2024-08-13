@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, computed, nextTick, defineComponent, Ref, onMounted, watch } from 'vue';
+import { ref, computed, defineComponent, onMounted, watch } from 'vue';
 import EventForm from "@/components/Calendar/EventForm.vue";
 import ActivitiesList from "@/components/Calendar/ActivitiesList.vue";
 import AppointmentsCalendar from "@/components/Calendar/AppointmentsCalendar.vue";
