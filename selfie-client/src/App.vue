@@ -22,7 +22,7 @@
               <span class="relative inline-flex border border-emerald-50 rounded-full h-3 w-3 bg-emerald-400"></span>
             </span>
           </router-link>
-          <router-link to="/calendar"
+          <router-link :to="{ name: 'calendar' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Calendario</span>
@@ -30,7 +30,7 @@
               <v-icon name="bi-calendar3" class="h-full w-full"/>
             </div>
           </router-link>
-          <router-link to="/note"
+          <router-link :to="{ name: 'note' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Note</span>
@@ -38,7 +38,7 @@
               <v-icon name="md-stickynote2-outlined" class="h-full w-full"/>
             </div>
           </router-link>
-          <router-link to="/pomodoro"
+          <router-link :to="{ name: 'pomodoro' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
             <span class="hidden sm:block">Pomodoro</span>

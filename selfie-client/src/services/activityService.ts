@@ -12,8 +12,17 @@ const getActivitiesByUser = async (username: string, start?: Date, end?: Date) =
             url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
         }
         const response = await axios.get(url, { withCredentials: true });
-        const transformedData = response.data.map((activity: any) => formatActivity(activity));
-        return transformedData;
+        return = response.data.map((activity: any) => formatActivity(activity));
+    } catch (error: any) {
+        console.log(error);
+        throw error.response.data;
+    }
+}
+
+const getPomodoroStats = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/pomodoro/stats`, { withCredentials: true });
+        return response.data;
     } catch (error: any) {
         throw error.response.data;
     }
@@ -37,7 +46,7 @@ const addActivity = async (activity: Activity) => {
     }
 }
 
-const modifyActivity = async (activity: Activity) => {
+const modifyActivity = async (activity: Partial<Activity>) => {
     try {
         const response = await axios.put(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
         return formatActivity(response.data);
@@ -73,6 +82,7 @@ const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> =
 
 export default {
     getActivitiesByUser,
+    getPomodoroStats,
     getActivityById,
     addActivity,
     modifyActivity,

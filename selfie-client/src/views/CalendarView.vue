@@ -129,6 +129,7 @@ export default defineComponent({
     };
     const resetCalendar = () => {
       focusDate.value = new Date();
+      document.getElementById(focusDate.value.toISOString().substring(0,10))?.scrollIntoView({ block: 'center',  behavior: 'smooth' });
     };
     const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);

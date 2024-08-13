@@ -10,7 +10,8 @@ const formatActivity = (activity: any) => {
         deadline: activity.deadline,
         notification: activity.notification,
         participants: activity.participants,
-        subActivitiesIDs: activity.subActivitiesIDs
+        subActivitiesIDs: activity.subActivitiesIDs,
+        pomodoro: activity.pomodoro
     };
 }
 
@@ -32,6 +33,23 @@ export const getActivitiesByUser = async (req: any, res: any) => {
 
         const formattedActivities = activities.map((activity: any) => formatActivity(activity));
         res.status(200).send(formattedActivities);
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving activities' });
+    }
+}
+
+export const getPomodoroStats = async (req: any, res: any) => {
+    try {
+        const completedActivities = await Activity.find({ "participants.username": req.user.username, done: true, pomodoro: { $ne: {}, $exists: true } });
+        const missingActivities = await Activity.find({ "participants.username": req.user.username, done: false, pomodoro: { $ne: {}, $exists: true }, deadline: { $lt: new Date() } }).sort({ deadline: 1 });
+        res.status(200).json({
+            completed: completedActivities.length,
+            completedCycles: completedActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles || 0), 0),
+            missing: missingActivities.length,
+            missingTotalCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.cycles || 0), 0),
+            missingCompletedCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles || 0), 0),
+            oldestActivityId: missingActivities[0]?._id || ''
+        });
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving activities' });
     }
@@ -65,7 +83,8 @@ export const addActivity = async (req: any, res: any) => {
         deadline: req.body.deadline,
         notification: req.body.notification,
         participants: req.body.participants,
-        subActivitiesIDs: req.body.subActivitiesIDs
+        subActivitiesIDs: req.body.subActivitiesIDs,
+        pomodoro: req.body.pomodoro
     });
 
     try {
@@ -79,7 +98,6 @@ export const addActivity = async (req: any, res: any) => {
 
 export const modifyActivity = async (req: any, res: any) => {
     const { id } = req.params;
-
     try {
         const activity = await Activity.findById(id);
 
@@ -87,11 +105,8 @@ export const modifyActivity = async (req: any, res: any) => {
             const removedParticipants = activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username));
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
-            activity.title = req.body.title;
-            activity.done = req.body.done;
-            activity.deadline = req.body.deadline;
-            activity.notification = req.body.notification;
-            activity.participants = req.body.participants;
+            const { title, done, deadline, notification, participants, pomodoro } = req.body;
+            const updatedActivity = await Activity.findByIdAndUpdate(id, { title, done, deadline, notification, participants, pomodoro }, { new: true });
 
             await activity.save();
             await inviteController.createInvitesForActivity(activity);
@@ -102,9 +117,6 @@ export const modifyActivity = async (req: any, res: any) => {
         else {
             res.status(404).send({ error: "Activity doesn't exist!" });
         }
-    } catch (error) {
-        res.status(404).send({ error: "Activity doesn't exist!" });
-    }
 }
 
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {
