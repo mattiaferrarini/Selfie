@@ -25,9 +25,11 @@ const handleDisconnection = (ws: WebSocket, userConnections: Map<string, WebSock
     }
 };
 
-const handleMessage = (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
+const handleMessage = async (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
     try {
         const parsedMessage = JSON.parse(message);
+        if (! await User.findOne({username: parsedMessage.to}))
+            return ws.send('User not found');
         chatController.sendMessage(user.username, parsedMessage.to, parsedMessage.text).then(() => {
             const connections = userConnections.get(parsedMessage.to);
             // TODO: email?
@@ -39,7 +41,10 @@ const handleMessage = (message: string, ws: WebSocket, userConnections: Map<stri
             }
             User.findOne({username: parsedMessage.to}).then((user: any) => {
                 user?.pushSubscriptions.forEach((pushSubscription: any) => {
-                    pushNotificationService.sendNotification(pushSubscription, {title: user.username, body: parsedMessage.text});
+                    pushNotificationService.sendNotification(pushSubscription, {
+                        title: user.username,
+                        body: parsedMessage.text
+                    });
                 });
             });
         }).catch((err) => ws.send('Error sending message', err));
