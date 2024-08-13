@@ -1,11 +1,17 @@
 import axios from 'axios';
-import {Activity} from '@/models/Activity';
+import { Activity } from '@/models/Activity';
+import eventService from './eventService';
+import timeService from './timeService';
 
 const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
 
-const getActivitiesByUser = async (username: string) => {
+const getActivitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {
-        const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
+        let url = `${API_URL}/user/${username}`;
+        if (start && end) {
+            url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
+        }
+        const response = await axios.get(url, { withCredentials: true });
         return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
         console.log(error);
@@ -18,7 +24,6 @@ const getPomodoroStats = async () => {
         const response = await axios.get(`${API_URL}/pomodoro/stats`, { withCredentials: true });
         return response.data;
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -65,11 +70,22 @@ const formatActivity = (activity: any) => {
     }
 }
 
+const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> => {
+    const event = await eventService.convertICalendarToEvent(icalStr);
+    const activity = new Activity();
+    activity.title = event.title;
+    activity.deadline = timeService.getEndOfDay(event.end);
+    activity.participants = event.participants;
+
+    return activity;
+}
+
 export default {
     getActivitiesByUser,
     getPomodoroStats,
     getActivityById,
     addActivity,
     modifyActivity,
-    deleteActivity
+    deleteActivity,
+    convertICalendarToActivity
 }

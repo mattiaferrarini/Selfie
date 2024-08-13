@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600" v-if="isAuthenticated">
+    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600 z-10" v-if="isAuthenticated">
       <div class="container mx-auto flex justify-between text-gray-700">
         <div class="flex items-center">
           <router-link to="/"
@@ -71,6 +71,14 @@
               </button>
             </div>
           </div>
+          <router-link to="/admin" v-if="isAdmin"
+                       class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
+                       active-class="text-emerald-700 sm:border-teal-500">
+            <span class="hidden sm:block">Admin</span>
+            <div class="block sm:hidden h-7 w-7">
+              <v-icon name="hi-view-grid-add" class="h-full w-full"/>
+            </div>
+          </router-link>
           <router-link to="/profile"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
@@ -105,6 +113,7 @@ export default defineComponent({
   setup() {
     const authStore = useAuthStore();
     const isAuthenticated = storeToRefs(authStore).isAuthenticated;
+    const isAdmin = storeToRefs(authStore).isAdmin;
     const wsStore = useWebSocketStore();
     const unread = storeToRefs(wsStore).unread;
     const dateStore = useDateStore();
@@ -143,6 +152,7 @@ export default defineComponent({
 
     return {
       isAuthenticated,
+      isAdmin,
       unread,
       logout,
       showTooltip,

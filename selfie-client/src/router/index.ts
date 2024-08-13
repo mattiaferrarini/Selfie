@@ -7,6 +7,7 @@ import ProfileView from "@/views/ProfileView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
 import NoteView from "@/views/note/NoteView.vue";
 import CalendarView from "@/views/CalendarView.vue";
+import AdminView from '@/views/AdminView.vue';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -72,6 +73,14 @@ const routes: Array<RouteRecordRaw> = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminView,
+    meta: {
+      requiresAuth: true
+    }
   }
 ]
 
@@ -82,6 +91,14 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const authStore = useAuthStore();
+
+    if (to.path === '/admin') {
+      if (!authStore.user.isAdmin) {
+          next({name: 'home'});
+          return;
+      }
+    }
+
     if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
         next({name: 'login'});
     } else if (to.matched.some(record => record.meta.requiresNotAuth) && authStore.isAuthenticated) {
