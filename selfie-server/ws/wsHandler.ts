@@ -1,7 +1,6 @@
 import WebSocket from 'ws';
-import User, { IUser } from "../models/User";
+import { IUser } from "../models/User";
 import chatController from "../controllers/chatController";
-import {pushNotificationService} from "../services/pushNotificationService";
 
 export const handleConnection = (ws: WebSocket, req: any, userConnections: Map<string, WebSocket[]>, user: IUser) => {
     const connections = userConnections.get(user.username) || [];
@@ -37,11 +36,6 @@ const handleMessage = (message: string, ws: WebSocket, userConnections: Map<stri
                     text: parsedMessage.text
                 })));
             }
-            User.findOne({username: parsedMessage.to}).then((user: any) => {
-                user?.pushSubscriptions.forEach((pushSubscription: any) => {
-                    pushNotificationService.sendNotification(pushSubscription, {title: user.username, body: parsedMessage.text});
-                });
-            });
         }).catch((err) => ws.send('Error sending message', err));
     } catch (error) {
         ws.send('Error parsing message');

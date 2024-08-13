@@ -3,24 +3,12 @@ import mongoose from "mongoose";
 import passport from "passport";
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
-import chatRoutes from './routes/chat';
 import noteRoutes from './routes/note';
-import eventRoutes from './routes/event';
-import activityRoutes from './routes/activity';
-import unavailabilityRoutes from './routes/unavailability';
-import notificationRoutes from './routes/notification';
-import userRoutes from './routes/user';
-import resourceRoutes from './routes/resource';
-import inviteRoutes from './routes/invite';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
-import {ensureAuthenticated} from "./middlewares/authMiddleware";
-import http from "node:http";
-import WebSocket from "ws";
-import {IUser} from "./models/User";
-import {handleConnection} from "./ws/wsHandler";
+import ensureAuthenticated from "./middlewares/authMiddleware";
 
 dotenv.config({ path: __dirname + '/.env.local' });
 
@@ -57,12 +45,11 @@ mongoose.connect(mongouri)
     });
 
 // Session configuration
-const sessionMiddleware = session({
+app.use(session({
     secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
     saveUninitialized: false,
-});
-app.use(sessionMiddleware);
+}));
 
 // Passport middleware
 app.use(passport.initialize());
@@ -71,39 +58,10 @@ app.use(passport.session());
 passport.use(strategy);
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/profile', ensureAuthenticated, profileRoutes);
-app.use('/chat', ensureAuthenticated, chatRoutes);
-app.use('/note', ensureAuthenticated, noteRoutes);
-app.use('/notification', ensureAuthenticated, notificationRoutes);
-app.use('/event', ensureAuthenticated, eventRoutes);
-app.use('/activity', ensureAuthenticated, activityRoutes);
-app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
-app.use('/user', ensureAuthenticated, userRoutes);
-app.use('/resource', ensureAuthenticated, resourceRoutes);
-app.use('/invite', ensureAuthenticated, inviteRoutes);
+app.use('/api/auth', authRoutes);
 
-const server = http.createServer(app);
+app.use('/api/profile', ensureAuthenticated, profileRoutes);
 
-const wss = new WebSocket.Server({server});
+app.use('/api/note', ensureAuthenticated, noteRoutes);
 
-const userConnections = new Map<string, WebSocket[]>();
-wss.on('connection', (ws, req: any) => {
-    // Handle session and passport for WebSocket
-    sessionMiddleware(req, {} as any, () => {
-        passport.initialize()(req, {} as any, () => {
-            passport.session()(req, {} as any, () => {
-                if (req.isAuthenticated()) {
-                    const user = req.user as IUser;
-
-                    handleConnection(ws, req, userConnections, user);
-                } else {
-                    ws.send(`Unauthorized`);
-                    ws.close();
-                }
-            });
-        });
-    });
-});
-
-server.listen(PORT);
+app.listen(PORT);
