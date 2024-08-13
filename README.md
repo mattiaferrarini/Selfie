@@ -16,6 +16,7 @@ src
 ├── assets
 ├── components
 ├── directives
+├── models
 ├── router
 ├── services
 ├── views
@@ -28,6 +29,8 @@ env.local
   multiple times on the website.
 - **directives**: Contains the custom directives used in the website. A directive is a custom attribute that can be
   attached to an element to add some behavior to it.
+- **models**: Contains the data models used in the website. A data model is a class that represents the data used in the
+  website.
 - **router**: Contains the code for routing in the website. The router is responsible for mapping the URL to the
   components that should be rendered.
 - **services**: Contains the code for making requests to the backend.
@@ -47,8 +50,12 @@ for handling requests from the frontend, processing the requests and sending the
 src
 ├── config
 ├── controllers
+├── middlewares
 ├── models
 ├── routes
+├── services
+├── uploads
+├── ws
 └── server.ts
 env.local
 ```
@@ -57,6 +64,10 @@ env.local
 - **models**: Contains the code for the data models used in the website.
 - **routes**: Contains the code for routing in the backend. The routes are responsible for mapping the URL to the
   controllers that should be called.
+- **services**: Contains the code for the services used in the website. A service is a class that contains the business
+  logic of the website.
+- **uploads**: Contains the uploaded files.
+- **ws**: Contains the code for the WebSocket server.
 - **server.ts**: The entry point of the backend.
 - **env.local**: Contains the environment variables used in the backend.
 
@@ -77,6 +88,28 @@ env.local
 1. Clone the repository:
     ```shell
     git clone
+    ```
+2. Install the dependencies for the client:
+    ```shell
+    cd selfie-client
+    npm install
+    ```
+3. Install the dependencies for the server:
+    ```shell
+    cd ../selfie-server
+    npm install
+    ```
+4. Create a `.env.local` for both the client and the server and set the variables
+5. Start the client:
+    ```shell
+    cd selfie-client
+    npm run serve
+    ```
+6. Start the server:
+    ```shell
+    cd selfie-server
+    npm run start
+    ```
 
 ## Project UI
 
