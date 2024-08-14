@@ -16,13 +16,15 @@ import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
-import {ensureAuthenticated} from "./middlewares/authMiddleware";
+import { ensureAuthenticated } from "./middlewares/authMiddleware";
 import * as http from "node:http";
-import {IUser} from "./models/User";
+import { IUser } from "./models/User";
 import WebSocket from 'ws';
-import {handleConnection} from "./ws/wsHandler";
+import { handleConnection } from "./ws/wsHandler";
+import { Agenda } from 'agenda';
+import jobs from './agenda/jobs';
 
-dotenv.config({path: './.env.local'});
+dotenv.config({ path: './.env.local' });
 
 // Create Express server
 const app = express();
@@ -35,7 +37,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/selfie')
@@ -45,6 +47,32 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/selfie')
     .catch(err => {
         console.error('Error connecting to MongoDB', err);
     });
+
+// Initialize Agenda
+const agenda = new Agenda({
+    db: {
+        address: process.env.MONGO_URI || 'mongodb://localhost:27017/selfie',
+        collection: 'jobs'
+    },
+    processEvery: '30 seconds'
+});
+
+// Define jobs for agenda
+jobs.defineJobs(agenda);
+
+// Start agenda
+agenda.start();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    await agenda.stop();
+    process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+    await agenda.stop();
+    process.exit(0);
+});
 
 // Session configuration
 const sessionMiddleware = session({
@@ -75,7 +103,7 @@ app.use('/invite', ensureAuthenticated, inviteRoutes);
 
 const server = http.createServer(app);
 
-const wss = new WebSocket.Server({server});
+const wss = new WebSocket.Server({ server });
 
 const userConnections = new Map<string, WebSocket[]>();
 wss.on('connection', (ws, req: any) => {
@@ -97,3 +125,5 @@ wss.on('connection', (ws, req: any) => {
 });
 
 server.listen(PORT);
+
+export { agenda };

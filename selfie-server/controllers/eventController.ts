@@ -5,6 +5,7 @@ import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
 import timeService from '../services/timeService';
+import jobSchedulerService from '../services/jobSchedulerService';
 
 const formatEvent = (event: any) => {
     return {
@@ -66,6 +67,8 @@ export const deleteEvent = async (req: any, res: any) => {
     try {
         await Event.findByIdAndDelete(id);
         await inviteController.deleteEventInvites(id);
+        await jobSchedulerService.clearEventNotificationsById(id);
+
         res.status(204).send();
     } catch (error) {
         res.status(404).send({ error: "Event doesn't exist!" });
@@ -88,6 +91,8 @@ export const addEvent = async (req: any, res: any) => {
     try {
         await newEvent.save();
         await inviteController.createInvitesForEvent(newEvent);
+        await jobSchedulerService.scheduleEventNotification(newEvent);
+
         res.status(201).send(formatEvent(newEvent));
     } catch (error) {
         res.status(422).send({ error: 'Error creating event' });
@@ -116,6 +121,7 @@ export const modifyEvent = async (req: any, res: any) => {
             await event.save();
             await inviteController.createInvitesForEvent(event);
             await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
+            await jobSchedulerService.updateUpcomingEventNotification(event);
 
             res.status(200).send(formatEvent(event));
         } else {
