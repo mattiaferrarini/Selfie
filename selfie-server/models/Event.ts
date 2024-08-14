@@ -93,4 +93,5 @@ const EventSchema = new Schema({
     }]
 });
 
-export default model<IEvent>('Event', EventSchema);
+const Event = model<IEvent>('Event', EventSchema);
+export default Event;
