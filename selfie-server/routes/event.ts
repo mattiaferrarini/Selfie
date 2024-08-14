@@ -3,7 +3,7 @@ import * as eventController from '../controllers/eventController';
 import multer from 'multer';
 
 const router = Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/user/:username', eventController.getEventsByUser);
 router.get('/:id', eventController.getEventById);

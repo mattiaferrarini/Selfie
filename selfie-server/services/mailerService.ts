@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import fs from 'fs';
 import dotenv from 'dotenv';
 
 dotenv.config({path: './.env.local'});
@@ -32,7 +31,7 @@ export async function sendEmail(to: string, subject: string, text: string) {
     }
 }
 
-export async function sendEmailWithAttachments(to: string, subject: string, text: string, attachments: any, deleteAttachments: boolean = false) {
+export async function sendEmailWithAttachments(to: string, subject: string, text: string, attachments: any) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: to,
@@ -43,11 +42,6 @@ export async function sendEmailWithAttachments(to: string, subject: string, text
 
     try {
         await transporter.sendMail(mailOptions);
-        if (deleteAttachments) {
-            for (let attachment of attachments) {
-                fs.unlinkSync(attachment.path);
-            }
-        }
     } catch (error) {
         console.error('Failed to send email:', error);
     }
