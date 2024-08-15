@@ -57,11 +57,22 @@ const agenda = new Agenda({
     processEvery: '30 seconds'
 });
 
-// Define jobs for agenda
-jobs.defineJobs(agenda);
+(async function () {
+    try {
+        // Start agenda
+        await agenda.start();
+        
+        // Purge all jobs
+        //await agenda.purge();
 
-// Start agenda
-agenda.start();
+        // Define jobs
+        await jobs.defineJobs(agenda);
+        console.log('Agenda started');
+    }
+    catch (error) {
+        console.error('Failed to start agenda:', error);
+    }
+})();
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {

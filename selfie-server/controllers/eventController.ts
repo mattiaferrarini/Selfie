@@ -65,9 +65,13 @@ export const getEventById = async (req: any, res: any) => {
 export const deleteEvent = async (req: any, res: any) => {
     const { id } = req.params;
     try {
-        await Event.findByIdAndDelete(id);
-        await inviteController.deleteEventInvites(id);
-        await jobSchedulerService.clearEventNotificationsById(id);
+        const event = await Event.findById(id);
+
+        if(event){
+            await jobSchedulerService.clearEventNotifications(event);
+            await Event.findByIdAndDelete(id);
+            await inviteController.deleteEventInvites(id);
+        }
 
         res.status(204).send();
     } catch (error) {

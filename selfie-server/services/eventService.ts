@@ -197,7 +197,7 @@ const isValidRepetition = (event: any, repStart: Date, repEnd: Date) : boolean =
 const getNextValidRepetition = (event: any, referenceDate: Date): {start: Date | null, end: Date | null} => {
     let { start, end } = getNextRepetition(event, referenceDate);
 
-    if(isValidRepetition(event, start, end))
+    if(isValidRepetition(event, start, end) && referenceDate < end)
         return {start, end};
     else
         return {start: null, end: null};
