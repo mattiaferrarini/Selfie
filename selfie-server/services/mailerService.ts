@@ -1,4 +1,7 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config({path: './.env.local'});
 
 // Create a transporter for nodemailer
 const transporter = nodemailer.createTransport({
@@ -19,6 +22,22 @@ export async function sendEmail(to: string, subject: string, text: string) {
         to: to,
         subject: subject,
         text: text,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Failed to send email:', error);
+    }
+}
+
+export async function sendEmailWithAttachments(to: string, subject: string, text: string, attachments: any) {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: to,
+        subject: subject,
+        text: text,
+        attachments: attachments,
     };
 
     try {
