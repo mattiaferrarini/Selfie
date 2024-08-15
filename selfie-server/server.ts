@@ -13,7 +13,7 @@ import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
-import ensureAuthenticated from "./middlewares/authMiddleware";
+import {ensureAuthenticated} from "./middlewares/authMiddleware";
 import * as http from "node:http";
 import {IUser} from "./models/User";
 import WebSocket from 'ws';
