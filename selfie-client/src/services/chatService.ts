@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.VUE_APP_API_URL + '/chat'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/chat';
 
 const list = async () => {
     try {

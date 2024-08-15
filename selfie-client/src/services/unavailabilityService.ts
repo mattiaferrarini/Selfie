@@ -1,13 +1,12 @@
 import axios from 'axios';
-import { Unavailability } from '@/models/Unavailability';
+import {Unavailability} from '@/models/Unavailability';
 
-const API_URL = process.env.VUE_APP_API_URL + '/unavailability'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/unavailability';
 
 const getUnavailabilitiesByUser = async (username: string) => {
     try {
         const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
-        const transformedData = response.data.map((unavailability: any) => formatUnavailability(unavailability));
-        return transformedData;
+        return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
         console.log(error);
         throw error.response.data;

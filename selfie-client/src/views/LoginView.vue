@@ -56,17 +56,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style>
-.bg-tropical {
-  background-image: url("@/assets/tropical.jpg");
-  background-repeat: repeat;
-  background-size: 100vh;
-}
-
-@media (max-width: 640px) {
-  .bg-tropical {
-    background-size: 100vw;
-  }
-}
-</style>

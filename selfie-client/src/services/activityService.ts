@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {Activity} from '@/models/Activity';
 
-const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/activity';
 
 const getActivitiesByUser = async (username: string) => {
     try {

@@ -157,5 +157,4 @@ export default defineComponent({
 </script>
 
 <style>
-/* You can still add custom styles here if needed */
 </style>

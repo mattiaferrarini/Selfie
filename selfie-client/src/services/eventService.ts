@@ -1,13 +1,12 @@
 import axios from 'axios';
-import { CalendarEvent } from '@/models/Event';
+import {CalendarEvent} from '@/models/Event';
 
-const API_URL = process.env.VUE_APP_API_URL + '/event'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/event';
 
 const getEventsByUser = async (username: string) => {
     try {
         const response = await axios.get(`${API_URL}/user/${username}`, { withCredentials: true });
-        const transformedData = response.data.map((event: any) => formatEvent(event));
-        return transformedData;
+        return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
         console.log(error);
         throw error.response.data;
