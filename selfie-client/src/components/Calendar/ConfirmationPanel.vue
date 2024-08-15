@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-70" @click.stop="cancel">
+    <div class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50" @click.stop="cancel">
         <div class="bg-white m-4 p-8 rounded-lg shadow-lg flex flex-col justify-center text-center">
             <h2 class="text-3xl font-bold mb-8 mt-4">Are you sure?</h2>
             <p class="my-4">{{ message }}</p>
