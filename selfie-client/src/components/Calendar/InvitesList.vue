@@ -52,7 +52,7 @@ export default defineComponent({
             immediate: true
         }
     },
-    emits: ['no-invites'],
+    emits: ['no-invites', 'accept-invite', 'decline-invite', 'postpone-invite'],
     methods: {
         formattedDescription(description: string) :string {
         return description.replace(/\n/g, '<br>');
@@ -85,14 +85,17 @@ export default defineComponent({
         acceptInvite(invite: Invite) {
             inviteService.acceptInvite(invite);
             this.removeInvite(invite);
+            this.$emit('accept-invite', invite);
         },
         declineInvite(invite: Invite) {
             inviteService.declineInvite(invite);
             this.removeInvite(invite);
+            this.$emit('decline-invite', invite);
         },
         postponeInvite(invite: Invite) {
             inviteService.postponeInvite(invite);
             this.removeInvite(invite);
+            this.$emit('postpone-invite', invite);
         },
         removeInvite(invite: Invite) {
             this.inviteInfos = this.inviteInfos.filter(inviteInfo => inviteInfo.invite.id !== invite.id);

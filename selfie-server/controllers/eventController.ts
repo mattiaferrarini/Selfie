@@ -161,11 +161,11 @@ export const sendExportViaEmail = async (req: any, res: any) => {
     }
     else{
         const subject = `Export of ${eventName}`;
-        const text = `Export of ${eventName} attached.\nYou can also add the event to your calendar by clicking the following links:\nYahoo: ${yahooLink}\nGoogle: ${googleLink}\nOutlook: ${outlookLink}`;
-        const attachments = [{ path: file.path}];
+        const text = `Export of ${eventName} attached.\n\nYou can also add the event to your calendar by clicking the following links:\nYahoo: ${yahooLink}\nGoogle: ${googleLink}\nOutlook: ${outlookLink}`;
+        const attachments = [{ filename: file.originalname, content: file.buffer }];
 
         try {
-            await sendEmailWithAttachments(to, subject, text, attachments, true);
+            await sendEmailWithAttachments(to, subject, text, attachments);
             res.status(200).send('Email sent!');
         } catch (error) {
             res.status(500).send({ error: 'Error sending the email.' });

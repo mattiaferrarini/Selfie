@@ -67,6 +67,10 @@
         <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
       </div>
     </form>
+
+    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+      @confirm="confirmAction" />
+
   </div>
 </template>
 
@@ -75,8 +79,12 @@ import { defineComponent } from 'vue';
 import { Unavailability } from '@/models/Unavailability';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
+import ConfirmationPanel from './ConfirmationPanel.vue';
 
 export default defineComponent({
+  components: {
+    ConfirmationPanel
+  },
   props: {
     unavailability: {
       type: Object as () => Unavailability,
@@ -98,6 +106,7 @@ export default defineComponent({
       newUnavailability: { ...this.unavailability },
       newStartTime: "",
       newEndTime: "",
+      confirmationMessage: ""
     }
   },
   mounted() {
@@ -132,7 +141,14 @@ export default defineComponent({
       this.$emit('saveUnavailability', this.newUnavailability);
     },
     deleteUnavailability() {
-      this.$emit('deleteUnavailability', this.unavailability);
+      this.confirmationMessage = "Are you sure you want to delete this unavailability?";
+    },
+    cancelAction() {
+      this.confirmationMessage = "";
+    },
+    confirmAction() {
+      this.confirmationMessage = "";
+      this.$emit('deleteUnavailability', this.newUnavailability);
     },
     enforceTemporalCoherence() {
       if (this.newUnavailability.start > this.newUnavailability.end) {
