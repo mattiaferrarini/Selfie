@@ -15,6 +15,7 @@ const lastmodify = ref();
 const category = ref();
 
 // owners edit
+const open_to_anyone = ref(false);
 const owners = ref(null);
 const users = ref([]);
 
@@ -29,10 +30,16 @@ const getNote = async () => {
   lastmodify.value = note.lastmodify;
   category.value = note.category;
   owners.value = note.owners;
+  if (owners.value.length === users.value.length) {
+    open_to_anyone.value = true;
+  }
 };
 
 const saveNote = async () => {
   const id = String(router.currentRoute.value.params.id);
+  if (open_to_anyone.value) {
+    owners.value = users.value;
+  }
   await noteService.modify(id, title.value, content.value, new Date(), category.value, owners.value);
   await router.push("/note");
 };
@@ -48,8 +55,8 @@ const getUserNames = async () => {
 };
 
 onMounted( async () => {
-  await getNote();
   await getUserNames();
+  await getNote();
 })
 
 </script>
@@ -95,12 +102,17 @@ onMounted( async () => {
 
     <div class="flex flex-col justify-center flex-wrap w-screen max-w-screen-md m-auto">
       <p class="text-center">Owners:</p>
-      <VueMultiselect
+      <div class="flex">
+        <label for="open_to_anyone">open to anyone</label>
+        <input class="ml-1" type="checkbox" id="open_to_anyone" v-model="open_to_anyone" />
+      </div>
+
+      <VueMultiselect v-if="!open_to_anyone"
           v-model="owners"
           :options="users"
-          :multiple="true"
-          >
+          :multiple="true">
       </VueMultiselect>
+
     </div>
   </div>
 </template>
