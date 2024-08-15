@@ -233,6 +233,7 @@ export default defineComponent({
       const res = await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
+      activityService.deleteActivity(activity);
       rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
       hideAllForms();
     };
