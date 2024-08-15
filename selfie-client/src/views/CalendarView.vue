@@ -431,6 +431,17 @@ export default defineComponent({
   border-radius: 5px;
 }
 
+.add-button {
+  width: 100%;
+  text-align: left;
+  background-color: #f2f2f2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.5em 1em;
+  border: 1px solid #ccc;
+}
+</style>
+
+<style>
 :root {
   --dp-input-icon-padding: 10px;
 }
@@ -439,14 +450,5 @@ export default defineComponent({
 .dp__today,
 .dp__overlay_cell_active {
   --dp-primary-color: #10b981;
-}
-
-.add-button {
-  width: 100%;
-  text-align: left;
-  background-color: #f2f2f2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.5em 1em;
-  border: 1px solid #ccc;
 }
 </style>
