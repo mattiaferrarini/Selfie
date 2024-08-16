@@ -2,34 +2,34 @@
   <div class="p-4 bg-white rounded-lg shadow border">
     <h3 v-if="weekly" class="text-lg font-semibold text-gray-800">This week</h3>
     <h3 v-else class="text-lg font-semibold text-gray-800">Today</h3>
-    <div class="mt-2">
+    <div class="mt-2" v-if="showEvents">
       <h4 class="text-md font-medium text-gray-700">Events</h4>
       <div v-if="weekly">
         <ul class="list-disc pl-5">
           <li v-for="event in eventsThisWeek" :key="event.id" class="text-gray-600">{{ event.title }}</li>
         </ul>
-        <p v-if="eventsThisWeek.length === 0">No events this week.</p>
+        <p v-if="eventsThisWeek.length === 0" class="text-gray-600">No events this week.</p>
       </div>
       <div v-else>
         <ul class="list-disc pl-5">
           <li v-for="event in eventsToday" :key="event.id" class="text-gray-600">{{ event.title }}</li>
         </ul>
-        <p v-if="eventsToday.length === 0">No events today.</p>
+        <p v-if="eventsToday.length === 0" class="text-gray-600">No events today.</p>
       </div>
     </div>
-    <div class="mt-2">
+    <div class="mt-2" v-if="showActivities">
       <h4 class="text-md font-medium text-gray-700">Activities</h4>
       <div v-if="weekly">
         <ul class="list-disc pl-5">
           <li v-for="event in activitiesThisWeek" :key="event.id" class="text-gray-600">{{ event.title }}</li>
         </ul>
-        <p v-if="activitiesThisWeek.length === 0">No activities this week.</p>
+        <p v-if="activitiesThisWeek.length === 0" class="text-gray-600">No activities this week.</p>
       </div>
       <div v-else>
         <ul class="list-disc pl-5">
           <li v-for="event in activitiesToday" :key="event.id" class="text-gray-600">{{ event.title }}</li>
         </ul>
-        <p v-if="activitiesToday.length === 0">No activities today.</p>
+        <p v-if="activitiesToday.length === 0" class="text-gray-600">No activities today.</p>
       </div>
     </div>
   </div>
@@ -54,7 +54,11 @@ export default defineComponent({
     weekly: {
       type: Boolean,
       default: false,
-    }
+    },
+    content: {
+      type: String,
+      default: 'all',
+    },
   },
   data() {
     return {
@@ -79,6 +83,12 @@ export default defineComponent({
     },
     activitiesThisWeek(): Activity[] {
       return this.getActivitiesForPeriod(this.startOfDay, this.endOfEndOfWeek);
+    },
+    showEvents(): boolean {
+      return this.content === 'all' || this.content === 'events';
+    },
+    showActivities(): boolean {
+      return this.content === 'all' || this.content === 'activities';
     },
   },
   methods: {
