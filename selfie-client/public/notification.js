@@ -1,5 +1,7 @@
 const publicVapidKey = "BH6-3vcDUAyaI-JYDuT1jTfn7XL3SfcjMHhuU4PSjwZTdy03yCTI66sWcVTLRo65r5JdIu61IzpxAtmmEewG-i4"; // REPLACE_WITH_YOUR_KEY
 
+//TODO: remove console.log
+
 // Check for service worker
 if ("serviceWorker" in navigator) {
     send().catch((err) => console.error(err));
