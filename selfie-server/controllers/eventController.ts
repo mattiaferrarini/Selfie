@@ -30,7 +30,8 @@ export const getEventsByUser = async (req: any, res: any) => {
         let endDate = end ? new Date(end) : undefined;
 
         let events = await getEventsByUserAndDate(username, startDate, endDate);
-        res.status(200).send(events);
+        let formattedEvents = events.map((event: any) => formatEvent(event));
+        res.status(200).send(formattedEvents);
         //res.status(200).send(events);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving events' });
