@@ -1,7 +1,7 @@
 import axios from 'axios';
 import notificationService from "@/services/notificationService";
 
-const API_URL = process.env.VUE_APP_API_URL + '/auth'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/auth';
 
 const login = async (username: string, password: string) => {
     try {

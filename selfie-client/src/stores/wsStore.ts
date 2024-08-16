@@ -59,9 +59,6 @@ export const useWebSocketStore = defineStore('websocket', {
                             if (!this.isChatModalOpen) {
                                 this.unread = true;
                             }
-                            new Notification(message.from, {
-                                body: message.text,
-                            });
                         }
                     } catch (err) {
                         // TODO: display?

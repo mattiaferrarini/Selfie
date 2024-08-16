@@ -6,6 +6,7 @@ import RegisterView from "@/views/RegisterView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import PomodoroView from "@/views/PomodoroView.vue";
 import NoteView from "@/views/note/NoteView.vue";
+import NoteEditView from "@/views/note/NoteEditView.vue";
 import CalendarView from "@/views/CalendarView.vue";
 import AdminView from '@/views/AdminView.vue';
 
@@ -54,6 +55,14 @@ const routes: Array<RouteRecordRaw> = [
     path: '/note',
     name: 'note',
     component: NoteView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/note/:id',
+    name: 'note-edit',
+    component: NoteEditView,
     meta: {
       requiresAuth: true
     }

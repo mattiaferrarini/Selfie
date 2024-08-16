@@ -3,7 +3,7 @@ import { Activity } from '@/models/Activity';
 import eventService from './eventService';
 import timeService from './timeService';
 
-const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/activity';
 
 const getActivitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {

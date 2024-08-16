@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Unavailability } from '@/models/Unavailability';
 import { CalendarEvent } from '@/models/Event';
 
-const API_URL = process.env.VUE_APP_API_URL + '/unavailability'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/unavailability';
 
 const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {
@@ -11,8 +11,7 @@ const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: D
             url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
         }
         const response = await axios.get(url, { withCredentials: true });
-        const transformedData = response.data.map((unavailability: any) => formatUnavailability(unavailability));
-        return transformedData;
+        return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
         console.log(error);
         throw error.response.data;
