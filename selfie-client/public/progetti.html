@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="notification.js"></script>
     <script src="sw.js"></script>
+    <script src="progetti.js" defer></script>
 </head>
 <body>
 <noscript>
@@ -16,122 +17,6 @@
         Please enable it to continue.</strong>
 </noscript>
 <div id="app" class="min-h-screen bg-gray-100">
-    <script>
-        class ConditionalRender extends HTMLElement {
-            static get observedAttributes() {
-                return ['condition'];
-            }
-
-            constructor() {
-                super();
-                this.attachShadow({mode: 'open'});
-            }
-
-            attributeChangedCallback(name, oldValue, newValue) {
-                if (name === 'condition') {
-                    this.render();
-                }
-            }
-
-            render() {
-                const condition = this.getAttribute('condition');
-                this.shadowRoot.innerHTML = condition === 'true' ? `<slot name="true"></slot>` : `<slot name="false"></slot>`;
-            }
-        }
-
-        customElements.define('conditional-render', ConditionalRender);
-
-        class ClickOutside extends HTMLElement {
-            constructor() {
-                super();
-                this.handleClick = this.handleClick.bind(this);
-            }
-
-            connectedCallback() {
-                document.addEventListener('click', this.handleClick);
-            }
-
-            disconnectedCallback() {
-                document.removeEventListener('click', this.handleClick);
-            }
-
-            handleClick(event) {
-                if (!this.contains(event.target)) {
-                    this.dispatchEvent(new CustomEvent('clickoutside'));
-                }
-            }
-        }
-
-        customElements.define('click-outside', ClickOutside);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // TODO: save date?
-            let showTooltip = false;
-            const selectedDate = '';
-
-            const conditionalRenderElement = document.getElementById('dateConditionalRender');
-
-            const toggleTooltip = () => {
-                const dateInput = document.getElementById('selectedDate');
-                dateInput.value = new Date().toISOString().split('T')[0];
-                showTooltip = !showTooltip;
-                conditionalRenderElement.setAttribute('condition', showTooltip);
-            };
-
-            const resetDate = () => {
-                const dateInput = document.getElementById('selectedDate');
-                dateInput.value = new Date().toISOString().split('T')[0];
-            };
-
-            const clickOutsideElement = document.getElementById('clickOutsideElement');
-            clickOutsideElement.addEventListener('clickoutside', () => {
-                showTooltip = false;
-                conditionalRenderElement.setAttribute('condition', showTooltip);
-            });
-
-            document.getElementById('toggleDateTooltip').addEventListener('click', toggleTooltip);
-            document.getElementById('resetDate').addEventListener('click', resetDate);
-        });
-
-
-        const unsubscribe = async () => {
-            try {
-                const registration = await navigator.serviceWorker.getRegistration();
-                const subscription = await registration?.pushManager.getSubscription();
-                await registration?.unregister();
-                const response = await fetch(`http://localhost:3000/notification/unsubscribe`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Credentials': 'include'
-                    },
-                    body: JSON.stringify({ endpoint: subscription?.endpoint })
-                });
-
-                if (!response.ok) {
-                    throw await response.json();
-                }
-
-                return await response.json();
-            } catch (error) {
-                throw error.response.data;
-            }
-        }
-
-        const logout = async () => {
-            await unsubscribe();
-            const response = await fetch(`${API_URL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Credentials': 'include'
-                },
-                body: JSON.stringify({})
-            });
-            localStorage.removeItem('auth');
-            window.location.href = '/#/login';
-        }
-    </script>
     <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600">
         <div class="container mx-auto flex justify-between text-gray-700">
             <div class="flex items-center">
@@ -232,7 +117,7 @@
                         </svg>
                     </div>
                 </a>
-                <button onclick="logout" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                <button onclick="logout()" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
                     <span class="hidden sm:block">Logout</span>
                     <span class="block sm:hidden h-7 w-7">
               <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2" viewBox="0 0 24 24"
