@@ -110,7 +110,7 @@ onMounted( async () => {
       <p class="m-2">Last modification {{ lastmodify }}</p>
     </div>
     <div v-if="viewMode" class="flex justify-center">
-      <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white"></div>
+      <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>
     </div>
     <div v-else class="flex justify-center resize-none" >
       <textarea

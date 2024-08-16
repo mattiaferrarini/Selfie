@@ -2,6 +2,7 @@
 import {ref, onMounted} from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
+import {marked} from "marked";
 
 const notes = ref();
 
@@ -39,8 +40,7 @@ onMounted(async () => {
         <router-link :to="`/note/${note._id}`">
           <div class="px-6 py-4">
             <div class="font-bold text-xl mb-2 break-words">{{ note.title }}</div>
-            <p class="text-gray-700 text-base break-words">
-              {{ note.content }}
+            <p class="text-gray-700 text-base break-words prose" v-html="marked(note.content)">
             </p>
           </div>
           <div>

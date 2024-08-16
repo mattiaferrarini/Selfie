@@ -32,7 +32,7 @@
           </router-link>
           <router-link :to="{ name: 'note' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
-                       active-class="text-emerald-700 sm:border-teal-500">
+                       :class="{ 'text-emerald-700 sm:border-teal-500': $route.name === 'note' || $route.name === 'note-edit' }">
             <span class="hidden sm:block">Note</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="md-stickynote2-outlined" class="h-full w-full"/>
