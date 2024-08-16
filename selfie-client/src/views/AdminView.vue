@@ -1,7 +1,7 @@
 <template>
     <div class="m-4">
         <h1 class="text-lg font-semibold text-center">Admin Panel</h1>
-        <div class="mt-4 flex flex-col gap-y-4 sm:flex-row sm:gap-x-4">
+        <div class="animate-fade-in mt-4 flex flex-col gap-y-4 sm:flex-row sm:gap-x-4">
             <div class="flex-1 flex flex-col gap-y-4">
                 <div class="bg-white rounded-lg p-4">
                     <form @submit="addResource">
