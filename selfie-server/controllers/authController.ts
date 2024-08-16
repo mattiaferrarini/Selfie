@@ -4,6 +4,7 @@ import passport from "passport";
 const default_preferences = {
     home: {
         calendarWeekly: false,
+        calendarContent: "all",
         notesDescription: false,
         pomodoroType: "stats"
     },

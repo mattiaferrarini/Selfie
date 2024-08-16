@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 bg-white rounded-lg shadow border m-4 text-gray-600">
+  <div class="p-4 bg-white rounded-lg shadow border text-gray-600">
     <h3 class="text-lg font-semibold text-gray-800">Pomodoro</h3>
     <div v-if="type === 'settings'">
       <h4 class="font-semibold text-gray-800">Impostazioni di default </h4>

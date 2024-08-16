@@ -27,6 +27,20 @@ export const getEventsByUser = async (req: any, res: any) => {
     const { start, end } = req.query;
     
     try {
+        let startDate = start ? new Date(start) : undefined;
+        let endDate = end ? new Date(end) : undefined;
+
+        let events = await getEventsByUserAndDate(username, startDate, endDate);
+        let formattedEvents = events.map((event: any) => formatEvent(event));
+        res.status(200).send(formattedEvents);
+        //res.status(200).send(events);
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving events' });
+    }
+}
+
+export const getEventsByUserAndDate = async (username: string, start?: Date, end?: Date) => {
+    try {
         let events = await Event.find({
             participants: {
                 $elemMatch: {
@@ -37,17 +51,12 @@ export const getEventsByUser = async (req: any, res: any) => {
         });
 
         if (start && end) {
-            const startDate = new Date(start);
-            const endDate = new Date(end);
-            events = events.filter((event: any) => eventService.eventInRange(event, startDate, endDate));
+            events = events.filter((event: any) => eventService.eventInRange(event, start, end));
         }
-
-        const formattedEvents = events.map((event: any) => formatEvent(event));
-
-        res.status(200).send(formattedEvents);
-        //res.status(200).send(events);
+        return events;
+        
     } catch (error) {
-        res.status(500).send({ error: 'Error retrieving events' });
+        throw new Error('Error retrieving events');
     }
 }
 
@@ -171,11 +180,11 @@ export const sendExportViaEmail = async (req: any, res: any) => {
     }
     else{
         const subject = `Export of ${eventName}`;
-        const text = `Export of ${eventName} attached.\nYou can also add the event to your calendar by clicking the following links:\nYahoo: ${yahooLink}\nGoogle: ${googleLink}\nOutlook: ${outlookLink}`;
-        const attachments = [{ path: file.path}];
+        const text = `Export of ${eventName} attached.\n\nYou can also add the event to your calendar by clicking the following links:\nYahoo: ${yahooLink}\nGoogle: ${googleLink}\nOutlook: ${outlookLink}`;
+        const attachments = [{ filename: file.originalname, content: file.buffer }];
 
         try {
-            await sendEmailWithAttachments(to, subject, text, attachments, true);
+            await sendEmailWithAttachments(to, subject, text, attachments);
             res.status(200).send('Email sent!');
         } catch (error) {
             res.status(500).send({ error: 'Error sending the email.' });

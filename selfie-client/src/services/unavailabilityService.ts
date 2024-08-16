@@ -2,7 +2,7 @@ import axios from 'axios';
 import {Unavailability} from '@/models/Unavailability';
 import {CalendarEvent} from '@/models/Event';
 
-const API_URL = process.env.VUE_APP_API_URL + '/unavailability'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/unavailability';
 
 const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {

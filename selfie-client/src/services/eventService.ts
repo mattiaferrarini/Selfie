@@ -4,7 +4,7 @@ import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
 import {CalendarEvent} from '@/models/Event';
 import {useAuthStore} from '@/stores/authStore';
 
-const API_URL = process.env.VUE_APP_API_URL + '/event'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/event';
 
 const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
     try {

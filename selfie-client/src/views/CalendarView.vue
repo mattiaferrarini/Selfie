@@ -67,7 +67,7 @@ export default defineComponent({
     /* Fetch content of the view */
     const fetchUserEvents = async () => {
       rangeUserEvents.value = await eventService.getEventsByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
-      if(content.value === 'appointments' || content.value === 'events')
+      if (content.value === 'appointments' || content.value === 'events')
         rangeEvents.value = rangeUserEvents.value;
     };
     const fetchActivities = async () => {
@@ -78,7 +78,7 @@ export default defineComponent({
     };
     const fetchResources = async () => {
       allResources.value = await resourceService.getAllResources();
-      if(allResources.value.length > 0)
+      if (allResources.value.length > 0)
         resource.value = allResources.value[0].name;
     };
     const fetchResourceEvents = async () => {
@@ -104,7 +104,7 @@ export default defineComponent({
     };
     const updateRangeAndFetchCalendarIfNecessary = async () => {
       const [start, end] = getRangeDates();
-    
+
       if (start.getTime() !== rangeStartDate.value.getTime() || end.getTime() !== rangeEndDate.value.getTime()) {
         rangeStartDate.value = start;
         rangeEndDate.value = end;
@@ -129,13 +129,13 @@ export default defineComponent({
     };
     const resetCalendar = () => {
       focusDate.value = new Date();
-      document.getElementById(focusDate.value.toISOString().substring(0,10))?.scrollIntoView({ block: 'center',  behavior: 'smooth' });
+      document.getElementById(focusDate.value.toISOString().substring(0, 10))?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     };
     const onViewChange = () => {
       console.log(`View changed to: ${view.value}`);
     };
     const onContentChange = async () => {
-      if(content.value === 'resources' && allResources.value.length > 0)
+      if (content.value === 'resources' && allResources.value.length > 0)
         rangeEvents.value = await fetchResourceEvents();
       else
         rangeEvents.value = rangeUserEvents.value;
@@ -233,6 +233,7 @@ export default defineComponent({
       const res = await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
+      activityService.deleteActivity(activity);
       rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
       hideAllForms();
     };
@@ -267,6 +268,18 @@ export default defineComponent({
     const noInvites = () => {
       hasPendingInvites.value = false;
       showInviteList.value = false;
+    }
+    const acceptInvite = async (invite: any) => {
+      if (invite.eventId) {
+        const event = await eventService.getEventById(invite.eventId);
+        if (event)
+          rangeUserEvents.value.push(event);
+      }
+      else if (invite.activityId) {
+        const activity = await activityService.getActivityById(invite.activityId);
+        if (activity)
+          rangeActivities.value.push(activity);
+      }
     }
 
     /* Computed properties */
@@ -311,14 +324,14 @@ export default defineComponent({
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
       modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
-      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton, eventModificationAllowd
+      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton, eventModificationAllowd, acceptInvite
     };
   },
 });
 </script>
 
 <template>
-  <div class="calendar-view">
+  <div class="calendar-view animate-fade-in">
     <nav class="text-gray-700 p-4 sm:p-8">
       <div class="flex justify-between mb-2">
         <div>
@@ -343,8 +356,9 @@ export default defineComponent({
           </div>
         </div>
       </div>
-      <div v-if="content==='resources'">
-        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource" class="mr-2 p-2 h-full rounded" @change="onResourceChange">
+      <div v-if="content === 'resources'">
+        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource"
+          class="mr-2 p-2 h-full rounded" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
         <p v-else>No resources available.</p>
@@ -353,10 +367,10 @@ export default defineComponent({
 
     <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false" class="cursor-pointer z-0">
       <template #trigger>
-      <div class="clickable-text flex items-center justify-center">
-        <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
-        <v-icon name="bi-chevron-expand"></v-icon>
-      </div>
+        <div class="clickable-text flex items-center justify-center">
+          <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
+          <v-icon name="bi-chevron-expand"></v-icon>
+        </div>
       </template>
     </VueDatePicker>
 
@@ -383,7 +397,8 @@ export default defineComponent({
     </div>
 
     <div v-if="hasPendingInvites" class="fixed bottom-4 left-4">
-      <button @click.stop="openInviteList" class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
+      <button @click.stop="openInviteList"
+        class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
         <v-icon name="md-markemailunread-outlined" class="w-full h-full"></v-icon>
       </button>
     </div>
@@ -391,10 +406,11 @@ export default defineComponent({
     <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate" :modification-allowed="eventModificationAllowd" class="m-4"/>
+        :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
+        :modification-allowed="eventModificationAllowd" class="m-4" />
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
-        :current-date="currentDate" class="m-4"/>
+        :current-date="currentDate" class="m-4" />
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
         @delete-unavailability="deleteUnavailability" @save-unavailability="saveUnavailability"
         :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" class="m-4" />
@@ -403,7 +419,7 @@ export default defineComponent({
     <div v-if="showInviteList" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
       <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
         <h2 class="text-lg font-bold mb-4">Pending invites</h2>
-        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"/>
+        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites" @accept-invite="acceptInvite"/>
       </div>
     </div>
 
@@ -416,14 +432,6 @@ export default defineComponent({
   border-radius: 5px;
 }
 
-:root {
-  --dp-input-icon-padding: 10px;
-}
-
-.dp__active_date, .dp__today, .dp__overlay_cell_active {
-  --dp-primary-color: #10b981;
-}
-
 .add-button {
   width: 100%;
   text-align: left;
@@ -431,5 +439,17 @@ export default defineComponent({
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.5em 1em;
   border: 1px solid #ccc;
+}
+</style>
+
+<style>
+:root {
+  --dp-input-icon-padding: 10px;
+}
+
+.dp__active_date,
+.dp__today,
+.dp__overlay_cell_active {
+  --dp-primary-color: #10b981;
 }
 </style>

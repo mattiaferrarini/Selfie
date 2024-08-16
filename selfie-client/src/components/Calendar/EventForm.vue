@@ -142,6 +142,9 @@
 
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
+    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+      @confirm="confirmAction" />
+
   </div>
 </template>
 
@@ -153,11 +156,13 @@ import { CalendarEvent } from '@/models/Event';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import eventService from '@/services/eventService';
+import ConfirmationPanel from './ConfirmationPanel.vue';
 
 export default defineComponent({
   components: {
     ParticipantsForm,
-    EventExportPanel
+    EventExportPanel,
+    ConfirmationPanel
   },
   props: {
     event: {
@@ -191,6 +196,7 @@ export default defineComponent({
       showParticipantsForm: false,
       authStore: useAuthStore(),
       showExportPanel: false,
+      confirmationMessage: ''
     }
   },
   mounted() {
@@ -250,6 +256,13 @@ export default defineComponent({
       this.closeParticipantsForm();
     },
     deleteEvent() {
+      this.confirmationMessage = 'Are you sure you want to delete this event?';
+    },
+    cancelAction() {
+      this.confirmationMessage = '';
+    },
+    confirmAction() {
+      this.confirmationMessage = '';
       this.$emit('deleteEvent', this.event);
     },
     openExportPanel() {
