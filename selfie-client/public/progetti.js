@@ -1,14 +1,14 @@
 class ConditionalRender extends HTMLElement {
-    static get observedAttributes() {
-        return ['condition'];
-    }
-
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
     }
 
-    attributeChangedCallback(name, oldValue, newValue) {
+    static get observedAttributes() {
+        return ['condition'];
+    }
+
+    attributeChangedCallback(name) {
         if (name === 'condition') {
             this.render();
         }
@@ -86,31 +86,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const API_URL = "http://localhost:3000";
 
+const forceLogout = () => {
+    localStorage.removeItem('auth');
+    window.location.href = '/#/login';
+}
+
+async function fetchWithMiddleware(url, options) {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        forceLogout();
+    }
+    return response;
+}
+
 const unsubscribe = async () => {
-    try {
-        const registration = await navigator.serviceWorker.getRegistration();
-        const subscription = await registration?.pushManager.getSubscription();
-        await registration?.unregister();
-        const response = await fetch(`${API_URL}/notification/unsubscribe`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Credentials': 'include'
-            },
-            body: JSON.stringify({ endpoint: subscription?.endpoint })
-        });
-
-        if (!response.ok) {
-            throw await response.json();
-        }
-
-        return await response.json();
-    } catch (error) {}
+    const registration = await navigator.serviceWorker.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    await registration?.unregister();
+    await fetchWithMiddleware(`${API_URL}/notification/unsubscribe`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Credentials': 'include'
+        },
+        body: JSON.stringify({endpoint: subscription?.endpoint})
+    });
 }
 
 const logout = async () => {
     await unsubscribe();
-    await fetch(`${API_URL}/logout`, {
+    await fetchWithMiddleware(`${API_URL}/logout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -118,6 +123,4 @@ const logout = async () => {
         },
         body: JSON.stringify({})
     });
-    localStorage.removeItem('auth');
-    window.location.href = '/#/login';
 }
