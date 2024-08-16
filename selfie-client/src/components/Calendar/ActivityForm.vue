@@ -110,6 +110,9 @@
 
         <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel" />
 
+        <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+            @confirm="confirmAction" />
+
     </div>
 </template>
 
@@ -122,12 +125,13 @@ import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import activityService from '@/services/activityService';
 import { CalendarEvent } from '@/models/Event';
-
+import ConfirmationPanel from './ConfirmationPanel.vue';
 
 export default defineComponent({
     components: {
         ParticipantsForm,
-        EventExportPanel
+        EventExportPanel,
+        ConfirmationPanel
     },
     props: {
         activity: {
@@ -155,7 +159,8 @@ export default defineComponent({
             },
             showParticipantsForm: false,
             showSubActivitiesForm: false,
-            showExportPanel: false
+            showExportPanel: false,
+            confirmationMessage: ''
         }
     },
     mounted() {
@@ -196,8 +201,14 @@ export default defineComponent({
             this.$emit('saveActivity', res);
         },
         deleteActivity() {
-            activityService.deleteActivity(this.activity);
-            this.$emit('deleteActivity', this.activity);
+            this.confirmationMessage = 'Are you sure you want to delete this activity?';
+        },
+        cancelAction() {
+            this.confirmationMessage = '';
+        },
+        confirmAction() {
+            this.confirmationMessage = '';
+            this.$emit('deleteActivity', this.newActivity);
         },
         openParticipantsForm() {
             this.showParticipantsForm = true;

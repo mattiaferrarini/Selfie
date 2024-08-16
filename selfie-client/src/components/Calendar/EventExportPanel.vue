@@ -1,7 +1,7 @@
 <template>
     <div class="absolute inset-0 bg-white rounded-lg w-full h-full overflow-scroll">
 
-        <div class="p-4 flex flex-col justify-center">
+        <div class="p-4 flex flex-col justify-center w-full h-full">
             <div class="flex flex-col justify-stretch text-center mb-4">
             <button @click="downloadICalendar" class="export-option">Download iCalendar File</button>
             <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
@@ -11,7 +11,7 @@
             <div v-if="emailSent" class="export-option">{{ emailSentResult }}</div>
         </div>
 
-        <button @click="closePanel" class="w-full p-1 rounded-lg bg-gray-300">Done</button>
+        <button @click="closePanel" class="w-full p-2 rounded-lg bg-gray-300">Done</button>
         </div>
     </div>
 </template>
