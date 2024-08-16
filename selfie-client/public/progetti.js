@@ -46,13 +46,14 @@ class ClickOutside extends HTMLElement {
 customElements.define('click-outside', ClickOutside);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // check logincookies
-    const auth = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("auth="))
-        ?.split("=")[1];
-    if (!auth) {
+    // check auth status
+    const auth = JSON.parse(localStorage.getItem('auth') || null);
+    if (!auth || !auth.isAuthenticated) {
         window.location.href = '/#/login';
+    }
+
+    if (auth.isAdmin) {
+        document.getElementById("adminLink").classList.remove("hidden");
     }
 
     // TODO: save date?
@@ -84,10 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const API_URL = "http://localhost:3000";
-
-delete_cookie = (name) => {
-    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-};
 
 const unsubscribe = async () => {
     try {
@@ -121,6 +118,6 @@ const logout = async () => {
         },
         body: JSON.stringify({})
     });
-    delete_cookie('auth');
+    localStorage.removeItem('auth');
     window.location.href = '/#/login';
 }
