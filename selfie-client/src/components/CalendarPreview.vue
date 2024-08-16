@@ -22,28 +22,32 @@
       <div v-if="weekly">
         <ul class="list-disc pl-5">
           <li v-for="event in activitiesThisWeek" :key="event.id" class="text-gray-600">{{ event.title }}</li>
+          <li v-for="event in uncompletedActivitiesThisWeek" :key="event.id" class="text-red-500">{{ event.title }}</li>
         </ul>
-        <p v-if="activitiesThisWeek.length === 0" class="text-gray-600">No activities this week.</p>
+        <p v-if="activitiesThisWeek.length === 0 && uncompletedActivitiesThisWeek.length === 0" class="text-gray-600">No
+          activities this week.</p>
       </div>
       <div v-else>
         <ul class="list-disc pl-5">
           <li v-for="event in activitiesToday" :key="event.id" class="text-gray-600">{{ event.title }}</li>
+          <li v-for="event in uncompletedActivitiesToday" :key="event.id" class="text-red-500">{{ event.title }}</li>
         </ul>
-        <p v-if="activitiesToday.length === 0" class="text-gray-600">No activities today.</p>
+        <p v-if="activitiesToday.length === 0 && uncompletedActivitiesToday.length === 0" class="text-gray-600">No
+          activities today.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import {defineComponent} from "vue";
 import timeService from "@/services/timeService";
 import eventService from "@/services/eventService";
 import activityService from "@/services/activityService";
 import eventRecurrenceService from "@/services/eventRecurrenceService";
-import { CalendarEvent } from "@/models/Event";
-import { Activity } from "@/models/Activity";
-import { useAuthStore } from "@/stores/authStore";
+import {CalendarEvent} from "@/models/Event";
+import {Activity} from "@/models/Activity";
+import {useAuthStore} from "@/stores/authStore";
 
 export default defineComponent({
   props: {
@@ -81,8 +85,14 @@ export default defineComponent({
     activitiesToday(): Activity[] {
       return this.getActivitiesForPeriod(this.startOfDay, this.endOfDay);
     },
+    uncompletedActivitiesToday(): Activity[] {
+      return this.getUncompletedActivitiesForPeriod(this.startOfDay);
+    },
     activitiesThisWeek(): Activity[] {
       return this.getActivitiesForPeriod(this.startOfDay, this.endOfEndOfWeek);
+    },
+    uncompletedActivitiesThisWeek(): Activity[] {
+      return this.getUncompletedActivitiesForPeriod(this.startOfDay);
     },
     showEvents(): boolean {
       return this.content === 'all' || this.content === 'events';
@@ -99,12 +109,17 @@ export default defineComponent({
     },
     getActivitiesForPeriod(start: Date, end: Date): Activity[] {
       return this.sortedActivities.filter((activity: Activity) => {
-        return (activity.deadline <= end && activity.deadline >= start) || (activity.deadline <= start && !activity.done);
+        return activity.deadline <= end && activity.deadline >= start;
+      });
+    },
+    getUncompletedActivitiesForPeriod(start: Date): Activity[] {
+      return this.sortedActivities.filter((activity: Activity) => {
+        return activity.deadline <= start && !activity.done;
       });
     },
     computeEventsWithDates() {
       let withDates = this.events.map((event: any) => {
-        return { event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay) };
+        return {event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay)};
       });
       let inRange = withDates.filter((event: any) => {
         return event.dates.start <= this.endOfEndOfWeek && event.dates.end >= this.startOfDay;
