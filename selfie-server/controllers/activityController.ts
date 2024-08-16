@@ -110,9 +110,8 @@ export const modifyActivity = async (req: any, res: any) => {
     const { id } = req.params;
     try {
         const activity = await Activity.findById(id);
-
         if (activity) {
-            const removedParticipants = activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username));
+            const removedParticipants = req.body.partecipants ? activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
             Object.assign(activity, req.body);
@@ -128,7 +127,7 @@ export const modifyActivity = async (req: any, res: any) => {
             res.status(404).send({ error: "Activity doesn't exist!" });
         }
     } catch (error) {
-        res.status(404).send({ error: "Activity doesn't exist!" });
+        res.status(404).send({ error: error });
     }
 }
 

@@ -28,7 +28,7 @@ const subscribe = async () => {
         console.log("Push Sent...");
         return response.data;
     } catch (error: any) {
-        throw error.response.data;
+        console.log(error);
     }
 };
 

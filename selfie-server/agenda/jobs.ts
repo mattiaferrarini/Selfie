@@ -181,7 +181,7 @@ const defineActivityNotification = async (agenda: Agenda) => {
 const sendNotificationsForActivity = async (activity: IActivity) => {
 
     const title = `Activity ${activity.title} is late!`;
-    const body = `You should have completed this activity by ${activity.deadline}. Complete it now!`;
+    const body = `You should have completed this activity by ${activity.deadline.toISOString().substring(0,10)}. Complete it now!`;
 
     for (const participant of activity.participants) {
         if (participant.status === 'accepted') {

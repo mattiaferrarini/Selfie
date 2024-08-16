@@ -39,7 +39,7 @@ const getActivityById = async (id: string) => {
 
 const addActivity = async (activity: Activity) => {
     try {
-        const response = await axios.post(`${API_URL}`, activity, { withCredentials: true });
+        const response = await axios.put(`${API_URL}`, activity, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -48,7 +48,7 @@ const addActivity = async (activity: Activity) => {
 
 const modifyActivity = async (activity: Partial<Activity>) => {
     try {
-        const response = await axios.put(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
         throw error.response.data;

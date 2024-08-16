@@ -7,11 +7,11 @@ const upload = multer({ dest: 'uploads/' });
 
 router.get('/user/:username', eventController.getEventsByUser);
 router.get('/:id', eventController.getEventById);
-router.post('/', eventController.addEvent);
+router.put('/', eventController.addEvent);
 router.post('/overlap/:username', eventController.getOverlappingEvents);
 router.post('/import', eventController.importICalendar);
 router.post('/export', upload.single('file'), eventController.sendExportViaEmail);
-router.put('/:id', eventController.modifyEvent);
+router.post('/:id', eventController.modifyEvent);
 router.delete('/:id', eventController.deleteEvent);
 
 export default router;
