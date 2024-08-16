@@ -21,4 +21,14 @@ export const getUserBasicInfo = async (req: Request, res: Response) => {
     } else {
         res.status(404).send({ error: "User doesn't exist!" });
     }
-};
+}
+
+export const findByUsername = async (username: string) => {
+    try{
+        const user = await User.findOne({ username });
+    return user;
+    }
+    catch{
+        return null;
+    }
+}

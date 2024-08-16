@@ -257,7 +257,7 @@ export default defineComponent({
     },
     confirmAction() {
       this.confirmationMessage = '';
-      this.$emit('deleteEvent', this.newEvent);
+      this.$emit('deleteEvent', this.event);
     },
     openExportPanel() {
       this.showExportPanel = true;

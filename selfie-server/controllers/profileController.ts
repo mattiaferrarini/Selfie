@@ -23,12 +23,13 @@ const changePassword = async (req: any, res: any) => {
 }
 
 const updateHomePreferences = async (req: any, res: any) => {
-    const {calendarWeekly, notesDescription, pomodoroType} = req.body;
+    const {calendarWeekly, calendarContent, notesDescription, pomodoroType} = req.body;
     try {
         const user: any = await User.findById(req.user._id);
         if (!user) return res.status(400).send('User not found');
 
         user.preferences.home.calendarWeekly = calendarWeekly;
+        user.preferences.home.calendarContent = calendarContent;
         user.preferences.home.notesDescription = notesDescription;
         user.preferences.home.pomodoroType = pomodoroType;
         await user.save();

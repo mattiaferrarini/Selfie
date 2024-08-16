@@ -331,7 +331,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="calendar-view">
+  <div class="calendar-view animate-fade-in">
     <nav class="text-gray-700 p-4 sm:p-8">
       <div class="flex justify-between mb-2">
         <div>
