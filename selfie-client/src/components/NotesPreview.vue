@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 bg-white rounded-lg shadow border m-4">
+  <div class="p-4 bg-white rounded-lg shadow border">
     <h3 class="text-lg font-semibold text-gray-800">Recent Notes</h3>
     <ul class="list-disc pl-5">
       <li v-for="note in notes" :key="note.id" class="text-gray-600"><h3>{{ note.title }}</h3>{{ desc ? note.content : '' }}</li>

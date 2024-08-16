@@ -11,10 +11,10 @@
         <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
       </div>
     </div>
-    <div class="animate-fade-in w-11/12 p-2 mt-3 sm:p-5 rounded shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in w-11/12 p-4 mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
       <div>{{ date }}</div>
-      <div class="flex flex-col sm:flex-row">
-        <div class="p-1 w-full sm:w-1/4 relative" v-click-outside="() => closeTooltip(refs.showCalendarTooltip)">
+      <div class="flex mt-4 flex-col sm:flex-row gap-4">
+        <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showCalendarTooltip)">
           <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showCalendarTooltip)">
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showCalendarTooltip ? ' rotate-180' : '']"/>
@@ -26,7 +26,7 @@
             <input type="checkbox" v-model="calendarWeekly" @change="updatePreferences" id="weekly"/>
           </div>
         </div>
-        <div class="p-1 w-full sm:w-1/4 relative" v-click-outside="() => closeTooltip(refs.showNotesTooltip)">
+        <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showNotesTooltip)">
           <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showNotesTooltip)">
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showNotesTooltip ? ' rotate-180' : '']"/>
@@ -38,7 +38,7 @@
             <input type="checkbox" v-model="notesDescription" @change="updatePreferences" id="description"/>
           </div>
         </div>
-        <div class="p-1 w-full sm:w-1/4 relative" v-click-outside="() => closeTooltip(refs.showPomodoroTooltip)">
+        <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showPomodoroTooltip)">
           <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showPomodoroTooltip)">
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
             showPomodoroTooltip ? ' rotate-180' : '']"/>
