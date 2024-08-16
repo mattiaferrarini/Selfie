@@ -46,8 +46,11 @@ class ClickOutside extends HTMLElement {
 customElements.define('click-outside', ClickOutside);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // check login
-    const auth = localStorage.getItem('auth');
+    // check logincookies
+    const auth = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("auth="))
+        ?.split("=")[1];
     if (!auth) {
         window.location.href = '/#/login';
     }
@@ -80,13 +83,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('resetDate').addEventListener('click', resetDate);
 });
 
+const API_URL = "http://localhost:3000";
+
+delete_cookie = (name) => {
+    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+};
 
 const unsubscribe = async () => {
     try {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
         await registration?.unregister();
-        const response = await fetch(`http://localhost:3000/notification/unsubscribe`, {
+        const response = await fetch(`${API_URL}/notification/unsubscribe`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -100,9 +108,7 @@ const unsubscribe = async () => {
         }
 
         return await response.json();
-    } catch (error) {
-        throw error.response;
-    }
+    } catch (error) {}
 }
 
 const logout = async () => {
@@ -115,6 +121,6 @@ const logout = async () => {
         },
         body: JSON.stringify({})
     });
-    localStorage.removeItem('auth');
+    delete_cookie('auth');
     window.location.href = '/#/login';
 }
