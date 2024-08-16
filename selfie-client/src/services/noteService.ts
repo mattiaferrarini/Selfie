@@ -12,7 +12,7 @@ const getall = async () => {
     }
 };
 
-const getid = async (id: number) => {
+const getid = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return response.data;
@@ -21,27 +21,27 @@ const getid = async (id: number) => {
     }
 };
 
-const create = async (content: string, title: string, creation: string, lastmodify: string) => {
+const create = async (content: string, title: string, creation: string, lastmodify: string, category: string) => {
     try {
-        const response = await axios.post(`${API_URL}/`, { content, title, creation, lastmodify }, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/`, { content, title, creation, lastmodify, category }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
     }
 }
 
-const modify = async (content: string, title: Date, lastmodify: Date) => {
+const modify = async (id: string, title: string, content: string, lastmodify: Date, category: string, owners: [string]) => {
     try {
-        const response = await axios.put(`${API_URL}/`, { content, title, lastmodify }, { withCredentials: true });
+        const response = await axios.put(`${API_URL}/${id}`, { content, title, lastmodify, category, owners }, { withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;
     }
 }
 
-const remove = async (id: number) => {
+const remove = async (id: string) => {
     try {
-        const response = await axios.put(`${API_URL}/${id}`, { withCredentials: true });
+        const response = await axios.delete(`${API_URL}/${id}`,{ withCredentials: true });
         return response.data;
     } catch (error: any) {
         throw error.response.data;

@@ -5,7 +5,7 @@ const default_preferences = {
     home: {
         calendarWeekly: false,
         notesDescription: false,
-        pomodoroType: "last"
+        pomodoroType: "stats"
     },
     notificationType: "email",
     notes: {},
@@ -30,7 +30,7 @@ export const register = async (req: any, res: any, next: any) => {
 }
 
 export const login = (req: any, res: any) => {
-    res.json({user: {"username": req.user.username, "realName": req.user.realName, birthday: req.user.birthday, "preferences": req.user.preferences}});
+    res.json({user: {"username": req.user.username, "realName": req.user.realName, isAdmin: req.user.isAdmin, email:req.user.email,  birthday: req.user.birthday, "preferences": req.user.preferences}});
 };
 
 export const logout = (req: any, res: any, next: any) => {

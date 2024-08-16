@@ -28,35 +28,23 @@ const formatDayMonth = (date: Date): string => {
     return `${day}/${month}`;
 };
 
-const getStartOfCurrentPeriod = (date: Date, view: string): Date => {
-    if (view === 'day') {
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-        return startOfDay;
-    } else if (view === 'week') {
-        const startOfWeek = getFirstDayOfWeek(new Date(date));
-        startOfWeek.setHours(0, 0, 0, 0);
-        return startOfWeek;
+const getStartOfCurrentPeriod = (date: Date, timeUnit: string): Date => {
+    if (timeUnit === 'day') {
+        return getStartOfDay(new Date(date));
+    } else if (timeUnit === 'week') {
+        return getStartOfDay(getFirstDayOfWeek(new Date(date)));
     } else {
-        const startOfMonth = getFirstDayOfMonth(new Date(date));
-        startOfMonth.setHours(0, 0, 0, 0);
-        return startOfMonth;
+        return getStartOfDay(getFirstDayOfMonth(new Date(date)));
     }
 };
 
-const getEndOfCurrentPeriod = (date: Date, view: string): Date => {
-    if (view === 'day') {
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 0, 0);
-        return endOfDay;
-    } else if (view === 'week') {
-        const endOfWeek = getLastDayOfWeek(new Date(date));
-        endOfWeek.setHours(23, 59, 0, 0);
-        return endOfWeek;
+const getEndOfCurrentPeriod = (date: Date, timeUnit: string): Date => {
+    if (timeUnit === 'day') {
+        return getEndOfDay(new Date(date));
+    } else if (timeUnit === 'week') {
+        return getEndOfDay(getLastDayOfWeek(new Date(date)));
     } else {
-        const endOfMonth = getLastDayOfMonth(new Date(date));
-        endOfMonth.setHours(23, 59, 0, 0);
-        return endOfMonth;
+        return getEndOfDay(getLastDayOfMonth(new Date(date)));
     }
 };
 
@@ -82,7 +70,7 @@ const getStartOfDay = (date: Date): Date => {
 
 const getEndOfDay = (date: Date): Date => {
     const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 0, 0);
+    endOfDay.setHours(23, 59, 59, 59);
     return endOfDay;
 };
 
@@ -92,11 +80,27 @@ const sameDate = (date1: Date, date2: Date): boolean => {
     return d1.toDateString() === d2.toDateString();
 };
 
-const prevCurrentDate = (currentDate: Date, view: string): Date => {
+const sameDay = (date1: Date, date2: Date): boolean => {
+    return date1.getDate() === date2.getDate() && date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
+}
+
+const sameWeek = (date1: Date, date2: Date): boolean => {
+    return sameDay(getFirstDayOfWeek(date1), getFirstDayOfWeek(date2));
+}
+
+const sameMonth = (date1: Date, date2: Date): boolean => {
+    return date1.getMonth() === date2.getMonth() && date1.getFullYear() === date2.getFullYear();
+}
+
+const sameYear = (date1: Date, date2: Date): boolean => {
+    return date1.getFullYear() === date2.getFullYear();
+}
+
+const prevCurrentDate = (currentDate: Date, timeUnit: string): Date => {
     let newDate: Date;
-    if (view === 'day') {
+    if (timeUnit === 'day') {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1);
-    } else if (view === 'week') {
+    } else if (timeUnit === 'week') {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
     } else {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
@@ -104,11 +108,11 @@ const prevCurrentDate = (currentDate: Date, view: string): Date => {
     return newDate;
 };
 
-const nextCurrentDate = (currentDate: Date, view: string): Date => {
+const nextCurrentDate = (currentDate: Date, timeUnit: string): Date => {
     let newDate: Date;
-    if (view === 'day') {
+    if (timeUnit === 'day') {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
-    } else if (view === 'week') {
+    } else if (timeUnit === 'week') {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7);
     } else {
         newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
@@ -127,30 +131,41 @@ const roundTime = (date: Date): Date => {
 
 const moveAheadByHours = (date: Date, hours: number): Date => {
     return new Date(date.getTime() + hours * 60 * 60 * 1000);
-};
+}
 
 const moveAheadByDays = (date: Date, days: number): Date => {
     return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-};
+}
 
 const moveAheadByMonths = (date: Date, months: number): Date => {
-    let new_months = date.getMonth() + months;
-    const new_year = date.getFullYear() + Math.floor(new_months / 12);
-    new_months = new_months % 12;
+    let new_month = date.getMonth() + months;
+    const new_year = date.getFullYear() + Math.floor(new_month / 12);
+    new_month = new_month % 12;
 
-    return cropDate(new_year, new_months, date.getDate());
-};
+    return cropDate(new_year, new_month, date.getDate());
+}
+
+const moveAheadByYears = (date: Date, years: number): Date => {
+    if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
+        return new Date(date.getFullYear() + years, date.getMonth(), 28);
+    else
+        return new Date(date.getFullYear() + years, date.getMonth(), date.getDate());
+}
 
 const cropDate = (year: number, month: number, day: number): Date =>{
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const daysInMonth = getDaysInMonth(year, month);
     return new Date(year, month, Math.min(day, daysInMonth));
 }
 
-const formatPeriodString = (currentDate: Date, view: string): string => {
-    if (view === 'day') {
+const getDaysInMonth = (year: number, month: number): number => {
+    return new Date(year, month, 0).getDate();
+}
+
+const formatPeriodString = (currentDate: Date, timeUnit: string): string => {
+    if (timeUnit === 'day') {
         return formatDayMonth(currentDate);
     }
-    else if (view === 'week') {
+    else if (timeUnit === 'week') {
         const firstDay = getFirstDayOfWeek(currentDate);
         const lastDay = getLastDayOfWeek(currentDate);
         return `${formatDayMonth(firstDay)} - ${formatDayMonth(lastDay)}`;
@@ -180,6 +195,18 @@ const monthDifference = (endDate: Date, startDate: Date): number => {
     return (endYear - startYear) * 12 + (endMonth - startMonth);
 }
 
+const yearDifference = (endDate: Date, startDate: Date): number => {
+    return endDate.getFullYear() - startDate.getFullYear();
+}
+
+const included = (start1: Date, end1: Date, start2: Date, end2: Date): boolean => {
+    return start1 <= start2 && start2 <= end2 && end2 <= end1;
+}
+
+const formatTime = (date: Date): string => {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -198,10 +225,18 @@ export default {
     roundTime,
     moveAheadByHours,
     moveAheadByDays,
+    moveAheadByYears,
     formatPeriodString,
     dayDifference,
     monthDifference,
     getNormalizedDayOfWeek,
     cropDate,
-    moveAheadByMonths
+    moveAheadByMonths,
+    yearDifference,
+    included,
+    formatTime,
+    sameDay,
+    sameWeek,
+    sameMonth,
+    sameYear
 };

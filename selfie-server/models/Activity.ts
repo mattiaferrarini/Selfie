@@ -1,6 +1,6 @@
 import { model, Schema, Document } from 'mongoose';
 
-interface IActivity extends Document{
+export interface IActivity extends Document{
     title: string;
     done: boolean;
     deadline: Date;
@@ -11,6 +11,7 @@ interface IActivity extends Document{
     };
     participants: {
         username: string;
+        email: string;
         status: string;
     }[];
     subActivitiesIDs: string[];
@@ -53,6 +54,10 @@ const ActivitySchema = new Schema({
                 type: String,
                 required: true
             },
+            email: {
+                type: String,
+                required: false
+            },  
             status: {
                 type: String,
                 required: true
@@ -78,4 +83,5 @@ const ActivitySchema = new Schema({
     },
 });
 
-export default model<IActivity>('Activity', ActivitySchema);
+const Activity = model<IActivity>('Activity', ActivitySchema);
+export default Activity;

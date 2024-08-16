@@ -57,7 +57,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 .bg-tropical {
   background-image: url("@/assets/tropical.jpg");
   background-repeat: repeat;

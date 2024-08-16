@@ -10,7 +10,7 @@ export class CalendarEvent {
         numberOfRepetitions: number;
         endDate: Date;
     };
-    place: string;
+    location: string;
     notification: {
         method: string[];
         when: string;
@@ -18,6 +18,7 @@ export class CalendarEvent {
     };
     participants: {
         username: string;
+        email: string;
         status: string;
     }[];
 
@@ -34,10 +35,10 @@ export class CalendarEvent {
         } = {
             frequency: 'never',
             until: 'infinity',
-            numberOfRepetitions: 0,
+            numberOfRepetitions: 1,
             endDate: new Date()
         },
-        place = '',
+        location = '',
         notification: {
             method: string[];
             when: string;
@@ -49,6 +50,7 @@ export class CalendarEvent {
         },
         participants: {
             username: string;
+            email: string;
             status: string;
         }[] = []
     ) {
@@ -57,7 +59,7 @@ export class CalendarEvent {
         this.start = start;
         this.end = end;
         this.repetition = repetition;
-        this.place = place;
+        this.location = location;
         this.notification = notification;
         this.participants = participants;
     }

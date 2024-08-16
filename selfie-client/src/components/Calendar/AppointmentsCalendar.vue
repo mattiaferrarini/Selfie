@@ -4,7 +4,8 @@
             <div v-if="date" class="m-4 sm:m-8 grid-item">
                 <div class="flex align-center justify-between border-t-2 border-b-2 border-gray-300 mb-2" :id="String(date.toISOString().substring(0,10))"
                     :class="{ 'bg-emerald-500': timeMethods.isWeekend(date), 'bg-white': !timeMethods.isWeekend(date) }">
-                    <h3>{{ String(date.getDate()).padStart(2, '0') }}/{{ String(date.getMonth() + 1).padStart(2, '0') }}</h3>
+                    <h3>{{ String(date.getDate()).padStart(2, '0') }}/{{ String(date.getMonth() + 1).padStart(2, '0') }}
+                    </h3>
                     <h3>{{ timeMethods.getDayOfWeek(date) }}</h3>
                 </div>
                 <div v-if="includeEvents" class="mb-2">
@@ -23,7 +24,8 @@
                     <h4 class="font-bold">Activities</h4>
                     <ul>
                         <li v-for="activity in activitiesForTheDay(date)" :key="activity.id" class="clickable-item">
-                            <div class="flex align-center justify-between" @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                            <div class="flex align-center justify-between" :class="{ late: isLateActivity(activity, date) }"
+                                @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                 <div class="flex flex-wrap justify-end space-x-4">
                                     <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles + '/' + activity.pomodoro.cycles + ' cicli' : '' }}</span>
@@ -59,7 +61,10 @@ import { defineComponent, PropType } from 'vue';
 import timeMethods from '../../services/timeService';
 import { CalendarEvent } from '@/models/Event';
 import { Unavailability } from '@/models/Unavailability';
+import { Activity } from '@/models/Activity';
+import { useDateStore } from '@/stores/dateStore';
 import router from "@/router";
+
 export default defineComponent({
     name: 'AppointmentsCalendar',
     props: {
@@ -99,14 +104,15 @@ export default defineComponent({
     emits: ['modifyEvent', 'modifyActivity', 'markAsDone', 'undoActivity', 'modifyUnavailability'],
     data() {
         return {
-            timeMethods: timeMethods
+            timeMethods: timeMethods,
+            dateStore: useDateStore()
         };
     },
     methods: {
         eventsForDay(date: Date): any[] {
             return this.filterAndSortForDay(this.allEvents, date);
         },
-        formatEventTime(event: {event: any, dates: {start: Date, end: Date}}, date: Date) : string{
+        formatEventTime(event: { event: any, dates: { start: Date, end: Date } }, date: Date): string {
             let startOfDay: Date = timeMethods.getStartOfDay(date);
             let endOfDay: Date = timeMethods.getEndOfDay(date);
 
@@ -125,9 +131,11 @@ export default defineComponent({
             this.$emit('modifyEvent', event);
         },
         activitiesForTheDay(date: Date): any[] {
+            const startOfDay = timeMethods.getStartOfDay(date);
             if (this.allActivities) {
                 return this.allActivities.filter((activity: any) => {
-                    return timeMethods.sameDate(activity.deadline, date);
+                    return timeMethods.sameDate(activity.deadline, date) || 
+                        (!activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today));
                 }).sort((a: any, b: any) => {
                     if (a.done && !b.done) {
                         return 1;
@@ -154,16 +162,16 @@ export default defineComponent({
         undoActivity(activity: any) {
             this.$emit('undoActivity', activity);
         },
-        unavailabiltiesForTheDay(date:Date): any[]{
-            if(this.allUnavailabilities === undefined)
+        unavailabiltiesForTheDay(date: Date): any[] {
+            if (this.allUnavailabilities === undefined)
                 return [];
             else
                 return this.filterAndSortForDay(this.allUnavailabilities, date);
         },
-        filterAndSortForDay(events: any[], date:Date) :any[]{
-            // get the period of the next repetition
+        filterAndSortForDay(events: any[], date: Date): any[] {
+            // get the period of the next repetition (relative to this date)
             let withDates = events.map((event: any) => {
-                return {event: event, dates: this.getNextRepetition(event, date)};
+                return { event: event, dates: this.getNextRepetition(event, date) };
             });
 
             // remove repetitions that are not on the date
@@ -199,21 +207,21 @@ export default defineComponent({
         modifyUnavailability(unav: any) {
             this.$emit('modifyUnavailability', unav);
         },
-        getNextRepetition(event: any, referenceDate: Date): {start: Date, end: Date}{
-            if(event.repetition.frequency === 'never' || event.start > timeMethods.getEndOfDay(referenceDate))
-                return {start: event.start, end: event.end};
+        getNextRepetition(event: any, referenceDate: Date): { start: Date, end: Date } {
+            if (event.repetition.frequency === 'never' || event.start > timeMethods.getEndOfDay(referenceDate))
+                return { start: event.start, end: event.end };
 
             let nextRepetition = new Date();
             let nextRepetitionEnd = new Date();
 
-            if (event.repetition.frequency == 'everyday') {
+            if (event.repetition.frequency == 'daily') {
                 nextRepetition = new Date(referenceDate);
-            } 
-            else if (event.repetition.frequency == 'weekly'){
+            }
+            else if (event.repetition.frequency == 'weekly') {
                 let distanceFromStart = timeMethods.dayDifference(referenceDate, event.start);
                 let previousRepetition = timeMethods.moveAheadByDays(event.start, distanceFromStart - distanceFromStart % 7);
 
-                if(distanceFromStart % 7 <= timeMethods.dayDifference(event.end, event.start))
+                if (distanceFromStart % 7 <= timeMethods.dayDifference(event.end, event.start))
                     nextRepetition = previousRepetition;
                 else
                     nextRepetition = timeMethods.moveAheadByDays(previousRepetition, 7);
@@ -222,14 +230,26 @@ export default defineComponent({
                 let distanceFromStart = timeMethods.monthDifference(referenceDate, event.start);
                 let previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart);
 
-                if(previousRepetition.getDate() > referenceDate.getDate())
+                if (previousRepetition.getDate() > referenceDate.getDate())
                     previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart - 1);
 
-                if(timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
+                if (timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
                     nextRepetition = previousRepetition;
                 else
                     nextRepetition = timeMethods.moveAheadByMonths(previousRepetition, 1);
-            } 
+            }
+            else if (event.repetition.frequency == 'yearly') {
+                let distanceFromStart = timeMethods.yearDifference(referenceDate, event.start);
+                let previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart);
+
+                if (previousRepetition > referenceDate)
+                    previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart - 1);
+
+                if (timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
+                    nextRepetition = previousRepetition;
+                else
+                    nextRepetition = timeMethods.moveAheadByYears(previousRepetition, 1);
+            }
             else {
                 nextRepetition = new Date(event.start);
             }
@@ -241,29 +261,39 @@ export default defineComponent({
             const offset = event.end.getTime() - event.start.getTime();
             nextRepetitionEnd.setTime(nextRepetition.getTime() + offset);
 
-            return {start: nextRepetition, end: nextRepetitionEnd};
+            return { start: nextRepetition, end: nextRepetitionEnd };
         },
-        isValidRepetition(event: any, repStart: Date, repEnd: Date) : boolean{
-            if(event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
+        // this assumes that the provided dates were obtained from the getNextRepetition method
+        isValidRepetition(event: any, repStart: Date, repEnd: Date): boolean {
+            if (event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
                 return true;
-            else if(event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
+            else if (event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
                 return true;
-            else if(event.repetition.until === 'n-reps'){
-                if(event.repetition.frequency === 'everyday')
+            else if (event.repetition.until === 'n-reps') {
+                if (event.repetition.frequency === 'daily')
                     return timeMethods.dayDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
-                else if(event.repetition.frequency === 'weekly')
+                else if (event.repetition.frequency === 'weekly')
                     return timeMethods.dayDifference(repStart, event.start) / 7 < event.repetition.numberOfRepetitions;
-                else if(event.repetition.frequency === 'monthly')
+                else if (event.repetition.frequency === 'monthly')
                     return timeMethods.monthDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
+                else if (event.repetition.frequency === 'yearly')
+                    return timeMethods.yearDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
                 else
                     return false;
             }
             else
-               return false;
+                return false;
+        },
+        isLateActivity(activity: Activity, date: Date): boolean {
+            const startOfDay = timeMethods.getStartOfDay(date);
+            return !activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today);
         }
     },
     computed: {
-        datesToDisplay() : Date[]{
+        today(): Date {
+            return new Date(this.dateStore.getCurrentDate());
+        },
+        datesToDisplay(): Date[] {
             if (this.view === 'day') {
                 return [this.currentDate];
             } else if (this.view === 'week') {
@@ -292,7 +322,7 @@ export default defineComponent({
                 return [];
             }
         },
-        datesToDisplayWithPlaceholders() : any[]{
+        datesToDisplayWithPlaceholders(): any[] {
             const dates = this.datesToDisplay;
             const datesWithPlaceholders = [];
             for (let i = 0; i < dates.length; i++) {
@@ -319,5 +349,9 @@ export default defineComponent({
 
 .clickable-item {
     cursor: pointer;
+}
+
+.late {
+    color: red;
 }
 </style>

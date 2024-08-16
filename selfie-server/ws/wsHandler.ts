@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
-import { IUser } from "../models/User";
+import User, { IUser } from "../models/User";
 import chatController from "../controllers/chatController";
+import {pushNotificationService} from "../services/pushNotificationService";
 
 export const handleConnection = (ws: WebSocket, req: any, userConnections: Map<string, WebSocket[]>, user: IUser) => {
     const connections = userConnections.get(user.username) || [];
@@ -24,9 +25,11 @@ const handleDisconnection = (ws: WebSocket, userConnections: Map<string, WebSock
     }
 };
 
-const handleMessage = (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
+const handleMessage = async (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
     try {
         const parsedMessage = JSON.parse(message);
+        if (! await User.findOne({username: parsedMessage.to}))
+            return ws.send('User not found');
         chatController.sendMessage(user.username, parsedMessage.to, parsedMessage.text).then(() => {
             const connections = userConnections.get(parsedMessage.to);
             // TODO: email?
@@ -36,6 +39,14 @@ const handleMessage = (message: string, ws: WebSocket, userConnections: Map<stri
                     text: parsedMessage.text
                 })));
             }
+            User.findOne({username: parsedMessage.to}).then((user: any) => {
+                user?.pushSubscriptions.forEach((pushSubscription: any) => {
+                    pushNotificationService.sendNotification(pushSubscription, {
+                        title: user.username,
+                        body: parsedMessage.text
+                    });
+                });
+            });
         }).catch((err) => ws.send('Error sending message', err));
     } catch (error) {
         ws.send('Error parsing message');

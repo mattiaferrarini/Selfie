@@ -86,7 +86,7 @@ export const useWebSocketStore = defineStore('websocket', {
                 this.messages.get(to)?.unshift({user: username, text, date: new Date()});
             }
         },
-        setChatModalOpen(isOpen: boolean) { // Add this method
+        setChatModalOpen(isOpen: boolean) {
             this.isChatModalOpen = isOpen;
             this.unread = false;
         },
