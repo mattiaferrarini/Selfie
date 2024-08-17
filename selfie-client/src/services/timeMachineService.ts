@@ -1,22 +1,37 @@
 import { install, InstalledClock } from '@sinonjs/fake-timers';
+import axios from 'axios';
+
+const API_URL = process.env.VUE_APP_API_URL + '/timeMachine';
 
 let clock: InstalledClock | undefined; // the global clock
 
-const setGlobalClock = (date: Date) => {
+const setGlobalClock = async (date: Date) => {
     if(clock)
         clock.uninstall();
     clock = install({ now: date, shouldAdvanceTime: true, shouldClearNativeTimers: true });
 
-    console.log('Global clock set to:', date);
+    try {
+        const response = await axios.post(`${API_URL}/setGlobalClock`, { date }, { withCredentials: true });
+        console.log(response.data);
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
 
-const restoreGlobalClock = () => {
+const restoreGlobalClock = async () => {
     if(clock){
         clock.uninstall();
         clock = undefined;
     }
 
-    console.log('Global clock restored to ', new Date());
+    try {
+        const response = await axios.post(`${API_URL}/restoreGlobalClock`, {}, { withCredentials: true });
+        console.log(response.data);
+    }
+    catch (error) {
+        console.log(error);
+    }
 } 
 
 export default {
