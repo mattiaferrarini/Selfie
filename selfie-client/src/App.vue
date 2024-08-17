@@ -63,9 +63,12 @@
               </span>
             </button>
             <div v-if="showTooltip"
-                 class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-              <input type="date" v-model="selectedDate" @change="setCurrentDate"
-                     class="p-2 border border-gray-300 rounded-md">
+                 class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10 flex">
+              <div class="flex flex-col">
+                <input type="date" v-model="selectedDate" @change="setCurrentDate"
+                     class="p-2 mb-2 border border-gray-300 rounded-md">
+              <input type="time" v-model="selectedTime" @change="setCurrentDate" class=" text-center p-2 border border-gray-300 rounded-md">
+              </div>
               <button @click="resetDate"
                       class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
               </button>
@@ -108,6 +111,8 @@ import router from "@/router";
 import {useDateStore} from "@/stores/dateStore";
 import authService from "@/services/authService";
 import {useWebSocketStore} from "@/stores/wsStore";
+import timeService from './services/timeService';
+import timeMachineService from './services/timeMachineService';
 
 export default defineComponent({
   setup() {
@@ -120,6 +125,7 @@ export default defineComponent({
 
     const showTooltip = ref(false);
     const selectedDate = ref('');
+    const selectedTime = ref('');
 
     const logout = () => {
       authService.logout();
@@ -133,7 +139,7 @@ export default defineComponent({
     }
 
     const toggleTooltip = () => {
-      selectedDate.value = dateStore.getCurrentDate().toISOString().split('T')[0];
+      initializeDate();
       showTooltip.value = !showTooltip.value;
     };
 
@@ -142,12 +148,24 @@ export default defineComponent({
     };
 
     const setCurrentDate = () => {
-      dateStore.setCurrentDate(new Date(selectedDate.value));
+      const date = new Date(selectedDate.value);
+      date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
+      timeMachineService.setGlobalClock(date);
+      
+      dateStore.setCurrentDate(date);
     };
 
     const resetDate = () => {
+      timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
-      selectedDate.value = (new Date()).toISOString().split('T')[0];
+
+      initializeDate();
+    };
+
+    const initializeDate = () => {
+      const now = new Date();
+      selectedDate.value = now.toISOString().split('T')[0];
+      selectedTime.value = timeService.formatTime(now);
     };
 
     return {
@@ -158,6 +176,7 @@ export default defineComponent({
       showTooltip,
       toggleTooltip,
       selectedDate,
+      selectedTime,
       setCurrentDate,
       resetDate,
       closeTooltip,

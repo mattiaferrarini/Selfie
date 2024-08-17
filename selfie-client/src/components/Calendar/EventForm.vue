@@ -206,8 +206,7 @@ export default defineComponent({
     onFormVisible() {
       if (!this.modifying) {
         // intialize default values for new event
-        console.log(this.currentDate);
-        this.newEvent.start = timeService.roundTime(this.currentDate);
+        this.newEvent.start = timeService.roundTime(new Date());
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
         this.newEvent.participants = [
