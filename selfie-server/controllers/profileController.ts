@@ -22,16 +22,12 @@ const changePassword = async (req: any, res: any) => {
     }
 }
 
-const updateHomePreferences = async (req: any, res: any) => {
-    const {calendarWeekly, calendarContent, notesDescription, pomodoroType} = req.body;
+const updatePreferences = async (req: any, res: any) => {
     try {
         const user: any = await User.findById(req.user._id);
         if (!user) return res.status(400).send('User not found');
 
-        user.preferences.home.calendarWeekly = calendarWeekly;
-        user.preferences.home.calendarContent = calendarContent;
-        user.preferences.home.notesDescription = notesDescription;
-        user.preferences.home.pomodoroType = pomodoroType;
+        Object.assign(user.preferences, req.body);
         await user.save();
         res.status(200).json({"preferences": user.preferences});
     } catch (err: any) {
@@ -65,41 +61,9 @@ const changeRealName = async (req: any, res: any) => {
     }
 }
 
-const updateNotificationPreferences = async (req: any, res: any) => {
-    const {notificationType} = req.body;
-    try {
-        const user: any = await User.findById(req.user._id);
-        if (!user) return res.status(400).send('User not found');
-
-        user.preferences.notificationType = notificationType;
-        await user.save();
-        res.status(200).json({"preferences": user.preferences});
-    } catch (err: any) {
-        res.status(400).send('Error updating pomodoro preferences');
-    }
-}
-
-const updatePomodoroPreferences = async (req: any, res: any) => {
-    const {workDuration, pauseDuration, numberOfCycles} = req.body;
-    try {
-        const user: any = await User.findById(req.user._id);
-        if (!user) return res.status(400).send('User not found');
-
-        user.preferences.pomodoro.workDuration = workDuration;
-        user.preferences.pomodoro.pauseDuration = pauseDuration;
-        user.preferences.pomodoro.numberOfCycles = numberOfCycles;
-        await user.save();
-        res.status(200).json({"preferences": user.preferences});
-    } catch (err: any) {
-        res.status(400).send('Error updating pomodoro preferences');
-    }
-}
-
 export default {
     changePassword,
-    updateHomePreferences,
+    updatePreferences,
     changeBirthday,
-    changeRealName,
-    updateNotificationPreferences,
-    updatePomodoroPreferences
+    changeRealName
 }
