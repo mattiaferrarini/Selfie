@@ -1,6 +1,7 @@
 import Activity from "../models/Activity";
 import timeService from "../services/timeService";
 import * as inviteController from './inviteController';
+import jobSchedulerService from "../services/jobSchedulerService";
 
 const formatActivity = (activity: any) => {
     return {
@@ -68,8 +69,15 @@ export const getActivityById = async (req: any, res: any) => {
 export const deleteActivity = async (req: any, res: any) => {
     const { id } = req.params;
     try {
-        await Activity.findByIdAndDelete(id);
-        await inviteController.deleteActivityInvites(id);
+
+        const activity = await Activity.findById(id);
+
+        if(activity){
+            await jobSchedulerService.clearActivityNotifications(activity);
+            await Activity.findByIdAndDelete(id);
+            await inviteController.deleteActivityInvites(id);
+        }
+
         res.status(204).send();
     } catch (error) {
         res.status(404).send({ error: "Activity doesn't exist!" });
@@ -90,6 +98,8 @@ export const addActivity = async (req: any, res: any) => {
     try {
         await newActivity.save();
         await inviteController.createInvitesForActivity(newActivity);
+        await jobSchedulerService.scheduleActivityNotification(newActivity);
+
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({ error: 'Error adding activity' });
@@ -100,9 +110,8 @@ export const modifyActivity = async (req: any, res: any) => {
     const { id } = req.params;
     try {
         const activity = await Activity.findById(id);
-
         if (activity) {
-            const removedParticipants = activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username));
+            const removedParticipants = req.body.partecipants ? activity.participants.filter((participant: any) => !req.body.participants.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
             Object.assign(activity, req.body);
@@ -110,6 +119,7 @@ export const modifyActivity = async (req: any, res: any) => {
 
             await inviteController.createInvitesForActivity(activity);
             await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
+            await jobSchedulerService.updateLateActivityNotification(activity);
 
             res.status(200).send(formatActivity(activity));
         }
@@ -117,7 +127,7 @@ export const modifyActivity = async (req: any, res: any) => {
             res.status(404).send({ error: "Activity doesn't exist!" });
         }
     } catch (error) {
-        res.status(404).send({ error: "Activity doesn't exist!" });
+        res.status(404).send({ error: error });
     }
 }
 
