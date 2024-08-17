@@ -66,7 +66,7 @@
                         <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
                     </div>
                 </div>
-                <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
+                <label v-if="false" class="flex items-center justify-between w-full gap-4">
                     How long
                     <select name="whenNotify" v-model="newActivity.notification.when">
                         <option value="atEvent">Day of deadline</option>
@@ -80,7 +80,7 @@
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
                     Frequency
                     <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36">
-                        <option value="never">Never</option>
+                        <!-- <option value="never">Never</option> -->
                         <option value="daily">Daily</option>
                         <option value="linear">Increase by 1 every day</option>
                         <option value="exponential">Multiple 2x every day</option>

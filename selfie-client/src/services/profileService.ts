@@ -11,9 +11,9 @@ const changePassword = async (old_password: string, new_password: string) => {
     }
 };
 
-const updateHomePreferences = async (calendarWeekly: boolean, notesDescription: boolean, pomodoroType: string) => {
+const updateHomePreferences = async (calendarWeekly: boolean, calendarContent: string, notesDescription: boolean, pomodoroType: string) => {
     try {
-        const response= await axios.post(`${API_URL}/preferences/home`, {calendarWeekly, notesDescription, pomodoroType}, {withCredentials: true});
+        const response= await axios.post(`${API_URL}/preferences/home`, {calendarWeekly, calendarContent, notesDescription, pomodoroType}, {withCredentials: true});
         const authStore = useAuthStore();
         authStore.setPreferences(response.data.preferences);
     } catch (error: any) {
