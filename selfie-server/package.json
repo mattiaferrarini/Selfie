@@ -30,6 +30,7 @@
   "dependencies": {
     "@types/nodemailer": "^6.4.15",
     "@types/ws": "^8.5.11",
+    "agenda": "^5.0.0",
     "bcryptjs": "^2.4.3",
     "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",
