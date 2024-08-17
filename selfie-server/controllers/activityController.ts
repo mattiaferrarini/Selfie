@@ -118,7 +118,7 @@ export const addActivity = async (req: any, res: any) => {
 
 export const modifyActivity = async (req: any, res: any) => {
     const {id} = req.params;
-    //try {
+    try {
         const activity = await Activity.findById(id);
 
         if (activity) {
@@ -156,9 +156,9 @@ export const modifyActivity = async (req: any, res: any) => {
         } else {
             res.status(404).send({error: "Activity doesn't exist!"});
         }
-    /*} catch (error) {
+    } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
-    }*/
+    }
 }
 
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {
