@@ -30,7 +30,7 @@ export class Activity {
         } = {
             method: [],
             when: 'atEvent',
-            repeat: 'never'
+            repeat: 'daily'
         },
         participants: {
             username: string;

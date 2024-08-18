@@ -30,11 +30,11 @@ const scheduleEventNotification = async (event: IEvent, referenceDate?: Date) =>
             }
         }
         else {
-            console.error('Failed to schedule event notification: no valid repetition found after', referenceDate);
+            console.log('No valid repetition found after', referenceDate, 'for event', event.title, '=> No notifications will be scheduled');
         }
     }
     else {
-        console.log('No notification method selected for event', event.title, '. No notifications will be scheduled');
+        console.log('No notification method selected for event', event.title, '=> No notifications will be scheduled');
     }
 }
 
@@ -110,7 +110,7 @@ const clearEventNotifications = async (event: IEvent) => {
     let deletedCount = await agenda.cancel({ name: jobs.eventNotificationStartJobName, 'data.eventId': eventId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.eventNotificationJobName, 'data.eventId': eventId }) || 0;
 
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 // returns the date when the notification process should start for an event's repetition
@@ -154,11 +154,11 @@ const scheduleActivityNotification = async (activity: IActivity) => {
             }
         }
         else {
-            console.log('activity', activity.title, 'is already done. No notifications will be scheduled');
+            console.log('Activity', activity.title, 'is already done => No notifications will be scheduled');
         }
     }
     else {
-        console.log('No notification method selected for activity', activity.title, '. No notifications will be scheduled');
+        console.log('No notification method selected for activity', activity.title, '=> No notifications will be scheduled');
     }
 }
 
@@ -223,7 +223,7 @@ const clearActivityNotifications = async (activity: IActivity) => {
     let deletedCount = await agenda.cancel({ name: jobs.activityNotificationStartJobName, 'data.activityId': activityId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.activityNotificationJobName, 'data.activityId': activityId }) || 0;
 
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 
@@ -259,25 +259,25 @@ const getDailyFrequencyString = (numberOfReps: number) => {
 // removes a job
 const removeJob = async (job: Job) => {
     const deletedCount = await agenda.cancel({ _id: job.attrs._id });
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 // removes all scheduled jobs
 const removeAllJobs = async () => {
     const deletedCount = await agenda.cancel({});
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 // removes all job scheduled to run before a date
 const removeJobsBefore = async (date: Date) => {
     const deletedCount = await agenda.cancel({ nextRunAt: { $lt: date } });
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 // removes all jobs scheduled to run after a date
 const removeJobsAfter = async (date: Date) => {
     const deletedCount = await agenda.cancel({ nextRunAt: { $gt: date } });
-    console.log('deleted', deletedCount, 'jobs');
+    console.log('Deleted', deletedCount, 'jobs.');
 }
 
 export default {
