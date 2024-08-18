@@ -22,29 +22,6 @@ class ConditionalRender extends HTMLElement {
 
 customElements.define('conditional-render', ConditionalRender);
 
-class ClickOutside extends HTMLElement {
-    constructor() {
-        super();
-        this.handleClick = this.handleClick.bind(this);
-    }
-
-    connectedCallback() {
-        document.addEventListener('click', this.handleClick);
-    }
-
-    disconnectedCallback() {
-        document.removeEventListener('click', this.handleClick);
-    }
-
-    handleClick(event) {
-        if (!this.contains(event.target)) {
-            this.dispatchEvent(new CustomEvent('clickoutside'));
-        }
-    }
-}
-
-customElements.define('click-outside', ClickOutside);
-
 document.addEventListener('DOMContentLoaded', () => {
     // check auth status
     const auth = JSON.parse(localStorage.getItem('auth') || null);
@@ -55,6 +32,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (auth.isAdmin) {
         document.getElementById("adminLink").classList.remove("hidden");
     }
+
+    document.getElementById('visualType').value = auth.user.preferences?.projectsView || 'list';
+    document.getElementById('visualType').addEventListener('change', (event) => {
+        console.log(event)
+        auth.user.preferences.projectsView = event.target.value;
+        localStorage.setItem('auth', JSON.stringify(auth));
+        fetchWithMiddleware(`${API_URL}/profile/preferences`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({projectsView: event.target.value})
+        });
+        const ganttView = document.getElementById('ganttView');
+        const listView = document.getElementById('listView');
+        if (event.target.value === 'gantt') {
+            ganttView.classList.remove('hidden');
+            listView.classList.add('hidden');
+        } else {
+            ganttView.classList.add('hidden');
+            listView.classList.remove('hidden');
+        }
+    });
 
     // TODO: save date?
     let showTooltip = false;
@@ -92,7 +92,10 @@ const forceLogout = () => {
 }
 
 async function fetchWithMiddleware(url, options) {
-    const response = await fetch(url, options);
+    const response = await fetch(url, {
+        ...options,
+        credentials: 'include'
+    });
     if (response.status === 401) {
         forceLogout();
     }
@@ -106,8 +109,7 @@ const unsubscribe = async () => {
     await fetchWithMiddleware(`${API_URL}/notification/unsubscribe`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Credentials': 'include'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({endpoint: subscription?.endpoint})
     });
@@ -118,8 +120,7 @@ const logout = async () => {
     await fetchWithMiddleware(`${API_URL}/logout`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Credentials': 'include'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({})
     });

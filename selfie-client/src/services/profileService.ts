@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {useAuthStore} from "@/stores/authStore";
+import {Preferences} from "@/models/Preferences";
 
 const API_URL = process.env.VUE_APP_API_URL + '/profile';
 
@@ -11,15 +12,15 @@ const changePassword = async (old_password: string, new_password: string) => {
     }
 };
 
-const updateHomePreferences = async (calendarWeekly: boolean, calendarContent: string, notesDescription: boolean, pomodoroType: string) => {
+const updatePreferences = async (preferences: Partial<Preferences>) => {
     try {
-        const response= await axios.post(`${API_URL}/preferences/home`, {calendarWeekly, calendarContent, notesDescription, pomodoroType}, {withCredentials: true});
+        const response= await axios.post(`${API_URL}/preferences`, preferences, {withCredentials: true});
         const authStore = useAuthStore();
         authStore.setPreferences(response.data.preferences);
     } catch (error: any) {
         throw error.response.data;
     }
-}
+};
 
 const changeRealName = async (realName: string) => {
     try {
@@ -37,31 +38,9 @@ const changeBirthday = async (birthday: Date) => {
     }
 };
 
-const updateNotificationPreferences = async (notificationType: string) => {
-    try {
-        const response= await axios.post(`${API_URL}/preferences/notification`, {notificationType}, {withCredentials: true});
-        const authStore = useAuthStore();
-        authStore.setPreferences(response.data.preferences);
-    } catch (error: any) {
-        throw error.response.data;
-    }
-}
-
-const updatePomodoroPreferences = async (workDuration: number, pauseDuration: number, numberOfCycles: number) => {
-    try {
-        const response= await axios.post(`${API_URL}/preferences/pomodoro`, {workDuration, pauseDuration, numberOfCycles}, {withCredentials: true});
-        const authStore = useAuthStore();
-        authStore.setPreferences(response.data.preferences);
-    } catch (error: any) {
-        throw error.response.data;
-    }
-}
-
 export default {
     changePassword,
-    updateHomePreferences,
+    updatePreferences,
     changeRealName,
-    changeBirthday,
-    updateNotificationPreferences,
-    updatePomodoroPreferences
+    changeBirthday
 };

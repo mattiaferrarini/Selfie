@@ -308,7 +308,13 @@ export default defineComponent({
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      profileService.updatePomodoroPreferences(this.workDuration, this.pauseDuration, this.numberOfCycles);
+      profileService.updatePreferences({
+        pomodoro: {
+          workDuration: this.workDuration,
+          pauseDuration: this.pauseDuration,
+          numberOfCycles: this.numberOfCycles
+        }
+      });
       this.showModal = false;
     },
     openEditModal() {
