@@ -1,10 +1,11 @@
 import Note from '../models/Note';
 
-
+const max_preview_length = 1000;
 export const getall = async (req: any, res: any) => {
     const username = req.user?.username
     const all_notes = await Note.find({owners: { $in: [username] }})
-    res.status(200).send(all_notes)
+    const all_notes_shrinked = all_notes.map((note: any) => { return { _id: note._id, content: note.content.substring(0, max_preview_length),title: note.title, creation: note.creation, lastmodify: note.lastmodify, category: note.category }})
+    res.status(200).send(all_notes_shrinked)
 }
 
 export const getid = async (req: any, res: any) => {
