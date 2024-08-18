@@ -19,6 +19,11 @@ export interface INote extends Document {
     lastmodify: Date;
     category:   string;
     owners:     string[];
+    todoList: {
+        title: string;
+        done: boolean;
+        activityID?: string;
+    }[];
 }
 
 const NoteSchema: Schema = new Schema<INote>({
@@ -56,6 +61,23 @@ const NoteSchema: Schema = new Schema<INote>({
             },
             message: 'at least one user is not valid'
         }
+    },
+    todoList: {
+        type: [{
+            title: {
+                type: String,
+                required: true
+            },
+            done: {
+                type: Boolean,
+                required: true
+            },
+            activityID: {
+                type: String,
+                required: false
+            }
+        }],
+        required: false
     }
 });
 

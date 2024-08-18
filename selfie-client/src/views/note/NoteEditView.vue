@@ -6,6 +6,7 @@ import router from "@/router";
 import { useTextareaAutosize } from '@vueuse/core'
 import VueMultiselect from 'vue-multiselect'
 import { marked } from 'marked'
+import todoList from "@/components/todoList.vue"
 
 // declaring reactive variables
 const { textarea: contentArea, input: content } = useTextareaAutosize();
@@ -24,6 +25,9 @@ const users = ref([]);
 const viewMode = ref(true);
 const renderedMarkdown = ref("");
 
+// todoList
+const todoData = ref([]);
+
 // useful functions
 
 const getNote = async () => {
@@ -35,6 +39,10 @@ const getNote = async () => {
   lastmodify.value = note.lastmodify;
   category.value = note.category;
   owners.value = note.owners;
+  todoData.value = note.todoList;
+  if (!todoData.value) {
+    todoData.value = [];
+  }
   if (owners.value.length === users.value.length) {
     open_to_anyone.value = true;
   }
@@ -45,7 +53,7 @@ const saveNote = async () => {
   if (open_to_anyone.value) {
     owners.value = users.value;
   }
-  await noteService.modify(id, title.value, content.value, new Date(), category.value, owners.value);
+  await noteService.modify(id, title.value, content.value, new Date(), category.value, owners.value, todoData.value);
   await router.push("/note");
 };
 
@@ -120,6 +128,10 @@ onMounted( async () => {
           placeholder="edit me"
           :disabled="viewMode">
       </textarea>
+    </div>
+
+    <div class="flex justify-center resize-none" >
+      <todoList v-model="todoData"></todoList>
     </div>
 
     <div class="flex flex-col justify-center flex-wrap w-screen max-w-screen-md m-auto">

@@ -26,7 +26,8 @@ export const create = async (req: any, res: any) => {
         creation: req.body.creation,
         lastmodify: req.body.lastmodify,
         category: req.body.category,
-        owners: [username]
+        owners: [username],
+        todoList: []
     })
     
     try {
@@ -42,13 +43,13 @@ export const modify = async (req: any, res: any) => {
     const username = req.user?.username
     try {
         const note = await Note.findOne({ _id: req.params.id, owners: { $in: [username] }})
-
-        if (note) { // ??
+        if (note) {
             note.content = req.body.content
             note.title = req.body.title
             note.lastmodify = req.body.lastmodify
             note.category = req.body.category
             note.owners = req.body.owners
+            note.todoList = req.body.todoList
         } else {
             throw new Error("is null")
         }
