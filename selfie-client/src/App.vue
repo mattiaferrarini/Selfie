@@ -63,8 +63,9 @@
               </span>
             </button>
             <div v-if="showTooltip"
-                 class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10 flex">
-              <div class="flex flex-col">
+                 class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
+              <div class="flex">
+                <div class="flex flex-col">
                 <input type="date" v-model="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md">
               <input type="time" v-model="selectedTime" class=" text-center p-2 border border-gray-300 rounded-md">
               </div>
@@ -76,6 +77,8 @@
                       class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
                 </button>
               </div>
+              </div>
+              <p v-if="timeMachineMessage.length > 0" class="text-center mt-2">{{ timeMachineMessage }}</p>
             </div>
           </div>
           <router-link to="/admin" v-if="isAdmin"
@@ -131,6 +134,8 @@ export default defineComponent({
     const selectedDate = ref('');
     const selectedTime = ref('');
 
+    const timeMachineMessage = ref('');
+
     const logout = () => {
       authService.logout();
       authStore.clearAuthData();
@@ -145,8 +150,6 @@ export default defineComponent({
     const toggleTooltip = () => {
       initializeDate();
       showTooltip.value = !showTooltip.value;
-
-      console.log(new Date());
     };
 
     const closeTooltip = () => {
@@ -156,20 +159,31 @@ export default defineComponent({
     const setCurrentDate = () => {
       const date = new Date(selectedDate.value);
       date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
+
       timeMachineService.setGlobalClock(date);
       dateStore.setCurrentDate(date);
+
+      displayTimeMachineMessage('Time machine set.');
     };
 
     const resetDate = () => {
       timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
-      initializeDate();
+
+      displayTimeMachineMessage('Time machine reset.');
     };
 
     const initializeDate = () => {
       const now = new Date();
       selectedDate.value = now.toISOString().split('T')[0];
       selectedTime.value = timeService.formatTime(now);
+    };
+
+    const displayTimeMachineMessage = (message: string) => {
+      timeMachineMessage.value = message;
+      setTimeout(() => {
+        timeMachineMessage.value = '';
+      }, 2000);
     };
 
     return {
@@ -184,6 +198,7 @@ export default defineComponent({
       setCurrentDate,
       resetDate,
       closeTooltip,
+      timeMachineMessage
     };
   },
 });
