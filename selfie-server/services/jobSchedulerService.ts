@@ -12,31 +12,36 @@ import { Job } from "agenda";
 // if the notification period has already started, the notification process will start immediately
 const scheduleEventNotification = async (event: IEvent, referenceDate?: Date) => {
     referenceDate = referenceDate || new Date();
-    const now = new Date();
 
-    const { start: nextStart, end: nextEnd } = eventService.getNextValidRepetition(event, referenceDate);
-    console.log('next repetition:', nextStart, nextEnd);
-    
-    if(nextStart && nextEnd) {
-        if(getEventNotificationStart(event, nextStart) < now && now < nextStart) {
-            // the notification process should have already started
-            await notifyEventNow(event, nextStart, nextEnd);
+    if (event.notification.method.length > 0) {
+        const { start: nextStart, end: nextEnd } = eventService.getNextValidRepetition(event, referenceDate);
 
-            // schedule the next repetition
-            await scheduleEventNotification(event, timeService.getStartOfDay(timeService.moveAheadByDays(nextEnd, 1)));
-        }else{
-            await scheduleEventNotificationStart(event, nextStart, nextEnd);
+        if (nextStart && nextEnd) {
+            const now = new Date();
+
+            if (getEventNotificationStart(event, nextStart) < now && now < nextStart) {
+                // the notification process should have already started
+                await notifyEventNow(event, nextStart, nextEnd);
+
+                // schedule the next repetition
+                await scheduleEventNotification(event, timeService.getStartOfDay(timeService.moveAheadByDays(nextEnd, 1)));
+            } else {
+                await scheduleEventNotificationStart(event, nextStart, nextEnd);
+            }
+        }
+        else {
+            console.error('Failed to schedule event notification: no valid repetition found after', referenceDate);
         }
     }
-    else{
-        console.error('Failed to schedule event notification: no valid repetition found after', referenceDate);
+    else {
+        console.log('No notification method selected for event', event.title, '. No notifications will be scheduled');
     }
 }
 
 // schedules the START of event notification for a specific event's repetition
 const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
-        console.log('scheduling event notification start for event', event._id);
+        console.log('scheduling event notification start for event', event.title);
         const jobName = jobs.eventNotificationStartJobName;
 
         // determine when notification should begin
@@ -60,7 +65,7 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
 // no checks for correcteness of time: it assumes this is the correct moment when notification should start
 const notifyEventNow = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
-        console.log('notifying event now', event._id);
+        console.log('notifying event now', event.title);
         const jobName = jobs.eventNotificationJobName;
 
         const job = agenda.create(jobName, {
@@ -99,18 +104,12 @@ const updateUpcomingEventNotification = async (event: IEvent) => {
 
 // deletes the current notification jobs for an event
 const clearEventNotifications = async (event: IEvent) => {
-    console.log('clearing existing event notifications for event', event._id);
+    console.log('clearing existing event notifications for event', event.title);
 
     const eventId = event._id;
     let deletedCount = await agenda.cancel({ name: jobs.eventNotificationStartJobName, 'data.eventId': eventId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.eventNotificationJobName, 'data.eventId': eventId }) || 0;
 
-    console.log('deleted', deletedCount, 'jobs');
-}
-
-// removes a job
-const removeJob = async (job: Job) => {
-    const deletedCount = await agenda.cancel({ _id: job.attrs._id });
     console.log('deleted', deletedCount, 'jobs');
 }
 
@@ -138,17 +137,28 @@ const getEventNotificationStart = (event: IEvent, repStartDate: Date) => {
 
 // schedules the notification process for a late activity
 const scheduleActivityNotification = async (activity: IActivity) => {
-    const now = new Date();
-    
-    if(timeService.getEndOfDay(activity.deadline) < timeService.getEndOfDay(now)){
-        // the activity is already late
-        await notifyActivityNow(activity);
 
-        // schedule the next repetition
-        await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(now, 1));
+    if (activity.notification.method.length > 0) {
+        if (!activity.done) {
+            const now = new Date();
+
+            if (timeService.getEndOfDay(activity.deadline) < timeService.getEndOfDay(now)) {
+                // the activity is already late
+                await notifyActivityNow(activity);
+
+                // schedule the next repetition
+                await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(now, 1));
+            }
+            else {
+                await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(activity.deadline, 1));
+            }
+        }
+        else {
+            console.log('activity', activity.title, 'is already done. No notifications will be scheduled');
+        }
     }
-    else{
-        await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(activity.deadline, 1));
+    else {
+        console.log('No notification method selected for activity', activity.title, '. No notifications will be scheduled');
     }
 }
 
@@ -159,7 +169,7 @@ const scheduleActivityNotificationStart = async (activity: IActivity, date: Date
         const startOfDay = timeService.getStartOfDay(date);
 
         const job = agenda.create(jobName, {
-            activityId: activity._id as String,
+            activityId: activity._id,
         });
 
         job.schedule(startOfDay);
@@ -178,14 +188,14 @@ const notifyActivityNow = async (activity: IActivity) => {
         const jobName = jobs.activityNotificationJobName;
 
         const job = agenda.create(jobName, {
-            activityId: activity._id as String,
+            activityId: activity._id,
             end: timeService.getEndOfDay(now)
         });
 
         const numberOfReps = getNumberOfActivityNotifications(activity, now);
         const frequency = getDailyFrequencyString(numberOfReps);
         job.repeatEvery(frequency);
-        
+
         await job.save();
     }
     catch {
@@ -207,14 +217,14 @@ const updateLateActivityNotification = async (activity: IActivity) => {
 
 // deletes the current notification jobs for an activity
 const clearActivityNotifications = async (activity: IActivity) => {
-    console.log('clearing existing activity notifications for activity', activity._id);
+    console.log('clearing existing activity notifications for activity', activity.title);
 
     const activityId = activity._id;
     let deletedCount = await agenda.cancel({ name: jobs.activityNotificationStartJobName, 'data.activityId': activityId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.activityNotificationJobName, 'data.activityId': activityId }) || 0;
 
     console.log('deleted', deletedCount, 'jobs');
-}   
+}
 
 
 // returns the number of repetitions for a late activity an a specific date
@@ -246,6 +256,30 @@ const getDailyFrequencyString = (numberOfReps: number) => {
     }
 }
 
+// removes a job
+const removeJob = async (job: Job) => {
+    const deletedCount = await agenda.cancel({ _id: job.attrs._id });
+    console.log('deleted', deletedCount, 'jobs');
+}
+
+// removes all scheduled jobs
+const removeAllJobs = async () => {
+    const deletedCount = await agenda.cancel({});
+    console.log('deleted', deletedCount, 'jobs');
+}
+
+// removes all job scheduled to run before a date
+const removeJobsBefore = async (date: Date) => {
+    const deletedCount = await agenda.cancel({ nextRunAt: { $lt: date } });
+    console.log('deleted', deletedCount, 'jobs');
+}
+
+// removes all jobs scheduled to run after a date
+const removeJobsAfter = async (date: Date) => {
+    const deletedCount = await agenda.cancel({ nextRunAt: { $gt: date } });
+    console.log('deleted', deletedCount, 'jobs');
+}
+
 export default {
     scheduleActivityNotification,
     updateLateActivityNotification,
@@ -257,5 +291,8 @@ export default {
     scheduleEventNotificationStart,
     scheduleEventNotification,
     notifyEventNow,
-    removeJob
+    removeJob,
+    removeAllJobs,
+    removeJobsBefore,
+    removeJobsAfter
 }

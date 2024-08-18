@@ -14,8 +14,8 @@ const setGlobalClock = async (date: Date) => {
         const response = await axios.post(`${API_URL}/setGlobalClock`, { date }, { withCredentials: true });
         console.log(response.data);
     }
-    catch (error) {
-        console.log(error);
+    catch (error: any) {
+        console.log(error.response.data);
     }
 }
 
@@ -29,8 +29,8 @@ const restoreGlobalClock = async () => {
         const response = await axios.post(`${API_URL}/restoreGlobalClock`, {}, { withCredentials: true });
         console.log(response.data);
     }
-    catch (error) {
-        console.log(error);
+    catch (error: any) {
+        console.log(error.response.data);
     }
 } 
 
