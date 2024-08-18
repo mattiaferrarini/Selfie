@@ -10,6 +10,8 @@ const subscribe = async () => {
             registration = await navigator.serviceWorker.register("/sw.js", {
                 scope: "/",
             });
+
+            await navigator.serviceWorker.ready;
             console.log("Service Worker Registered...");
         }
 
@@ -18,7 +20,7 @@ const subscribe = async () => {
             console.log("Registering Push...");
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(process.env.VUE_PUBLIC_VAPID_KEY || ''),
+                applicationServerKey: urlBase64ToUint8Array(process.env.VUE_APP_PUBLIC_VAPID_KEY || ''),
             });
             console.log("Push Registered...");
         }
@@ -28,7 +30,7 @@ const subscribe = async () => {
         console.log("Push Sent...");
         return response.data;
     } catch (error: any) {
-        throw error.response;
+        console.log(error);
     }
 };
 

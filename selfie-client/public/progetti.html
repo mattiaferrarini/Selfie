@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="favicon.ico">
     <title>Selfie</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="notification.js"></script>
     <script src="sw.js"></script>
+    <script src="modalComponent.js"></script>
+    <script src="clickOutsideComponent.js"></script>
     <script src="progetti.js" defer></script>
+    <link rel="stylesheet" href="tailwind.css"/>
 </head>
 <body>
 <noscript>
@@ -141,7 +143,35 @@
         </div>
     </nav>
     <div class="flex flex-col items-center justify-center min-h-screen p-3 pt-10 sm:pt-16">
-        asd
+        <div class="w-full h-full">
+            <label for="visualType">Visualizzaione:</label>
+            <select id="visualType">
+                <option value="list">Lista</option>
+                <option value="gantt">Gantt</option>
+            </select>
+        </div>
+        <div id="listView">
+
+        </div>
+        <div id="ganttView">
+
+        </div>
+
+        <!-- Button and Modal to add -->
+        <div class="flex flex-col fixed bottom-4 right-4">
+            <button onclick="document.getElementById('addModal').show()"
+                    class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
+                <svg data-v-6482da86="" class="ov-icon w-full h-full" aria-hidden="true" width="19.2" height="19.2"
+                     viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+                </svg>
+            </button>
+        </div>
+        <modal-component id="addModal">
+            <h2 class="text-xl font-bold mb-4">Modal Title</h2>
+            <p>Modal content goes here...</p>
+        </modal-component>
     </div>
 </div>
 </body>

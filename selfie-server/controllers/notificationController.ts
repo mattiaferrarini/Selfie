@@ -55,9 +55,24 @@ const sendNotification = async (user: IUser, payload: any) => {
     // TODO check compatibility email and push
 }
 
+const sendPushNotification = async (user: IUser, payload: any) => {
+    user.pushSubscriptions.forEach((pushSubscription: any) => pushNotificationService.sendNotification(pushSubscription, payload));
+}
+
+const sendEmailNotification = async (to: string, subject: string, body: string) => {
+    try{
+        await sendEmail(to, subject, body);
+    }
+    catch (error){
+        console.error('Failed to send email:', error);
+    }
+}
+
 export default {
     subscribe,
     unsubscribe,
     sendNotificationTest,
-    sendNotification
+    sendNotification,
+    sendPushNotification,
+    sendEmailNotification
 }
