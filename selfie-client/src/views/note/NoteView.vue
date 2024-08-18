@@ -30,23 +30,30 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="p-3">
     <div class="flex justify-center">
       <button class="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700" @click="newnote()">new note</button>
     </div>
 
-    <div class="flex flex-wrap justify-center max-w-screen-md m-auto">
-      <div v-for="note in notes" :key="note._id" class="max-w-sm rounded overflow-hidden shadow-lg">
+    <div class="flex flex-row flex-wrap justify-center m-auto gap-3">
+      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-scroll rounded border-2 border-black">
         <router-link :to="`/note/${note._id}`">
-          <div class="px-6 py-4">
-            <div class="font-bold text-xl mb-2 break-words">{{ note.title }}</div>
-            <p class="text-gray-700 text-base break-words prose" v-html="marked(note.content)">
-            </p>
-          </div>
-          <div>
-            <div class="px-6 py-4">
-              <span>{{ note.category }}</span>
+          <div class="p-4">
+            <div class="flex flex-col justify-center pb-2 gap-y-2">
+              <!-- note header information -->
+              <div class="bg-gray-400 rounded w-fit">
+                <h1 class="font-bold text-3xl break-word">{{ note.title }}</h1>
+              </div>
+
+              <span class="bg-purple-500 break-words rounded w-fit">Category: {{ note.category }}</span>
+
+              <div class="flex flex-col bg-blue-500 rounded w-fit">
+                <span class="break-words ">Created: {{ note.creation }}</span>
+                <span class="break-words">Updated: {{ note.lastmodify }}</span>
+              </div>
             </div>
+            <div class="bg-black rounded h-1"></div>
+            <div class="text-gray-700 text-base break-words prose" v-html="marked(note.content)"></div>
           </div>
         </router-link>
       </div>

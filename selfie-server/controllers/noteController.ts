@@ -1,6 +1,6 @@
 import Note from '../models/Note';
 
-const max_preview_length = 1000;
+const max_preview_length = 600;
 export const getall = async (req: any, res: any) => {
     const username = req.user?.username
     const all_notes = await Note.find({owners: { $in: [username] }})
