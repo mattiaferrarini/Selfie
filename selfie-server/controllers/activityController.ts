@@ -1,6 +1,7 @@
 import Activity from "../models/Activity";
 import timeService from "../services/timeService";
 import * as inviteController from './inviteController';
+import jobSchedulerService from "../services/jobSchedulerService";
 
 const formatActivity = (activity: any) => {
     return {
@@ -117,8 +118,6 @@ export const addActivity = async (req: any, res: any) => {
         }
         await newActivity.save();
         await inviteController.createInvitesForActivity(newActivity);
-        await jobSchedulerService.scheduleActivityNotification(newActivity);
-
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
@@ -159,7 +158,6 @@ export const modifyActivity = async (req: any, res: any) => {
 
             await inviteController.createInvitesForActivity(activity);
             await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-            await jobSchedulerService.updateLateActivityNotification(activity);
 
             res.status(200).send(formatActivity(activity));
         } else {
