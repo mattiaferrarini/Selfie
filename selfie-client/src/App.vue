@@ -111,8 +111,8 @@ import router from "@/router";
 import {useDateStore} from "@/stores/dateStore";
 import authService from "@/services/authService";
 import {useWebSocketStore} from "@/stores/wsStore";
-import timeService from './services/timeService';
-import timeMachineService from './services/timeMachineService';
+import timeMachineService from "@/services/timeMachineService";
+import timeService from "@/services/timeService";
 
 export default defineComponent({
   setup() {
@@ -141,6 +141,8 @@ export default defineComponent({
     const toggleTooltip = () => {
       initializeDate();
       showTooltip.value = !showTooltip.value;
+
+      console.log(new Date());
     };
 
     const closeTooltip = () => {
@@ -151,14 +153,12 @@ export default defineComponent({
       const date = new Date(selectedDate.value);
       date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
       timeMachineService.setGlobalClock(date);
-      
       dateStore.setCurrentDate(date);
     };
 
     const resetDate = () => {
       timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
-
       initializeDate();
     };
 
