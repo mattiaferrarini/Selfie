@@ -6,7 +6,7 @@
                 <div class="flex align-center justify-between p-5 cursor-pointer" @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                         <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                         <div class="flex gap-4">
-                            {{ activity.pomodoro ?  activity.pomodoro.completedCycles[username] + '/' + activity.pomodoro.cycles + ' cicli' : '' }}
+                            {{ activity.pomodoro ?  activity.pomodoro.completedCycles[username] + '/' + activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}
                             <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
                             {{timeMethods.formatDayMonth(activity.deadline)}}
                             <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>

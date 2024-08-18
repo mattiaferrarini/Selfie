@@ -47,7 +47,7 @@ export interface IUser extends Document {
             pomodoroType: PomodoroType;
         };
         notificationType: NotificationType;
-        notes: Object; // Adjust the type based on your requirements
+        notes: Object;
         pomodoro: {
             workDuration: number;
             pauseDuration: number;

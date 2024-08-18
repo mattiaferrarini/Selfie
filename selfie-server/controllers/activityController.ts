@@ -56,7 +56,7 @@ export const getPomodoroStats = async (req: any, res: any) => {
             completed: completedActivities.length,
             completedCycles: completedActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles.get(req.user.username) || 0), 0),
             missing: missingActivities.length,
-            missingTotalCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.cycles || 0), 0),
+            missingTotalCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.options.numberOfCycles || 0), 0),
             missingCompletedCycles: missingActivities.reduce((acc, activity) => acc + (activity.pomodoro?.completedCycles.get(req.user.username) || 0), 0),
             oldestActivityId: missingActivities[0]?._id || ''
         });
@@ -135,8 +135,8 @@ export const modifyActivity = async (req: any, res: any) => {
 
             if (req.body.pomodoro && req.body.pomodoro.completedCycles) {
                 if (!activity.pomodoro)
-                    activity.pomodoro = {cycles: req.body.pomodoro.cycles, completedCycles: new Map<string,number>()};
-                activity.pomodoro.cycles = req.body.pomodoro.cycles;
+                    activity.pomodoro = {options: req.body.pomodoro.options, completedCycles: new Map<string,number>()};
+                activity.pomodoro.options = req.body.pomodoro.options;
 
                 Object.entries(req.body.pomodoro.completedCycles).map((object: any) => {
                     activity.pomodoro?.completedCycles.set(object[0], object[1]);
