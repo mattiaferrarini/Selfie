@@ -36,13 +36,13 @@ const defineEventNotificationStart = async (agenda: Agenda) => {
             }
             else {
                 // notify participants now for the current repetition
-                await jobSchedulerService.notifyEventNow(event, eventRepStart, eventRepEnd);
+                await jobSchedulerService.notifyEventRepetition(event, eventRepStart, eventRepEnd);
 
                 // schedule notification start for the next repetition (if any)
                 await jobSchedulerService.scheduleEventNotification(event, timeService.getStartOfDay(timeService.moveAheadByDays(eventRepEnd, 1)));
             }
 
-            // remove the current job as it has already been executed
+            // remove the job as it has been executed
             await jobSchedulerService.removeJob(job);
         }
         catch (error) {
@@ -59,28 +59,16 @@ const defineEventNotification = async (agenda: Agenda) => {
 
             if (!event) {
                 // the event doesn't exist anymore: remove the job
-                await jobSchedulerService.removeJob(job);
                 console.error('Event not found:', job.attrs.data.eventId);
             }
-            else if (event.notification.when === 'atEvent' || event.notification.repeat === 'never') {
-                // the notification should be sent only once: now
+            else {
+                // send the notification
+                console.log('Notifying event now', event.title);
                 await sendNotificationsForEvent(event);
-                await jobSchedulerService.removeJob(job);
             }
-            else { 
-                // repeated notification case
-                const eventRepStart = new Date(job.attrs.data.eventRepStart);
-                const now = new Date();
 
-                if (now > eventRepStart) {
-                    // the event has already started: remove the job
-                    await jobSchedulerService.removeJob(job);
-                }
-                else {
-                    // send notifications to participants
-                    sendNotificationsForEvent(event);
-                }
-            }
+            // removes the job as it has been executed
+            await jobSchedulerService.removeJob(job);
         }
         catch (error) {
             console.error('Failed to notify event:', error);
@@ -127,20 +115,22 @@ const defineActivityNotificationStart = async (agenda: Agenda) => {
         try {
             const activity = await Activity.findById(job.attrs.data.activityId);
 
-            if (!activity || activity.done) {
-                // the activity doesn't exist anymore or it has been completed: there's nothing to do
-                console.error('Activity not found or already done:', job.attrs.data.activityId);
+            if (!activity) {
+                console.error('Activity not found', job.attrs.data.activityId);
+            }
+            else if(activity.done){
+                console.log("Activity ", activity.title, "has already been completed => No notification sent");
             }
             else {
-                // start the notifications for the day
-                await jobSchedulerService.notifyActivityNow(activity);
+                // start the notifications for the current day
+                await jobSchedulerService.notifyActivityToday(activity);
 
                 // schedule this job for the next day
                 const tomorrow = timeService.moveAheadByDays(new Date(), 1);
                 await jobSchedulerService.scheduleActivityNotificationStart(activity, tomorrow);
             }
 
-            // remove the current job as it has already been executed
+            // remove the job as it has been executed
             await jobSchedulerService.removeJob(job);
         }
         catch (error) {
@@ -154,22 +144,21 @@ const defineActivityNotification = async (agenda: Agenda) => {
     agenda.define(activityNotificationJobName, async (job: Job) => {
         try {
             const activity = await Activity.findById(job.attrs.data.activityId);
-            const end = new Date(job.attrs.data.end);
-            const now = new Date();
 
-            if (!activity || activity.done) {
-                // the activity doesn't exist anymore or it has been completed: there's nothing to do
-                await jobSchedulerService.removeJob(job);
-                console.error('Activity not found or already completed:', job.attrs.data.activityId);
+            if (!activity) {
+                console.error('Activity not found', job.attrs.data.activityId);
             }
-            else if (now > end) {
-                // notifications have already been sent for the day: remove the job
-                await jobSchedulerService.removeJob(job);
+            else if(activity.done){
+                console.log("Activity ", activity.title, "has already been completed => No notification sent");
             }
             else {
                 // send notifications to participants
+                console.log("Notifying activity now", activity.title);
                 await sendNotificationsForActivity(activity);
             }
+
+            // remove the job as it has been executed
+            await jobSchedulerService.removeJob(job);
         }
         catch (error) {
             console.error('Failed to notify activity:', error);

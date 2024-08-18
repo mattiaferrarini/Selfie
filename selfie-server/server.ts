@@ -55,7 +55,7 @@ const agenda = new Agenda({
         address: process.env.MONGO_URI || 'mongodb://localhost:27017/selfie',
         collection: 'jobs'
     },
-    processEvery: '30 seconds'
+    processEvery: '20 seconds'
 });
 
 (async function () {

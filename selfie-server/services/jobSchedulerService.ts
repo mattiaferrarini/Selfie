@@ -17,17 +17,7 @@ const scheduleEventNotification = async (event: IEvent, referenceDate?: Date) =>
         const { start: nextStart, end: nextEnd } = eventService.getNextValidRepetition(event, referenceDate);
 
         if (nextStart && nextEnd) {
-            const now = new Date();
-
-            if (getEventNotificationStart(event, nextStart) < now && now < nextStart) {
-                // the notification process should have already started
-                await notifyEventNow(event, nextStart, nextEnd);
-
-                // schedule the next repetition
-                await scheduleEventNotification(event, timeService.getStartOfDay(timeService.moveAheadByDays(nextEnd, 1)));
-            } else {
-                await scheduleEventNotificationStart(event, nextStart, nextEnd);
-            }
+            scheduleEventNotificationStart(event, nextStart, nextEnd);
         }
         else {
             console.log('No valid repetition found after', referenceDate, 'for event', event.title, '=> No notifications will be scheduled');
@@ -47,43 +37,38 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
         // determine when notification should begin
         const notificationStart = getEventNotificationStart(event, eventRepStart);
 
-        const job = agenda.create(jobName, {
-            eventId: event._id,
-            eventRepStart: eventRepStart,
-            eventRepEnd: eventRepEnd
-        });
+        // TODO: check this data is necessary
+        const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
 
-        job.schedule(notificationStart);
-        await job.save();
+        await agenda.schedule(notificationStart, jobName, jobData);
     }
     catch (error) {
         console.error('Failed to schedule event notification:', error);
     }
 }
 
-// immediately starts notifying event according to settings
-// no checks for correcteness of time: it assumes this is the correct moment when notification should start
-const notifyEventNow = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
+// notifies a single repetition of an event according to settings
+const notifyEventRepetition = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
-        console.log('notifying event now', event.title);
         const jobName = jobs.eventNotificationJobName;
 
-        const job = agenda.create(jobName, {
-            eventId: event._id,
-            eventRepStart: eventRepStart,
-            eventRepEnd: eventRepEnd
-        });
+        // TODO: check this data is necessary
+        const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
 
-        if (event.notification.when === 'atEvent' || event.notification.repeat === 'never') {
-            job.run(); // the event is starting: notify now
-        }
-        else {
-            // repeat every frequency until the event starts
-            const frequency = event.notification.repeat;
-            job.repeatEvery(frequency);
-        }
+        // determine when notification should begin (computed again to limit agenda processing delay)
+        let notificationStart = getEventNotificationStart(event, eventRepStart);
+            
+        // determine the number of notifications 
+        const numberOfNotifications = getNumberOfEventNotifications(event);
 
-        await job.save();
+        // determine the frequency of notifications in minutes
+        const frequency = stringToMinutes(event.notification.repeat);
+
+        // schedule the appropriate number of notifications for the current repetition
+        for(let i = 0; i < numberOfNotifications; i++){
+            await agenda.schedule(notificationStart, jobName, jobData);
+            notificationStart = timeService.moveAheadByMinutes(notificationStart, frequency);
+        }
     }
     catch {
         console.error('Failed to notify event');
@@ -115,39 +100,48 @@ const clearEventNotifications = async (event: IEvent) => {
 
 // returns the date when the notification process should start for an event's repetition
 const getEventNotificationStart = (event: IEvent, repStartDate: Date) => {
-    if (event.notification.when === 'atEvent')
-        return repStartDate;
-    else {
-        const parts = event.notification.when.split(' ');
-        const unit = parts[1];
-        const value = parseInt(parts[0]);
+    const ahead = stringToMinutes(event.notification.when);
+    return timeService.moveAheadByMinutes(repStartDate, -ahead);
+}
 
-        if (unit === 'minutes')
-            return timeService.moveAheadByMinutes(repStartDate, -value);
-        else if (unit === 'hours')
-            return timeService.moveAheadByHours(repStartDate, -value);
-        else if (unit === 'days')
-            return timeService.moveAheadByDays(repStartDate, -value);
-        else if (unit === 'weeks')
-            return timeService.moveAheadByDays(repStartDate, -7 * value);
-        else
-            throw new Error('Invalid unit');
+// returns the number of notifications for an event repetition
+const getNumberOfEventNotifications = (event: IEvent) => {
+    if(event.notification.repeat === 'never')
+        return 1;
+    else{
+        const when = stringToMinutes(event.notification.when);
+        const repeat = stringToMinutes(event.notification.repeat);
+        return Math.ceil(when / repeat);
     }
+}
+
+// converts a string representing a time amount to the corresponding number of minutes
+const stringToMinutes = (str: string) => {
+    const parts = str.split(' ');
+    const unit = parts[1];
+    const value = parseInt(parts[0]);
+
+    if (unit === 'minutes' || unit === 'minute')
+        return value;
+    else if (unit === 'hours' || unit === 'hour')
+        return value * 60;
+    else if (unit === 'days' || unit === 'day')
+        return value * 60 * 24;
+    else if (unit === 'weeks' || unit === 'week')
+        return value * 60 * 24 * 7;
+    else
+        return 0;
 }
 
 // schedules the notification process for a late activity
 const scheduleActivityNotification = async (activity: IActivity) => {
-
     if (activity.notification.method.length > 0) {
         if (!activity.done) {
             const now = new Date();
 
             if (timeService.getEndOfDay(activity.deadline) < timeService.getEndOfDay(now)) {
-                // the activity is already late
-                await notifyActivityNow(activity);
-
-                // schedule the next repetition
-                await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(now, 1));
+                // if the activity is already late, notify for today
+                await scheduleActivityNotificationStart(activity, now);
             }
             else {
                 await scheduleActivityNotificationStart(activity, timeService.moveAheadByDays(activity.deadline, 1));
@@ -167,36 +161,31 @@ const scheduleActivityNotificationStart = async (activity: IActivity, date: Date
     try {
         const jobName = jobs.activityNotificationStartJobName;
         const startOfDay = timeService.getStartOfDay(date);
-
-        const job = agenda.create(jobName, {
-            activityId: activity._id,
-        });
-
-        job.schedule(startOfDay);
-        await job.save();
+        await agenda.schedule(startOfDay, jobName, {activityId: activity._id});
     }
     catch {
         console.error('Failed to schedule activity notification start');
     }
 }
 
-// immediately starts notifying activity according to settings
-// it assumes the activity is already late
-const notifyActivityNow = async (activity: IActivity) => {
+// schedules notification for a late activity for the present day
+const notifyActivityToday = async (activity: IActivity) => {
     try {
         const now = new Date();
+
         const jobName = jobs.activityNotificationJobName;
+        // TODO: check data is necessary
+        const jobData = {activityId: activity._id, end: timeService.getEndOfDay(now)};
 
-        const job = agenda.create(jobName, {
-            activityId: activity._id,
-            end: timeService.getEndOfDay(now)
-        });
-
+        let notificationStart = timeService.getStartOfDay(now);
         const numberOfReps = getNumberOfActivityNotifications(activity, now);
-        const frequency = getDailyFrequencyString(numberOfReps);
-        job.repeatEvery(frequency);
+        console.log('now:', now, 'numberOfReps:', numberOfReps);
+        const frequency = Math.ceil(24 * 60 / numberOfReps);
 
-        await job.save();
+        for(let i = 0; i < numberOfReps; i++){
+            await agenda.schedule(notificationStart, jobName, jobData);
+            notificationStart = timeService.moveAheadByMinutes(notificationStart, frequency);
+        }
     }
     catch {
         console.error('Failed to notify activity');
@@ -233,15 +222,19 @@ const getNumberOfActivityNotifications = (activity: IActivity, date: Date) => {
     let res = 1;
     switch (activity.notification.repeat) {
         case 'daily':
-            res = 1; break;
+            res = 1; 
+            break;
         case 'linear':
             res = timeService.dayDifference(date, activity.deadline, true);
+            break;
         case 'exponential':
             res = Math.pow(2, timeService.dayDifference(date, activity.deadline, true));
+            break;
         default:
             res = 1;
     }
-    return Math.max(1, Math.min(res, 24 * 6));
+    // allow at most a notification every 5 minutes
+    return Math.max(1, Math.min(res, 24 * 12));
 }
 
 // returns a string representing the frequency of a notification
@@ -280,19 +273,34 @@ const removeJobsAfter = async (date: Date) => {
     console.log('Deleted', deletedCount, 'jobs.');
 }
 
+// stop all scheduled jobs
+const stopAllJobs = async () => {
+    await agenda.stop();
+    console.log('Agenda stopped');
+}
+
+// resume all scheduled jobs
+const resumeAllJobs = async () => {
+    await agenda.start();
+    await jobs.defineJobs(agenda);
+    console.log('Agenda started');
+}
+
 export default {
     scheduleActivityNotification,
     updateLateActivityNotification,
     scheduleActivityNotificationStart,
-    notifyActivityNow,
+    notifyActivityToday,
     updateUpcomingEventNotification,
     clearEventNotifications,
     clearActivityNotifications,
     scheduleEventNotificationStart,
     scheduleEventNotification,
-    notifyEventNow,
+    notifyEventRepetition,
     removeJob,
     removeAllJobs,
     removeJobsBefore,
-    removeJobsAfter
+    removeJobsAfter,
+    stopAllJobs,
+    resumeAllJobs
 }

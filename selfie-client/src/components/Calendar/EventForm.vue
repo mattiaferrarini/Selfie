@@ -93,7 +93,7 @@
           When
           <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed"
             @change="enforceRepetitionCoherence">
-            <option value="atEvent">Time of event</option>
+            <option value="0 minutes">Time of event</option>
             <option value="5 minutes">5 min before</option>
             <option value="15 minutes">15 min before</option>
             <option value="30 minutes">30 min before</option>
@@ -108,7 +108,7 @@
           Repeat
           <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed">
             <option value="never">Never</option>
-            <option v-if="repetitionOptionAllowed('1 minute')" value="minute">Every minute</option>
+            <option v-if="repetitionOptionAllowed('1 minute')" value="1 minute">Every minute</option>
             <option v-if="repetitionOptionAllowed('5 minutes')" value="5 minutes">Every 5 minutes</option>
             <option v-if="repetitionOptionAllowed('15 minutes')" value="15 minutes">Every 15 minutes</option>
             <option v-if="repetitionOptionAllowed('30 minutes')" value="30 minutes">Every 30 minutes</option>
