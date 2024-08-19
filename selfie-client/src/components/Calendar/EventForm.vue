@@ -305,21 +305,16 @@ export default defineComponent({
       }
     },
     repetitionOptionAllowed(option: string): boolean {
-      if (this.newEvent.notification.when === 'atEvent') {
-        return false;
-      }
-      else {
-        const whenParts = this.newEvent.notification.when.split(' ');
-        const optionParts = option.split(' ');
+      const whenParts = this.newEvent.notification.when.split(' ');
+      const optionParts = option.split(' ');
 
-        const whenUnit = this.mapUnitToInt(whenParts[1]);
-        const whenValue = Number(whenParts[0]);
+      const whenUnit = this.mapUnitToInt(whenParts[1]);
+      const whenValue = Number(whenParts[0]);
 
-        const optionUnit = this.mapUnitToInt(optionParts[1]);
-        const optionValue = Number(optionParts[0]);
+      const optionUnit = this.mapUnitToInt(optionParts[1]);
+      const optionValue = Number(optionParts[0]);
 
-        return (optionUnit < whenUnit) || (optionUnit === whenUnit && optionValue < whenValue);
-      }
+      return (optionUnit < whenUnit) || (optionUnit === whenUnit && optionValue < whenValue);
     },
     mapUnitToInt(unit: string): number {
       switch (unit) {
@@ -359,7 +354,7 @@ export default defineComponent({
       return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
     },
     repeatedNotificationAllowed(): boolean {
-      return this.newEvent.notification.when !== 'atEvent';
+      return this.newEvent.notification.when !== '0 minutes';
     },
     formattedStartDate: {
       get(): string {
