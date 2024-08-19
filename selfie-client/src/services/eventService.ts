@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { CalendarOptions, GoogleCalendar, ICalendar, OutlookCalendar, YahooCalendar } from "datebook";
+import {CalendarOptions, GoogleCalendar, ICalendar, OutlookCalendar, YahooCalendar} from "datebook";
 import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
-import { CalendarEvent } from '@/models/Event';
-import { useAuthStore } from '@/stores/authStore';
+import {CalendarEvent} from '@/models/Event';
+import {useAuthStore} from '@/stores/authStore';
 
 const API_URL = process.env.VUE_APP_API_URL + '/event';
 
@@ -32,8 +32,7 @@ const getEventById = async (id: string) => {
 const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
     try {
         const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
-        const transformedData = response.data.map((event: any) => formatEvent(event));
-        return transformedData;
+        return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
         throw error.response.data;
     }
@@ -41,7 +40,7 @@ const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
 
 const addEvent = async (event: CalendarEvent) => {
     try {
-        const response = await axios.post(`${API_URL}`, event, { withCredentials: true });
+        const response = await axios.put(`${API_URL}`, event, { withCredentials: true });
         return formatEvent(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -50,7 +49,7 @@ const addEvent = async (event: CalendarEvent) => {
 
 const modifyEvent = async (event: CalendarEvent) => {
     try {
-        const response = await axios.put(`${API_URL}/${event.id}`, event, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/${event.id}`, event, { withCredentials: true });
         return formatEvent(response.data);
     } catch (error: any) {
         throw error.response.data;

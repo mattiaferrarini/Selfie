@@ -25,13 +25,7 @@ class PushNotificationService {
     }
 
     public sendNotification(subscription: any, payload: any): void {
-        this.pushService.send(subscription, payload, (err: any, result: any) => {
-            if (err) {
-                console.error(err);
-            } else {
-                console.log(result);
-            }
-        });
+        this.pushService.send(subscription, payload);
     }
 }
 

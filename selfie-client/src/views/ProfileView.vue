@@ -20,15 +20,15 @@
         <form @submit.stop="changeNotificationType">
           <label for="notification_mode" class="block text-sm font-medium text-gray-700">Tipo di Notifica</label>
           <select type="password" v-model="notificationType" id="notification_mode"
-                 class="w-full px-3 py-2 mb-3 border rounded" required>
+                  class="w-full px-3 py-2 mb-3 border rounded" required>
             <option value="email">Email</option>
             <option value="push">Web Push</option>
             <option value="both">Entrambe</option>
           </select>
           <input type="submit" value="Cambia Notifiche"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
+                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
-        <p v-if="passErrorMessage" class="mt-2 text-red-500">{{ passErrorMessage }}</p>
+        <p v-if="notificationErrorMessage" class="mt-2 text-red-500">{{ notificationErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Cambia Password</legend>
@@ -46,7 +46,7 @@
                  class="w-full px-3 py-2 mb-3 border rounded" required
                  placeholder="Repeat New Password"/>
           <input type="submit" value="Cambia Password"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
+                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="passErrorMessage" class="mt-2 text-red-500">{{ passErrorMessage }}</p>
       </fieldset>
@@ -57,7 +57,7 @@
           <input type="date" v-model="birthday" id="birthday" :max="(new Date()).toISOString().substring(0,10)"
                  min="1900-01-01" class="w-full px-3 py-2 mb-3 border rounded" required/>
           <input type="submit" value="Cambia Compleanno"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
+                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="birthErrorMessage" class="mt-2 text-red-500">{{ birthErrorMessage }}</p>
       </fieldset>
@@ -68,7 +68,7 @@
           <input type="text" v-model="realName" id="name" placeholder="Fabio Rossi"
                  class="w-full px-3 py-2 mb-3 border rounded" required/>
           <input type="submit" value="Cambia Nome"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded"/>
+                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="nameErrorMessage" class="mt-2 text-red-500">{{ nameErrorMessage }}</p>
       </fieldset>
@@ -99,7 +99,7 @@ export default defineComponent({
 
     const changeNotificationType = async () => {
       try {
-        await profileService.updateNotificationPreferences(notificationType.value);
+        await profileService.updatePreferences({notificationType: notificationType.value});
         notificationErrorMessage.value = "Notifiche cambiate con successo";
       } catch (error: any) {
         notificationErrorMessage.value = error;

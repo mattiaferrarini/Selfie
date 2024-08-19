@@ -9,7 +9,7 @@ export const getUserNames = async (req: any, res: any) => {
     res.status(200).send(usernames);
 }
 
-// Function to check if a user with the given username exists
+// check if a user with the given username exists
 export const getUserBasicInfo = async (req: Request, res: Response) => {
     const { username } = req.params;
 
@@ -23,6 +23,7 @@ export const getUserBasicInfo = async (req: Request, res: Response) => {
     }
 }
 
+// find user by username
 export const findByUsername = async (username: string) => {
     try{
         const user = await User.findOne({ username });

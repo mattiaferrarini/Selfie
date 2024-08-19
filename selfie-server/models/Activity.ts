@@ -17,7 +17,7 @@ export interface IActivity extends Document{
     subActivitiesIDs: string[];
     pomodoro?: {
         cycles: number;
-        completedCycles: number;
+        completedCycles: Map<string, number>
     };
 }
 
@@ -76,7 +76,9 @@ const ActivitySchema = new Schema({
                 required: true
             },
             completedCycles: {
-                type: Number,
+                type: Map,
+                of: Number,
+                default: 0,
                 required: true
             },
         },

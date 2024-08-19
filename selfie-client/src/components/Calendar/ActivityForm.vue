@@ -45,7 +45,7 @@
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
-                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null" @click="newActivity.pomodoro = newActivity.pomodoro == null ? {cycles:1, completedCycles: 0} : null" /> Pomodoro</label>
+                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null" @click="newActivity.pomodoro = newActivity.pomodoro == null ? {cycles:1, completedCycles: {[authStore.user.username]: 0}} : null" /> Pomodoro</label>
                 </div>
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
                     <span class="flex-1">Cycles</span>
@@ -53,7 +53,7 @@
                 </label>
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
                     <span class="flex-1">Completed Cycles</span>
-                    <input type="number" v-model="newActivity.pomodoro.completedCycles" class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
+                    <input type="number" v-model="newActivity.pomodoro.completedCycles[authStore.user.username]" class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
                 </label>
             </div>
             <hr>
@@ -66,7 +66,7 @@
                         <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
                     </div>
                 </div>
-                <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
+                <label v-if="false" class="flex items-center justify-between w-full gap-4">
                     How long
                     <select name="whenNotify" v-model="newActivity.notification.when">
                         <option value="atEvent">Day of deadline</option>
@@ -80,7 +80,7 @@
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
                     Frequency
                     <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36">
-                        <option value="never">Never</option>
+                        <!-- <option value="never">Never</option> -->
                         <option value="daily">Daily</option>
                         <option value="linear">Increase by 1 every day</option>
                         <option value="exponential">Multiple 2x every day</option>

@@ -5,8 +5,8 @@ const router = Router();
 
 router.get('/user/:username', unavailabilityController.getUnavailabilitiesByUser);
 router.post('/overlap/:username', unavailabilityController.getOverlappingUnavailabilities);
-router.post('/', unavailabilityController.addUnavailability);
-router.put('/:id', unavailabilityController.modifyUnavailability);
+router.put('/', unavailabilityController.addUnavailability);
+router.post('/:id', unavailabilityController.modifyUnavailability);
 router.delete('/:id', unavailabilityController.deleteUnavailability);
 
 export default router;

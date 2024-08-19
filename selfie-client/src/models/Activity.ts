@@ -16,7 +16,9 @@ export class Activity {
     subActivitiesIDs: string[];
     pomodoro: null | undefined | {
         cycles: number;
-        completedCycles: number;
+        completedCycles: {
+            [username: string]: number
+        };
     };
 
     constructor(

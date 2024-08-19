@@ -192,6 +192,7 @@ import activityService from "@/services/activityService";
 export default defineComponent({
   data() {
     return {
+      username: useAuthStore().user.username,
       timing: false,
       showModal: false,
       showYoutubeModal: false,
@@ -224,7 +225,7 @@ export default defineComponent({
       this.activityId = router.currentRoute.value.params.activityId as string;
       activityService.getActivityById(this.activityId).then((activity) => {
         this.numberOfCycles = activity.pomodoro.cycles;
-        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
+        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles[this.username]) * 60 * (this.workDuration + this.pauseDuration)
       });
     }
   },
@@ -256,10 +257,13 @@ export default defineComponent({
         this.intervalRef = setInterval(() => {
           this.counter--;
           if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
-            activityService.modifyActivity({id: this.activityId,
+            activityService.modifyActivity({
+              id: this.activityId,
               pomodoro: {
                 cycles: this.numberOfCycles,
-                completedCycles: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                completedCycles: {
+                  [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                }
               }
             });
           }
@@ -279,10 +283,13 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
-      activityService.modifyActivity({id: this.activityId,
+      activityService.modifyActivity({
+        id: this.activityId,
         pomodoro: {
           cycles: this.numberOfCycles,
-          completedCycles: this.numberOfCycles - cycle
+          completedCycles: {
+            [this.username]: this.numberOfCycles - cycle
+          }
         }
       });
     },
@@ -301,7 +308,13 @@ export default defineComponent({
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      profileService.updatePomodoroPreferences(this.workDuration, this.pauseDuration, this.numberOfCycles);
+      profileService.updatePreferences({
+        pomodoro: {
+          workDuration: this.workDuration,
+          pauseDuration: this.pauseDuration,
+          numberOfCycles: this.numberOfCycles
+        }
+      });
       this.showModal = false;
     },
     openEditModal() {
@@ -313,10 +326,11 @@ export default defineComponent({
     },
     saveEditChanges() {
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
-      activityService.modifyActivity({id: this.activityId,
+      activityService.modifyActivity({
+        id: this.activityId,
         pomodoro: {
           cycles: this.numberOfCycles,
-          completedCycles: this.setCycleNumber - 1
+          completedCycles: {[this.username]: this.setCycleNumber - 1}
         }
       });
       this.showEditModal = false;

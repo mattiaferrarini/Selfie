@@ -15,9 +15,20 @@ enum NotificationType {
     BOTH = "both"
 }
 
+enum CalendarContent {
+    ALL = "all",
+    EVENTS = "events",
+    ACTIVITIES = "activities"
+}
+
 enum PomodoroType {
     SETTINGS = "settings",
     STATS = "stats"
+}
+
+enum ProjectsView {
+    LIST = "list",
+    GANTT = "gantt"
 }
 
 export interface IUser extends Document {
@@ -31,7 +42,7 @@ export interface IUser extends Document {
     preferences: {
         home: {
             calendarWeekly: boolean;
-            calendarContent: string;
+            calendarContent: CalendarContent;
             notesDescription: boolean;
             pomodoroType: PomodoroType;
         };
@@ -42,6 +53,7 @@ export interface IUser extends Document {
             pauseDuration: number;
             numberOfCycles: number;
         };
+        projectsView: ProjectsView;
     };
 }
 
@@ -57,7 +69,8 @@ const UserSchema: Schema = new Schema<IUser>({
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: /^[a-zA-Z0-9_]*$/ // Only letters, numbers and underscores
     },
     email: {
         type: String,
@@ -105,7 +118,8 @@ const UserSchema: Schema = new Schema<IUser>({
             pomodoroType: {
                 type: String,
                 required: true,
-                enum: ['settings', 'stats']
+                enum: ['settings', 'stats'],
+                default: 'stats'
             }
         },
         notificationType: {
@@ -130,6 +144,12 @@ const UserSchema: Schema = new Schema<IUser>({
                 type: Number,
                 required: true
             }
+        },
+        projectsView: {
+            type: String,
+            required: true,
+            default: 'list',
+            enum: ['list', 'gantt']
         }
     }
 });
