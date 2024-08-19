@@ -9,14 +9,14 @@ let clock: InstalledClock | undefined; // the global clock
 export const setGlobalClock = async(req: any, res: any) => {
     const date = new Date(req.body.date);
     try {
-        // remove all scheduled jobs to prevent conflicts when setting the global clock
-        await jobSchedulerService.removeAllJobs();
-        // set the global clock
-        if(clock)
-            clock.uninstall();
-        clock = install({ now: date, shouldAdvanceTime: true, shouldClearNativeTimers: true });
-        // reschedule notifications
-        await rescheduleNotifications(timeService.getStartOfDay(new Date()));
+        const now = new Date();
+
+        // determine whether to reschedule notifications or not
+        // notifications are not rescheduled if the date is in the future, but on the same day
+        if(now < date && timeService.sameDay(now, date))
+            await setGlobalClockWithoutReschedule(date);
+        else
+            await setGlboalClockWithReschedule(date);
 
         console.log('Global clock set to:', date);
         res.status(200).send({ message: 'Global clock set to:', date });
@@ -24,6 +24,32 @@ export const setGlobalClock = async(req: any, res: any) => {
         res.status(500).send({ error: 'Error setting global clock' });
     }
 }
+
+const setGlboalClockWithReschedule = async (date: Date) => {
+    // remove all scheduled jobs to prevent conflicts when setting the global clock
+    await jobSchedulerService.removeAllJobs();
+
+    // set the global clock
+    if(clock)
+        clock.uninstall();
+    clock = install({ now: date, shouldAdvanceTime: true, shouldClearNativeTimers: true });
+
+    // reschedule notifications
+    await rescheduleNotifications(timeService.getStartOfDay(new Date()));
+}
+
+const setGlobalClockWithoutReschedule = async (date: Date) => {
+    // stop all jobs to avoid conflicts when setting the global clock
+    await jobSchedulerService.stopAllJobs();
+
+    // set the global clock
+    if(clock)
+        clock.uninstall();
+    clock = install({ now: date, shouldAdvanceTime: true, shouldClearNativeTimers: true });
+
+    // resume all jobs
+    await jobSchedulerService.resumeAllJobs();
+}   
 
 export const restoreGlobalClock = async(req: any, res: any) => {
     try {
