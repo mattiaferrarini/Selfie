@@ -15,7 +15,11 @@ export class Activity {
     }[];
     subActivitiesIDs: string[];
     pomodoro: null | undefined | {
-        cycles: number;
+        options: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
         completedCycles: {
             [username: string]: number
         };
