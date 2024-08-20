@@ -117,7 +117,7 @@ onMounted( async () => {
       <!-- shof if only todoData is not empty -->
       <div>
         <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode"></todoList>
-        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2">add todo list</button>
+        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2" :disabled="viewMode">add todo list</button>
       </div>
       <div class="flex flex-row flex-wrap justify-center">
         <p class="m-2">Creation date: {{ creation }}</p>
