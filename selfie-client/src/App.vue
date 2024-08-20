@@ -156,19 +156,23 @@ export default defineComponent({
       showTooltip.value = false;
     };
 
-    const setCurrentDate = () => {
+    const setCurrentDate = async () => {
+      const oldDate = new Date();
       const date = new Date(selectedDate.value);
       date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
 
-      timeMachineService.setGlobalClock(date);
+      await timeMachineService.setGlobalClock(date);
       dateStore.setCurrentDate(date);
+      dateStore.setTimeDiff(date.getTime() - oldDate.getTime());
 
       displayTimeMachineMessage('Time machine set.');
     };
 
     const resetDate = () => {
+      const oldDate = new Date();
       timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
+      dateStore.setTimeDiff((new Date()).getTime() - oldDate.getTime());
 
       displayTimeMachineMessage('Time machine reset.');
     };
