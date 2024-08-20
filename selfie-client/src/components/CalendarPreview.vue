@@ -102,6 +102,22 @@ export default defineComponent({
     },
   },
   methods: {
+    async fetchData() {
+      console.log("EXECUTED");
+      this.startOfDay = timeService.getStartOfDay(this.date);
+      this.endOfDay = timeService.getEndOfDay(this.date);
+      this.endOfEndOfWeek = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
+      const todayMidnight = timeService.getStartOfDay(this.date);
+      const sundayMidnight = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
+      const username = useAuthStore().user.username;
+
+      this.events = await eventService.getEventsByUser(username, todayMidnight, sundayMidnight);
+      this.activities = await activityService.getActivitiesByUser(username, todayMidnight, sundayMidnight);
+
+      this.computeEventsWithDates();
+      this.computeSortedActivities();
+      console.log(this.uncompletedActivitiesThisWeek, this.activitiesThisWeek);
+    },
     getEventsForPeriod(start: Date, end: Date): CalendarEvent[] {
       return this.eventsWithDates.filter((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => {
         return event.dates.start <= end && event.dates.end >= start;
@@ -135,15 +151,13 @@ export default defineComponent({
     },
   },
   async mounted() {
-    const todayMidnight = timeService.getStartOfDay(this.date);
-    const sundayMidnight = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
-    const username = useAuthStore().user.username;
-
-    this.events = await eventService.getEventsByUser(username, todayMidnight, sundayMidnight);
-    this.activities = await activityService.getActivitiesByUser(username, todayMidnight, sundayMidnight);
-
-    this.computeEventsWithDates();
-    this.computeSortedActivities();
+    await this.fetchData();
   },
+  watch: {
+    date: {
+      handler: 'fetchData',
+      immediate: true,
+    }
+  }
 });
 </script>

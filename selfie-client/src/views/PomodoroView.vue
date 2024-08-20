@@ -183,11 +183,12 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, watch} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
 import router from "@/router";
 import activityService from "@/services/activityService";
+import {useDateStore} from "@/stores/dateStore";
 
 export default defineComponent({
   data() {
@@ -229,6 +230,30 @@ export default defineComponent({
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
+    const dateStore = useDateStore();
+    watch(
+        () => dateStore.timeDiff,
+        (newTimeDiff) => {
+          if (this.timing) {
+            this.counter = Math.trunc(Math.min(Math.max(this.counter - newTimeDiff / 1000, 0), this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)));
+            if (this.activityId)
+              activityService.modifyActivity({
+                id: this.activityId,
+                pomodoro: {
+                  options: {
+                    workDuration: this.workDuration,
+                    pauseDuration: this.pauseDuration,
+                    numberOfCycles: this.numberOfCycles,
+                  },
+                  completedCycles: {
+                    [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                  }
+                }
+              });
+          }
+        },
+        { immediate: true }
+    );
   },
   computed: {
     formattedCounter(): string {
