@@ -33,6 +33,7 @@ class CustomDate {
 export const useDateStore = defineStore('date', {
     state: () => ({
         currentDate: new Date(),
+        timeDiff: 0,
     }),
     actions: {
         /*addDaysToCurrentDate(days: number) {
@@ -44,6 +45,9 @@ export const useDateStore = defineStore('date', {
         setCurrentDate(date: Date) {
             //this.currentDate.setDate(date);
             this.currentDate = date;
+        },
+        setTimeDiff(millisecondsDiff: number) {
+            this.timeDiff = millisecondsDiff;
         },
         getCurrentDate(): Date {
             //return this.currentDate.getDate();

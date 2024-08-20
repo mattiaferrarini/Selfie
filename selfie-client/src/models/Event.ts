@@ -45,7 +45,7 @@ export class CalendarEvent {
             repeat: string;
         } = {
             method: [],
-            when: 'atEvent',
+            when: '0 minutes',
             repeat: 'never'
         },
         participants: {
