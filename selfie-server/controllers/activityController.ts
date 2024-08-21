@@ -132,6 +132,7 @@ export const modifyActivity = async (req: any, res: any) => {
         const activity = await Activity.findById(id);
         if (activity) {
             const participantUsernames = req.body.participants?.map((participant: any) => participant.username);
+            const removedParticipants = req.body.participants ? activity.participants.filter((participant: any) => !participantUsernames.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
             if (req.body.pomodoro && req.body.pomodoro.completedCycles) {

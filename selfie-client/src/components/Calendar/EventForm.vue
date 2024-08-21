@@ -30,12 +30,20 @@
               :min="minEndTime">
           </div>
         </div>
+
+        <div class="flex items-center justify-between w-full gap-8">
+          <label for="timezone" class="flex-1">Time Zone</label>
+          <select v-model="newEvent.timezone" id="timezone" class="w-1/2 sm:w-auto text-center rounded-md" :disabled="!modificationAllowed">
+            <option v-for="tz in timeZones" :key="tz" :value="tz" style="word-wrap: break-word;">{{ tz }}</option>
+          </select>
+        </div>
       </div>
       <hr>
       <div>
         <label class="flex items-center justify-between w-full gap-4">
           Repeat
-          <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed">
+          <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="never">Never</option>
             <option v-if="dailyRepetitionAllowed" value="daily">Daily</option>
             <option v-if="weeklyRepetitionAllowed" value="weekly">Weekly</option>
@@ -45,7 +53,8 @@
         </label>
         <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
           Until
-          <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed">
+          <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="infinity">Infinity</option>
             <option value="n-reps">N repetitions</option>
             <option value="date">Date</option>
@@ -92,7 +101,7 @@
         <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
           When
           <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed"
-            @change="enforceRepetitionCoherence">
+            @change="enforceRepetitionCoherence" class="text-center rounded-md">
             <option value="atEvent">Time of event</option>
             <option value="5 minutes">5 min before</option>
             <option value="15 minutes">15 min before</option>
@@ -106,7 +115,8 @@
         </label>
         <label v-if="repeatedNotificationAllowed" class="flex items-center justify-between w-full gap-4">
           Repeat
-          <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed">
+          <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="never">Never</option>
             <option v-if="repetitionOptionAllowed('1 minute')" value="minute">Every minute</option>
             <option v-if="repetitionOptionAllowed('5 minutes')" value="5 minutes">Every 5 minutes</option>
@@ -157,6 +167,7 @@ import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import eventService from '@/services/eventService';
 import ConfirmationPanel from './ConfirmationPanel.vue';
+import moment from 'moment-timezone';
 
 export default defineComponent({
   components: {
@@ -196,7 +207,8 @@ export default defineComponent({
       showParticipantsForm: false,
       authStore: useAuthStore(),
       showExportPanel: false,
-      confirmationMessage: ''
+      confirmationMessage: '',
+      timeZones: moment.tz.names()
     }
   },
   mounted() {
@@ -206,13 +218,17 @@ export default defineComponent({
     onFormVisible() {
       if (!this.modifying) {
         // intialize default values for new event
-        console.log(this.currentDate);
+        this.newEvent.timezone = moment.tz.guess();
         this.newEvent.start = timeService.roundTime(this.currentDate);
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
         this.newEvent.participants = [
           { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
         ];
+      }
+      else{
+        this.newEvent.start = timeService.makeTimezoneLocal(this.newEvent.start, this.newEvent.timezone);
+        this.newEvent.end = timeService.makeTimezoneLocal(this.newEvent.end, this.newEvent.timezone);
       }
       this.setTimes();
     },
@@ -242,6 +258,9 @@ export default defineComponent({
         this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
         this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
       }
+
+      this.newEvent.start = timeService.convertToTimezone(this.newEvent.start, this.newEvent.timezone);
+      this.newEvent.end = timeService.convertToTimezone(this.newEvent.end, this.newEvent.timezone);
 
       this.$emit('saveEvent', this.newEvent);
     },
@@ -430,5 +449,9 @@ export default defineComponent({
 
 hr {
   margin: 0.5rem 0;
+}
+
+select {
+  padding: 0.15rem;
 }
 </style>

@@ -4,6 +4,7 @@ export class CalendarEvent {
     allDay: boolean;
     start: Date;
     end: Date;
+    timezone: string;
     repetition: {
         frequency: string;
         until: string;
@@ -27,6 +28,7 @@ export class CalendarEvent {
         allDay = false,
         start: Date = new Date(),
         end: Date = new Date(),
+        timezone = 'UTC',
         repetition: {
             frequency: string;
             until: string;
@@ -58,6 +60,7 @@ export class CalendarEvent {
         this.allDay = allDay;
         this.start = start;
         this.end = end;
+        this.timezone = timezone;
         this.repetition = repetition;
         this.location = location;
         this.notification = notification;

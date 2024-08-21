@@ -9,12 +9,13 @@
     "tailwind:watch": "npx tailwindcss -i ./src/assets/tailwind.css -o ./public/tailwind.css --watch"
   },
   "dependencies": {
-    "@vueuse/core": "^10.11.0",
     "@vuepic/vue-datepicker": "^9.0.1",
+    "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
     "core-js": "^3.8.3",
     "datebook": "^8.0.1",
     "file-saver": "^2.0.5",
+    "moment-timezone": "^0.5.45",
     "oh-vue-icons": "^1.0.0-rc3",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
