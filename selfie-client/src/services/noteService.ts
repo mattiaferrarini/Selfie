@@ -30,7 +30,7 @@ const create = async (content: string, title: string, creation: string, lastmodi
     }
 }
 
-const modify = async (id: string, title: string, content: string, lastmodify: Date, category: string, owners: [string], todoList: [any]) => {
+const modify = async (id: string, title: string, content: string, lastmodify: Date, category: string, owners: string[], todoList: any[]) => {
     try {
         const response = await axios.put(`${API_URL}/${id}`, { content, title, lastmodify, category, owners, todoList }, { withCredentials: true });
         return response.data;

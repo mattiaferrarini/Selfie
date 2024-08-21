@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {defineModel, defineProps, onBeforeMount, onMounted, reactive, ref} from "vue";
+import {defineModel, defineProps, onBeforeMount, ref} from "vue";
 import ActivityForm from "@/components/Calendar/ActivityForm.vue";
 import activityService from "@/services/activityService";
 import {useDateStore} from "@/stores/dateStore";
@@ -17,6 +17,7 @@ const addTodo = () => {
     title: newTodo.value,
     done: false
   });
+  newTodo.value = ""
 };
 
 const selectedActivity = ref<Activity>(new Activity());
@@ -38,28 +39,22 @@ const closeAddForms = () => {
 };
 
 const saveActivity = async (newActivity: any) => {
-  if (modifying.value) {
-    await activityService.modifyActivity(newActivity);
-  } else {
-    const activity = await activityService.addActivity(newActivity);
+  todoData.value[index].activityID = newActivity.id;
+  dones.value[index] = newActivity.done
+  deadlines.value[index] = newActivity.deadline.toLocaleDateString()
+  titles.value[index] = newActivity.title
 
-    todoData.value[index].activityID = activity.id;
-    dones.value[index] = activity.done
-    deadlines.value[index] = activity.deadline.toLocaleDateString("en-US")
-    titles.value[index] = activity.title
-  }
 
   closeAddForms()
 };
 
 const deleteActivity = async (activity: any) => {
-  await activityService.deleteActivity(activity);
   todoData.value[index].activityID = null;
-
   closeAddForms()
 };
 
 const makeActivity = (todo: any, i: number) => {
+  modifying.value = false;
   selectedActivity.value = new Activity();
   selectedActivity.value.title = todo.title;
   selectedActivity.value.done = todo.done;
@@ -68,6 +63,7 @@ const makeActivity = (todo: any, i: number) => {
 };
 
 const editActivity = async (todo: any, i: number) => {
+  modifying.value = true;
   selectedActivity.value = await activityService.getActivityById(todo.activityID);
 
   index = i;
@@ -79,7 +75,7 @@ onBeforeMount(async () => {
     if (todoData.value[i].activityID) {
       const activity = await activityService.getActivityById(todoData.value[i].activityID);
       dones.value[i] = activity.done
-      deadlines.value[i] = activity.deadline.toLocaleDateString("en-US")
+      deadlines.value[i] = activity.deadline.toLocaleDateString()
       titles.value[i] = activity.title
     }
   }

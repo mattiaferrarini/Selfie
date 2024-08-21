@@ -48,8 +48,8 @@ onMounted(async () => {
               <span class="bg-purple-500 break-words rounded w-fit">Category: {{ note.category }}</span>
 
               <div class="flex flex-col bg-blue-500 rounded w-fit">
-                <span class="break-words ">Created: {{ note.creation }}</span>
-                <span class="break-words">Updated: {{ note.lastmodify }}</span>
+                <span class="break-words ">Created: {{ new Date(note.creation).toLocaleString() }}</span>
+                <span class="break-words">Updated: {{ new Date(note.lastmodify).toLocaleString() }}</span>
               </div>
             </div>
             <div class="bg-black rounded h-1"></div>

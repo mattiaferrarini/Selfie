@@ -18,7 +18,7 @@ const category = ref();
 
 // owners edit
 const open_to_anyone = ref(false);
-const owners = ref(null);
+const owners = ref<string[]>([]);
 const users = ref([]);
 
 // markdown rendering
@@ -26,7 +26,7 @@ const viewMode = ref(true);
 const renderedMarkdown = ref("");
 
 // todoList
-const todoData = ref([]);
+const todoData = ref<any>([]);
 const todoListShow = ref(false);
 
 // useful functions
@@ -111,17 +111,17 @@ onMounted( async () => {
           placeholder="edit me"
           :disabled="viewMode">
       </textarea>
+      <div class="flex flex-row flex-wrap justify-center">
+        <p class="m-2">Creation date: {{ new Date(creation).toLocaleString() }}</p>
+        <p class="m-2">Last modification {{ new Date(lastmodify).toLocaleString() }}</p>
+      </div>
       <div class="flex justify-center">
         <input type="text" v-model="category" :disabled="viewMode" class="text-center m-2 focus:outline-none text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700">
       </div>
-      <!-- shof if only todoData is not empty -->
+      <!-- show if only todoData is not empty -->
       <div>
         <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode"></todoList>
         <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2" :disabled="viewMode">add todo list</button>
-      </div>
-      <div class="flex flex-row flex-wrap justify-center">
-        <p class="m-2">Creation date: {{ creation }}</p>
-        <p class="m-2">Last modification {{ lastmodify }}</p>
       </div>
       <div v-if="viewMode" class="flex justify-center">
         <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>
