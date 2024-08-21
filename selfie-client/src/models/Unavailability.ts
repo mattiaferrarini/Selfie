@@ -4,6 +4,7 @@ export class Unavailability {
     allDay: boolean;
     start: Date;
     end: Date;
+    timezone: string;
     repetition: {
         frequency: string;
         until: string;
@@ -17,6 +18,7 @@ export class Unavailability {
         allDay = false,
         start: Date = new Date(),
         end: Date = new Date(),
+        timezone = 'UTC',
         repetition: {
             frequency: string;
             until: string;
@@ -34,6 +36,7 @@ export class Unavailability {
         this.allDay = allDay;
         this.start = start;
         this.end = end;
+        this.timezone = timezone;
         this.repetition = repetition;
         this.username = username;
     }

@@ -29,6 +29,13 @@
             <input type="time" v-if="!newUnavailability.allDay" v-model="newEndTime" :min="minEndTime">
           </div>
         </div>
+
+        <div class="flex items-center justify-between w-full gap-8">
+          <label for="timezone" class="flex-1">Time Zone</label>
+          <select v-model="newUnavailability.timezone" id="timezone" class="w-1/2 sm:w-auto text-center rounded-md">
+            <option v-for="tz in timeZones" :key="tz" :value="tz" style="word-wrap: break-word;">{{ tz }}</option>
+          </select>
+        </div>
       </div>
       <hr>
       <div>
@@ -80,6 +87,7 @@ import { Unavailability } from '@/models/Unavailability';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import ConfirmationPanel from './ConfirmationPanel.vue';
+import moment from 'moment-timezone';
 
 export default defineComponent({
   components: {
@@ -106,7 +114,8 @@ export default defineComponent({
       newUnavailability: { ...this.unavailability },
       newStartTime: "",
       newEndTime: "",
-      confirmationMessage: ""
+      confirmationMessage: "",
+      timeZones: moment.tz.names()
     }
   },
   mounted() {
@@ -119,6 +128,10 @@ export default defineComponent({
         this.newUnavailability.end = timeService.moveAheadByHours(this.newUnavailability.start, 1);
         this.newUnavailability.repetition.endDate = new Date(this.newUnavailability.end);
         this.newUnavailability.username = this.authStore.user.username;
+      }
+      else{
+        this.newUnavailability.start = timeService.makeTimezoneLocal(this.newUnavailability.start, this.newUnavailability.timezone);
+        this.newUnavailability.end = timeService.makeTimezoneLocal(this.newUnavailability.end, this.newUnavailability.timezone);
       }
       this.newStartTime = timeService.formatTime(this.newUnavailability.start);
       this.newEndTime = timeService.formatTime(this.newUnavailability.end);
@@ -137,6 +150,9 @@ export default defineComponent({
         this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
         this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
       }
+
+      this.newUnavailability.start = timeService.convertToTimezone(this.newUnavailability.start, this.newUnavailability.timezone);
+      this.newUnavailability.end = timeService.convertToTimezone(this.newUnavailability.end, this.newUnavailability.timezone);
 
       this.$emit('saveUnavailability', this.newUnavailability);
     },
