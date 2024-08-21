@@ -119,7 +119,8 @@ export const modifyEvent = async (req: any, res: any) => {
         const event = await Event.findById(id);
 
         if (event) {
-            const removedParticipants = event.participants.filter((participant: any) => !req.body.participants.includes(participant.username));
+            const participantUsernames = req.body.participants?.map((participant: any) => participant.username);
+            const removedParticipants = req.body.participants ? event.participants.filter((participant: any) => !participantUsernames.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
             event.title = req.body.title;

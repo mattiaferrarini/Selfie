@@ -115,7 +115,7 @@ export default defineComponent({
   methods: {
     onFormVisible() {
       if (!this.modifying) {
-        this.newUnavailability.start = timeService.roundTime(this.currentDate);
+        this.newUnavailability.start = timeService.roundTime(new Date());
         this.newUnavailability.end = timeService.moveAheadByHours(this.newUnavailability.start, 1);
         this.newUnavailability.repetition.endDate = new Date(this.newUnavailability.end);
         this.newUnavailability.username = this.authStore.user.username;

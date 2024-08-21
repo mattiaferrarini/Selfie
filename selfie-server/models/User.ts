@@ -47,7 +47,7 @@ export interface IUser extends Document {
             pomodoroType: PomodoroType;
         };
         notificationType: NotificationType;
-        notes: Object; // Adjust the type based on your requirements
+        notes: Object;
         pomodoro: {
             workDuration: number;
             pauseDuration: number;
@@ -69,7 +69,8 @@ const UserSchema: Schema = new Schema<IUser>({
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: /^[a-zA-Z0-9_]*$/ // Only letters, numbers and underscores
     },
     email: {
         type: String,
@@ -117,7 +118,8 @@ const UserSchema: Schema = new Schema<IUser>({
             pomodoroType: {
                 type: String,
                 required: true,
-                enum: ['settings', 'stats']
+                enum: ['settings', 'stats'],
+                default: 'stats'
             }
         },
         notificationType: {

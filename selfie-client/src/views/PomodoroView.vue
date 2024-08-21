@@ -183,15 +183,17 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, watch} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
 import router from "@/router";
 import activityService from "@/services/activityService";
+import {useDateStore} from "@/stores/dateStore";
 
 export default defineComponent({
   data() {
     return {
+      username: useAuthStore().user.username,
       timing: false,
       showModal: false,
       showYoutubeModal: false,
@@ -214,19 +216,32 @@ export default defineComponent({
   },
   created() {
     const pomodoroPreferences = useAuthStore().user.preferences.pomodoro;
-    if (pomodoroPreferences) {
+    if (router.currentRoute.value.params.activityId) {
+      this.activityId = router.currentRoute.value.params.activityId as string;
+      activityService.getActivityById(this.activityId).then((activity) => {
+        this.workDuration = activity.pomodoro.options.workDuration;
+        this.pauseDuration = activity.pomodoro.options.pauseDuration;
+        this.numberOfCycles = activity.pomodoro.options.numberOfCycles;
+        this.counter = (activity.pomodoro.options.numberOfCycles - activity.pomodoro.completedCycles[this.username]) * 60 * (this.workDuration + this.pauseDuration)
+      });
+    } else if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
-    if (router.currentRoute.value.params.activityId) {
-      this.activityId = router.currentRoute.value.params.activityId as string;
-      activityService.getActivityById(this.activityId).then((activity) => {
-        this.numberOfCycles = activity.pomodoro.cycles;
-        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
-      });
-    }
+
+    const dateStore = useDateStore();
+    watch(
+        () => dateStore.timeDiff,
+        (newTimeDiff) => {
+          if (this.timing) {
+            this.counter = Math.trunc(Math.min(Math.max(this.counter - newTimeDiff / 1000, 0), this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)));
+            // TODO: update
+          }
+        },
+        { immediate: true }
+    );
   },
   computed: {
     formattedCounter(): string {
@@ -259,8 +274,14 @@ export default defineComponent({
             activityService.modifyActivity({
               id: this.activityId,
               pomodoro: {
-                cycles: this.numberOfCycles,
-                completedCycles: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                options: {
+                  workDuration: this.workDuration,
+                  pauseDuration: this.pauseDuration,
+                  numberOfCycles: this.numberOfCycles,
+                },
+                completedCycles: {
+                  [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                }
               }
             });
           }
@@ -283,8 +304,14 @@ export default defineComponent({
       activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
-          completedCycles: this.numberOfCycles - cycle
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles,
+          },
+          completedCycles: {
+            [this.username]: this.numberOfCycles - cycle
+          }
         }
       });
     },
@@ -303,13 +330,27 @@ export default defineComponent({
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      profileService.updatePreferences({
-        pomodoro: {
-          workDuration: this.workDuration,
-          pauseDuration: this.pauseDuration,
-          numberOfCycles: this.numberOfCycles
-        }
-      });
+      if (this.activityId) {
+        activityService.modifyActivity({
+          id: this.activityId,
+          pomodoro: {
+            options: {
+              workDuration: this.workDuration,
+              pauseDuration: this.pauseDuration,
+              numberOfCycles: this.numberOfCycles
+            },
+            completedCycles: {}
+          }
+        });
+      } else {
+        profileService.updatePreferences({
+          pomodoro: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          }
+        });
+      }
       this.showModal = false;
     },
     openEditModal() {
@@ -324,8 +365,12 @@ export default defineComponent({
       activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
-          completedCycles: this.setCycleNumber - 1
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          },
+          completedCycles: {[this.username]: this.setCycleNumber - 1}
         }
       });
       this.showEditModal = false;

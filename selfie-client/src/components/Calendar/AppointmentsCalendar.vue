@@ -28,7 +28,7 @@
                                 @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                 <div class="flex flex-wrap justify-end space-x-4">
-                                    <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles + '/' + activity.pomodoro.cycles + ' cicli' : '' }}</span>
+                                    <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles[username] + '/' + activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}</span>
                                     <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
                                     <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
                                     <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
@@ -65,6 +65,7 @@ import { Unavailability } from '@/models/Unavailability';
 import { Activity } from '@/models/Activity';
 import { useDateStore } from '@/stores/dateStore';
 import router from "@/router";
+import {useAuthStore} from "@/stores/authStore";
 
 export default defineComponent({
     name: 'AppointmentsCalendar',
@@ -106,7 +107,8 @@ export default defineComponent({
     data() {
         return {
             timeMethods: timeMethods,
-            dateStore: useDateStore()
+            dateStore: useDateStore(),
+            username: useAuthStore().user.username
         };
     },
     methods: {
