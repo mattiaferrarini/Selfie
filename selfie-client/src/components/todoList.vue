@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {defineModel, defineProps, onBeforeMount, ref} from "vue";
+import {defineModel, defineProps, onBeforeMount, onMounted, reactive, ref} from "vue";
 import ActivityForm from "@/components/Calendar/ActivityForm.vue";
 import activityService from "@/services/activityService";
 import {useDateStore} from "@/stores/dateStore";
@@ -24,6 +24,12 @@ const selectedActivity = ref<Activity>(new Activity());
 const dateStore = useDateStore();
 const currentDate = ref(new Date(dateStore.getCurrentDate()));
 
+let index: number;
+
+const dones = ref<boolean[]>([])
+const deadlines = ref<string[]>([])
+const titles = ref<string[]>([])
+
 const showActivityForm = ref(false);
 const modifying = ref(false);
 
@@ -36,8 +42,11 @@ const saveActivity = async (newActivity: any) => {
     await activityService.modifyActivity(newActivity);
   } else {
     const activity = await activityService.addActivity(newActivity);
-    console.error(activity, activity.id);
-    todoData.value[0].activityID = activity.id; // TODO: works for only the first
+
+    todoData.value[index].activityID = activity.id;
+    dones.value[index] = activity.done
+    deadlines.value[index] = activity.deadline.toLocaleDateString("en-US")
+    titles.value[index] = activity.title
   }
 
   closeAddForms()
@@ -45,24 +54,36 @@ const saveActivity = async (newActivity: any) => {
 
 const deleteActivity = async (activity: any) => {
   await activityService.deleteActivity(activity);
-  todoData.value[0].activityID = null;
+  todoData.value[index].activityID = null;
+
   closeAddForms()
 };
 
-const makeActivity = (todo: any) => {
+const makeActivity = (todo: any, i: number) => {
   selectedActivity.value = new Activity();
   selectedActivity.value.title = todo.title;
   selectedActivity.value.done = todo.done;
+  index = i;
   showActivityForm.value = true;
 };
 
-const editActivity = async (todo: any) => {
+const editActivity = async (todo: any, i: number) => {
   selectedActivity.value = await activityService.getActivityById(todo.activityID);
-  selectedActivity.value.title = todo.title;
-  selectedActivity.value.done = todo.done;
+
+  index = i;
   showActivityForm.value = true;
 };
 
+onBeforeMount(async () => {
+  for (let i = 0; i < todoData.value.length; i++) {
+    if (todoData.value[i].activityID) {
+      const activity = await activityService.getActivityById(todoData.value[i].activityID);
+      dones.value[i] = activity.done
+      deadlines.value[i] = activity.deadline.toLocaleDateString("en-US")
+      titles.value[i] = activity.title
+    }
+  }
+})
 
 </script>
 
@@ -80,16 +101,17 @@ const editActivity = async (todo: any) => {
           :current-date="currentDate" class="m-4"/>
     </div>
     <ul>
-      <li v-for="todo in todoData" :key="todo.title" class="pb-3">
+      <li v-for="(todo, i) in todoData" :key="todo.title" class="pb-3">
         <div v-if="!todo.activityID" class="flex flex-row justify-between">
           <input type="checkbox" v-model="todo.done" :disabled="editable">
           <span>{{ todo.title }}</span>
-          <button class="bg-yellow-400 rounded-lg p-1" @click="makeActivity(todo)" :disabled="editable">Make Activity</button>
+          <button class="bg-yellow-400 rounded-lg p-1" @click="makeActivity(todo, i)" :disabled="editable">Make Activity</button>
         </div>
         <div v-else class="flex flex-row justify-between">
-          <input type="checkbox" v-model="todo.done" disabled>
-          <span>{{ todo.title }}</span>
-          <button class="bg-yellow-400 rounded-lg p-1" @click="editActivity(todo)" :disabled="editable">Edit Activity</button>
+          <input type="checkbox" :checked="dones[i]" disabled>
+          <span>{{ titles[i] }}</span>
+          <span>Deadline: {{ deadlines[i] }}</span>
+          <button class="bg-yellow-400 rounded-lg p-1" @click="editActivity(todo, i)" :disabled="editable">Edit Activity</button>
         </div>
       </li>
     </ul>
