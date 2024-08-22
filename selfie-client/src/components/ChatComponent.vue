@@ -8,6 +8,7 @@
         Add
       </button>
     </div>
+    <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
     <label for="selectedChat">Select chat</label>
     <select v-model="selectedUser" id="selectedChat" class="p-2 border">
       <option v-for="user in users" :key="user" :value="user">{{ user }}</option>
@@ -24,7 +25,7 @@
     </div>
     <div class="flex">
       <textarea type="text" v-model="newMessage" v-on:keyup.enter="sendMessage" placeholder="Type a message..."
-             class="flex-grow p-2 border rounded-l-lg"/>
+                class="flex-grow p-2 border rounded-l-lg"/>
       <button @click="sendMessage" class="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded-r-lg">
         Send
       </button>
@@ -37,6 +38,7 @@ import {computed, defineComponent, ref} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import {useWebSocketStore} from "@/stores/wsStore";
 import {storeToRefs} from "pinia";
+import userService from "@/services/userService";
 
 export default defineComponent({
   setup() {
@@ -47,16 +49,26 @@ export default defineComponent({
     const users = computed(() => Array.from(messages.value.keys()));
 
     const selectedUser = ref();
-    const newUser = ref();
+    const newUser = ref('');
+    const errorMessage = ref('');
     const newMessage = ref('');
 
     selectedUser.value = users.value[0];
 
     const addUser = () => {
       if (newUser.value.trim() !== '') {
-        users.value.push(newUser.value);
-        selectedUser.value = newUser.value;
-        newUser.value = '';
+        userService.getUserBasicInfo(newUser.value).then((user) => {
+          if (!user) {
+            errorMessage.value = 'User doesn\'t exist!';
+          } else if (!users.value.includes(newUser.value)) {
+            users.value.push(newUser.value);
+            selectedUser.value = newUser.value;
+            newUser.value = '';
+            errorMessage.value = '';
+          } else {
+            errorMessage.value = 'Chat already existing!';
+          }
+        });
       }
     }
 
@@ -73,6 +85,7 @@ export default defineComponent({
       username,
       selectedUser,
       newUser,
+      errorMessage,
       newMessage,
       sendMessage,
       addUser,

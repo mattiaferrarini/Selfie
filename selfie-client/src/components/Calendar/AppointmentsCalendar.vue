@@ -28,7 +28,7 @@
                                 @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                 <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                 <div class="flex flex-wrap justify-end space-x-4">
-                                    <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles + '/' + activity.pomodoro.cycles + ' cicli' : '' }}</span>
+                                    <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles[username] + '/' + activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}</span>
                                     <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
                                     <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon name="md-done"></v-icon></button>
                                     <button v-else @click="undoActivity(activity)" @click.stop><v-icon name="fa-undo"></v-icon></button>
@@ -59,11 +59,13 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import timeMethods from '../../services/timeService';
+import eventRecurrenceService from '@/services/eventRecurrenceService';
 import { CalendarEvent } from '@/models/Event';
 import { Unavailability } from '@/models/Unavailability';
 import { Activity } from '@/models/Activity';
 import { useDateStore } from '@/stores/dateStore';
 import router from "@/router";
+import {useAuthStore} from "@/stores/authStore";
 
 export default defineComponent({
     name: 'AppointmentsCalendar',
@@ -105,7 +107,8 @@ export default defineComponent({
     data() {
         return {
             timeMethods: timeMethods,
-            dateStore: useDateStore()
+            dateStore: useDateStore(),
+            username: useAuthStore().user.username
         };
     },
     methods: {
@@ -208,81 +211,11 @@ export default defineComponent({
             this.$emit('modifyUnavailability', unav);
         },
         getNextRepetition(event: any, referenceDate: Date): { start: Date, end: Date } {
-            if (event.repetition.frequency === 'never' || event.start > timeMethods.getEndOfDay(referenceDate))
-                return { start: event.start, end: event.end };
-
-            let nextRepetition = new Date();
-            let nextRepetitionEnd = new Date();
-
-            if (event.repetition.frequency == 'daily') {
-                nextRepetition = new Date(referenceDate);
-            }
-            else if (event.repetition.frequency == 'weekly') {
-                let distanceFromStart = timeMethods.dayDifference(referenceDate, event.start);
-                let previousRepetition = timeMethods.moveAheadByDays(event.start, distanceFromStart - distanceFromStart % 7);
-
-                if (distanceFromStart % 7 <= timeMethods.dayDifference(event.end, event.start))
-                    nextRepetition = previousRepetition;
-                else
-                    nextRepetition = timeMethods.moveAheadByDays(previousRepetition, 7);
-            }
-            else if (event.repetition.frequency == 'monthly') {
-                let distanceFromStart = timeMethods.monthDifference(referenceDate, event.start);
-                let previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart);
-
-                if (previousRepetition.getDate() > referenceDate.getDate())
-                    previousRepetition = timeMethods.moveAheadByMonths(event.start, distanceFromStart - 1);
-
-                if (timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
-                    nextRepetition = previousRepetition;
-                else
-                    nextRepetition = timeMethods.moveAheadByMonths(previousRepetition, 1);
-            }
-            else if (event.repetition.frequency == 'yearly') {
-                let distanceFromStart = timeMethods.yearDifference(referenceDate, event.start);
-                let previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart);
-
-                if (previousRepetition > referenceDate)
-                    previousRepetition = timeMethods.moveAheadByYears(event.start, distanceFromStart - 1);
-
-                if (timeMethods.dayDifference(referenceDate, previousRepetition) <= timeMethods.dayDifference(event.end, event.start))
-                    nextRepetition = previousRepetition;
-                else
-                    nextRepetition = timeMethods.moveAheadByYears(previousRepetition, 1);
-            }
-            else {
-                nextRepetition = new Date(event.start);
-            }
-
-            // set times and compute end date
-            nextRepetition.setHours(event.start.getHours());
-            nextRepetition.setMinutes(event.start.getMinutes());
-
-            const offset = event.end.getTime() - event.start.getTime();
-            nextRepetitionEnd.setTime(nextRepetition.getTime() + offset);
-
-            return { start: nextRepetition, end: nextRepetitionEnd };
+            return eventRecurrenceService.getNextRepetition(event, referenceDate);
         },
         // this assumes that the provided dates were obtained from the getNextRepetition method
         isValidRepetition(event: any, repStart: Date, repEnd: Date): boolean {
-            if (event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
-                return true;
-            else if (event.repetition.until === 'date' && repEnd <= timeMethods.getEndOfDay(event.repetition.endDate))
-                return true;
-            else if (event.repetition.until === 'n-reps') {
-                if (event.repetition.frequency === 'daily')
-                    return timeMethods.dayDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
-                else if (event.repetition.frequency === 'weekly')
-                    return timeMethods.dayDifference(repStart, event.start) / 7 < event.repetition.numberOfRepetitions;
-                else if (event.repetition.frequency === 'monthly')
-                    return timeMethods.monthDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
-                else if (event.repetition.frequency === 'yearly')
-                    return timeMethods.yearDifference(repStart, event.start) < event.repetition.numberOfRepetitions;
-                else
-                    return false;
-            }
-            else
-                return false;
+            return eventRecurrenceService.isValidRepetition(event, repStart, repEnd);
         },
         isLateActivity(activity: Activity, date: Date): boolean {
             const startOfDay = timeMethods.getStartOfDay(date);

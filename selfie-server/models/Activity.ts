@@ -16,8 +16,12 @@ export interface IActivity extends Document{
     }[];
     subActivitiesIDs: string[];
     pomodoro?: {
-        cycles: number;
-        completedCycles: number;
+        options: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
+        completedCycles: Map<string, number>
     };
 }
 
@@ -71,12 +75,27 @@ const ActivitySchema = new Schema({
     },
     pomodoro: {
         type: {
-            cycles: {
-                type: Number,
+            options: {
+                type: {
+                    workDuration: {
+                        type: Number,
+                        required: true
+                    },
+                    pauseDuration: {
+                        type: Number,
+                        required: true
+                    },
+                    numberOfCycles: {
+                        type: Number,
+                        required: true
+                    }
+                },
                 required: true
             },
             completedCycles: {
-                type: Number,
+                type: Map,
+                of: Number,
+                default: 0,
                 required: true
             },
         },

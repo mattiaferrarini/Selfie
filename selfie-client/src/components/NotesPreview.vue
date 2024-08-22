@@ -32,7 +32,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-4 bg-white rounded-lg shadow border m-4">
+  <div class="p-4 bg-white rounded-lg shadow border">
     <h3 class="text-lg font-semibold text-gray-800">Recent Notes</h3>
     <ul class="list-disc pl-5">
       <li v-for="note in noteList" :key="note.id" class="text-gray-600">
