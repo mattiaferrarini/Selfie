@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
+  <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -14,7 +14,7 @@
       <div>
         <label><input type="checkbox" v-model="newEvent.allDay" :disabled="!modificationAllowed"> All-day</label><br>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mt-3">
           <label> Start </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
@@ -22,7 +22,7 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mb-3">
           <label> End </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed" :min="minEndDate">
@@ -51,7 +51,7 @@
             <option v-if="yearlyRepetitionAllowed" value="yearly">Yearly</option>
           </select>
         </label>
-        <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4 mt-1">
           Until
           <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed"
             class="text-center rounded-md">
@@ -60,12 +60,12 @@
             <option value="date">Date</option>
           </select>
         </label>
-        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4 mt-1">
           Number of repetitions
           <input type="number" min="1" v-model="newEvent.repetition.numberOfRepetitions"
             style="max-width: 4em; text-align: center" :disabled="!modificationAllowed">
         </label>
-        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4 mt-1">
           End date
           <input type="date" v-model="formattedRepeatEndDate" :disabled="!modificationAllowed" :min="minRepEndDate">
         </label>
@@ -98,7 +98,7 @@
               Whatsapp </label>
           </div>
         </div>
-        <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
+        <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4 mt-1">
           When
           <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed"
             @change="enforceRepetitionCoherence" class="text-center rounded-md">
@@ -113,7 +113,7 @@
             <option value="1 week">1 week before</option>
           </select>
         </label>
-        <label v-if="repeatedNotificationAllowed" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatedNotificationAllowed" class="flex items-center justify-between w-full gap-4 mt-1">
           Repeat
           <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed"
             class="text-center rounded-md">
@@ -129,17 +129,17 @@
         </label>
       </div>
       <hr>
-      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-4">
-        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-1 rounded-lg bg-gray-300">Export
+      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-8">
+        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Export
           event</button>
-        <div v-else class="text-center">
-          <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import event</label>
+        <div v-else class="text-center cursor-pointer">
+          <label id="event-upload" for="fileInput" class="w-full p-2 rounded-lg bg-gray-400 block text-white">Import event</label>
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
         <div class="flex w-full space-x-1">
           <button v-if="modifying" type="button" @click="deleteEvent"
-            class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-          <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+            class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
+          <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
         </div>
       </div>
       <div v-else class="mt-4">
@@ -452,6 +452,6 @@ hr {
 }
 
 select {
-  padding: 0.15rem;
+  padding: 0.25rem;
 }
 </style>

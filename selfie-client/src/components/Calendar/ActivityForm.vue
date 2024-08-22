@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
+    <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
         <div class="flex justify-end">
             <button @click="closeForm">
                 <v-icon name="md-close" />
@@ -7,11 +7,11 @@
         </div>
         <form class="flex flex-col" @submit="handleSubmit">
             <div>
-                <label><input type="text" placeholder="Untitled Activity" required
+                <label><input type="text" placeholder="Untitled Activity" required class="w-full"
                         v-model="newActivity.title"></label><br>
             </div>
             <hr>
-            <div>
+            <div class="mb-2">
                 <label><input type="checkbox" v-model="newActivity.done"> Completed </label><br>
             </div>
             <div>
@@ -41,11 +41,13 @@
                         <v-icon name="md-navigatenext" />
                     </button>
                 </div>
-            <hr>
+                <hr>
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
-                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null" @click="newActivity.pomodoro = newActivity.pomodoro == null ? {cycles:1, completedCycles: {[authStore.user.username]: 0}} : null" /> Pomodoro</label>
+                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null"
+                            @click="newActivity.pomodoro = newActivity.pomodoro == null ? { cycles: 1, completedCycles: { [authStore.user.username]: 0 } } : null" />
+                        Pomodoro</label>
                 </div>
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
                     <span class="flex-1">Cycles</span>
@@ -53,7 +55,8 @@
                 </label>
                 <label v-if="newActivity.pomodoro" class="flex items-center justify-between w-full gap-4">
                     <span class="flex-1">Completed Cycles</span>
-                    <input type="number" v-model="newActivity.pomodoro.completedCycles[authStore.user.username]" class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
+                    <input type="number" v-model="newActivity.pomodoro.completedCycles[authStore.user.username]"
+                        class="flex-1" min="0" :max="newActivity.pomodoro.cycles" required />
                 </label>
             </div>
             <hr>
@@ -66,7 +69,7 @@
                         <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
                     </div>
                 </div>
-                <label v-if="false" class="flex items-center justify-between w-full gap-4">
+                <label v-if="false" class="flex items-center justify-between w-full gap-4 mt-1">
                     How long
                     <select name="whenNotify" v-model="newActivity.notification.when">
                         <option value="atEvent">Day of deadline</option>
@@ -77,7 +80,7 @@
                         <option value="1month">1 month after</option>
                     </select>
                 </label>
-                <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4">
+                <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4 mt-1">
                     Frequency
                     <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36">
                         <!-- <option value="never">Never</option> -->
@@ -88,19 +91,19 @@
                 </label>
             </div>
             <hr>
-            <div class="flex-col space-y-1 w-full mt-4">
+            <div class="flex-col space-y-1 w-full mt-8">
                 <button v-if="modifying" type="button" @click="openExportPanel"
-                    class="w-full p-1 rounded-lg bg-gray-300">Export
-                    as event</button>
-                <div v-else class="text-center">
-                    <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import
+                    class="w-full p-2 rounded-lg bg-gray-400 text-white">Export as event</button>
+                <div v-else class="text-center cursor-pointer">
+                    <label id="event-upload" for="fileInput"
+                        class="w-full p-2 rounded-lg bg-gray-400 text-white block">Import
                         activity</label>
                     <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
                 </div>
                 <div class="flex w-full space-x-1">
                     <button v-if="modifying" type="button" @click="deleteActivity"
-                        class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+                        class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
                 </div>
             </div>
         </form>
@@ -282,6 +285,11 @@ export default defineComponent({
 
 <style scoped>
 hr {
-  margin: 0.5rem 0;
+    margin: 0.5rem 0;
+}
+
+select {
+    padding: 0.25rem;
+    border-radius: 0.375rem;
 }
 </style>

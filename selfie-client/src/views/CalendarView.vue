@@ -155,14 +155,17 @@ export default defineComponent({
     const openAddEventForm = () => {
       selectedEvent.value = new CalendarEvent();
       showEventForm.value = true;
+      showAddOptions.value = false;
     };
     const openAddActivityForm = () => {
       selectedActivity.value = new Activity();
       showActivityForm.value = true;
+      showAddOptions.value = false;
     };
     const openUnavailabilityForm = () => {
       selectedUnavailability.value = new Unavailability();
       showUnavailabilityForm.value = true;
+      showAddOptions.value = false;
     };
 
     /* Open forms to modify events, activities, and unavailabilities */
@@ -386,9 +389,9 @@ export default defineComponent({
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">
       <ul class="mr-4 mb-4 self-start" v-if="showAddOptions">
-        <li><button class="add-button" @click.stop="openAddEventForm">Event</button></li>
-        <li><button class="add-button" @click.stop="openAddActivityForm">Activity</button></li>
-        <li><button class="add-button" @click.stop="openUnavailabilityForm">Unavailability</button></li>
+        <li><button class="add-button" @click.stop="openAddEventForm"><v-icon name="md-event" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Event</button></li>
+        <li><button class="add-button mt-1" @click.stop="openAddActivityForm"><v-icon name="md-eventavailable" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Activity</button></li>
+        <li><button class="add-button mt-1" @click.stop="openUnavailabilityForm"><v-icon name="md-block" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Unavailability</button></li>
       </ul>
       <button @click.stop="openAddOptions" id="open-add-form-btn" v-if="showAddButton"
         class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
@@ -403,7 +406,7 @@ export default defineComponent({
       </button>
     </div>
 
-    <div v-if="showForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50"
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
@@ -416,7 +419,7 @@ export default defineComponent({
         :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" class="m-4" />
     </div>
 
-    <div v-if="showInviteList" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
+    <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
         <h2 class="text-lg font-bold mb-4">Pending invites</h2>
         <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites" @accept-invite="acceptInvite"/>
@@ -437,8 +440,20 @@ export default defineComponent({
   text-align: left;
   background-color: #f2f2f2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.5em 1em;
+  padding-left: 0.75rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75rem; /* 28px */
+}
+
+.add-button:hover {
+  background-color: #e5e5e5;
 }
 </style>
 

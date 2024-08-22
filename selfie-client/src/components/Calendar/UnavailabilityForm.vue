@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
+  <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -7,14 +7,14 @@
     </div>
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
-        <label><input type="text" placeholder="Untitled Unavailability" required
+        <label><input type="text" placeholder="Untitled Unavailability" required class="w-full"
             v-model="newUnavailability.title"></label><br>
       </div>
       <hr>
       <div>
         <label><input type="checkbox" v-model="newUnavailability.allDay"> All-day</label><br>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mt-3">
           <label> Start </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedStartDate">
@@ -22,7 +22,7 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mb-3">
           <label> End </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedEndDate" :min="minEndDate">
@@ -49,7 +49,7 @@
             <option v-if="yearlyRepetitionAllowed" value="yearly">Yearly</option>
           </select>
         </label>
-        <label v-if="repeatNew" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNew" class="flex items-center justify-between w-full gap-4 mt-1">
           Until
           <select name="until" v-model="newUnavailability.repetition.until">
             <option value="infinity">Infinity</option>
@@ -57,21 +57,21 @@
             <option value="date">Date</option>
           </select>
         </label>
-        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4 mt-1">
           Number of repetitions
-          <input type="number" min="0" v-model="newUnavailability.repetition.numberOfRepetitions"
+          <input type="number" min="1" v-model="newUnavailability.repetition.numberOfRepetitions"
             style="max-width: 4em; text-align: center">
         </label>
-        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4 mt-1">
           End date
           <input type="date" v-model="formattedRepeatEndDate" :min="minRepEndDate">
         </label>
       </div>
       <hr>
-      <div class="flex w-full space-x-1">
+      <div class="flex w-full space-x-1 mt-8">
         <button v-if="modifying" type="button" @click="deleteUnavailability"
-          class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-        <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+          class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
+        <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
       </div>
     </form>
 
@@ -124,6 +124,7 @@ export default defineComponent({
   methods: {
     onFormVisible() {
       if (!this.modifying) {
+        this.newUnavailability.timezone = moment.tz.guess();
         this.newUnavailability.start = timeService.roundTime(this.currentDate);
         this.newUnavailability.end = timeService.moveAheadByHours(this.newUnavailability.start, 1);
         this.newUnavailability.repetition.endDate = new Date(this.newUnavailability.end);
@@ -260,5 +261,11 @@ export default defineComponent({
 <style scoped>
 hr {
   margin: 0.5rem 0;
+}
+
+select {
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    text-align: center;
 }
 </style>
