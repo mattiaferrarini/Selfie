@@ -230,17 +230,29 @@ export default defineComponent({
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
-
     const dateStore = useDateStore();
     watch(
         () => dateStore.timeDiff,
         (newTimeDiff) => {
           if (this.timing) {
             this.counter = Math.trunc(Math.min(Math.max(this.counter - newTimeDiff / 1000, 0), this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)));
-            // TODO: update
+            if (this.activityId)
+              activityService.modifyActivity({
+                id: this.activityId,
+                pomodoro: {
+                  options: {
+                    workDuration: this.workDuration,
+                    pauseDuration: this.pauseDuration,
+                    numberOfCycles: this.numberOfCycles,
+                  },
+                  completedCycles: {
+                    [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                  }
+                }
+              });
           }
         },
-        { immediate: true }
+        {immediate: true}
     );
   },
   computed: {
@@ -248,8 +260,8 @@ export default defineComponent({
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
       let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60)
       let seconds = cycle_time % 60;
-      // pad seconds and if minutes == 0 set it to workDuration
-      !minutes && (minutes = this.workDuration);
+      // set minutes if it's the start of a cycle and pad seconds
+      (this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) && (minutes = this.workDuration);
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     },
     pauseOrWork(): string {
@@ -263,14 +275,14 @@ export default defineComponent({
     },
   },
   methods: {
-    // TODO: update database in relevant methods?
     playOrPause() {
       if (this.timing) {
         clearInterval(this.intervalRef);
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
-          if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
+          let remainingCycleTime = this.counter % ((this.workDuration + this.pauseDuration) * 60);
+          if (this.activityId && remainingCycleTime == 0) {
             activityService.modifyActivity({
               id: this.activityId,
               pomodoro: {
@@ -285,14 +297,20 @@ export default defineComponent({
               }
             });
           }
-          // TODO: check and notify the user
-          if (this.counter <= 0) {
+          if ((remainingCycleTime == this.pauseDuration * 60 || remainingCycleTime == 0) && this.counter > 0) {
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: remainingCycleTime == 0 ? 'Pause time is over!' : 'Work time is over!',
+            });
+          } else if (this.counter <= 0) {
             clearInterval(this.intervalRef);
             this.counter = 0;
             this.timing = false;
             if (this.activityId) {
               activityService.modifyActivity({id: this.activityId, done: true});
             }
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: 'Pomodoro is over!',
+            });
           }
         }, 1000);
       }
@@ -301,7 +319,7 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
-      activityService.modifyActivity({
+      this.activityId && activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
           options: {
@@ -362,7 +380,7 @@ export default defineComponent({
     },
     saveEditChanges() {
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
-      activityService.modifyActivity({
+      this.activityId && activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
           options: {
