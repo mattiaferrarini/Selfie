@@ -22,19 +22,6 @@ class ConditionalRender extends HTMLElement {
 
 customElements.define('conditional-render', ConditionalRender);
 
-// Transform toISOString to always use Locale
-function decorateLocaleToISOString() {
-    const originalToISOString = Date.prototype.toISOString;
-
-    Date.prototype.toISOString = function () {
-        const translatedDate = new Date(this.getTime() - this.getTimezoneOffset() * 60 * 1000);
-        return originalToISOString.call(translatedDate);
-    };
-}
-
-// Apply the decorator
-decorateLocaleToISOString();
-
 document.addEventListener('DOMContentLoaded', () => {
     // check auth status
     const auth = JSON.parse(localStorage.getItem('auth') || null);

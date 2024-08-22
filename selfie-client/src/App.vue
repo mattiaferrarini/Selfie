@@ -179,7 +179,8 @@ export default defineComponent({
 
     const initializeDate = () => {
       const now = new Date();
-      selectedDate.value = now.toISOString().split('T')[0];
+      const translatedDate = new Date(now.getTime() - now.getTimezoneOffset() * 60 * 1000);
+      selectedDate.value = translatedDate.toISOString().split('T')[0];
       selectedTime.value = timeService.formatTime(now);
     };
 
