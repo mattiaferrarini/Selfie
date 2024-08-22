@@ -17,10 +17,13 @@ import {
     FaUndo,
     GiTimeTrap,
     HiSearch,
+    HiViewGridAdd,
     MdAdd,
     MdClose,
+    MdDelete,
     MdDone,
     MdFlipcameraandroidOutlined,
+    MdMarkemailunreadOutlined,
     MdModeeditoutline,
     MdNavigatebefore,
     MdNavigatenext,
@@ -34,10 +37,7 @@ import {
     MdStickynote2Outlined,
     MdTimerSharp,
     RiLogoutCircleRLine,
-    RiUserSettingsLine,
-    HiViewGridAdd,
-    MdDelete,
-    MdMarkemailunreadOutlined
+    RiUserSettingsLine
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 import {useAuthStore} from "@/stores/authStore";
@@ -64,6 +64,19 @@ axios.interceptors.response.use((response: any) => {
     }
     return Promise.reject(error);
 });
+
+// Transform toISOString to always use Locale
+function decorateLocaleToISOString() {
+    const originalToISOString = Date.prototype.toISOString;
+
+    Date.prototype.toISOString = function () {
+        const translatedDate = new Date(this.getTime() - this.getTimezoneOffset() * 60 * 1000);
+        return originalToISOString.call(translatedDate);
+    };
+}
+
+// Apply the decorator
+decorateLocaleToISOString();
 
 const app = createApp(App);
 const pinia = createPinia();

@@ -22,6 +22,19 @@ class ConditionalRender extends HTMLElement {
 
 customElements.define('conditional-render', ConditionalRender);
 
+// Transform toISOString to always use Locale
+function decorateLocaleToISOString() {
+    const originalToISOString = Date.prototype.toISOString;
+
+    Date.prototype.toISOString = function () {
+        const translatedDate = new Date(this.getTime() - this.getTimezoneOffset() * 60 * 1000);
+        return originalToISOString.call(translatedDate);
+    };
+}
+
+// Apply the decorator
+decorateLocaleToISOString();
+
 document.addEventListener('DOMContentLoaded', () => {
     // check auth status
     const auth = JSON.parse(localStorage.getItem('auth') || null);
@@ -62,15 +75,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const conditionalRenderElement = document.getElementById('dateConditionalRender');
 
-    const toggleTooltip = () => {
-        const dateInput = document.getElementById('selectedDate');
+    const dateInput = document.getElementById('selectedDate');
+    const timeInput = document.getElementById('selectedTime');
+
+    try {
+        const date = JSON.parse(localStorage.getItem('date'));
+        dateInput.value = date.currentDate.split('T')[0];
+        timeInput.value = date.currentTime;
+    } catch (e) {
         dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    const toggleTooltip = () => {
         showTooltip = !showTooltip;
         conditionalRenderElement.setAttribute('condition', showTooltip);
     };
 
     const resetDate = () => {
-        const dateInput = document.getElementById('selectedDate');
         dateInput.value = new Date().toISOString().split('T')[0];
     };
 
