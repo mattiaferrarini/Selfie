@@ -7,6 +7,7 @@ import { useTextareaAutosize } from '@vueuse/core'
 import VueMultiselect from 'vue-multiselect'
 import { marked } from 'marked'
 import todoList from "@/components/todoList.vue"
+import {onBeforeRouteLeave} from "vue-router";
 
 // declaring reactive variables
 const { textarea: contentArea, input: content } = useTextareaAutosize();
@@ -79,6 +80,10 @@ onMounted( async () => {
   await getUserNames();
   await getNote();
   renderedMarkdown.value = await marked(content.value);
+})
+
+onBeforeRouteLeave( async () => {
+  await saveNote();
 })
 
 </script>
