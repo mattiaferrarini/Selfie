@@ -7,7 +7,7 @@ import { useTextareaAutosize } from '@vueuse/core'
 import VueMultiselect from 'vue-multiselect'
 import { marked } from 'marked'
 import todoList from "@/components/todoList.vue"
-import {onBeforeRouteLeave} from "vue-router";
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router";
 
 // declaring reactive variables
 const { textarea: contentArea, input: content } = useTextareaAutosize();
@@ -82,7 +82,8 @@ onMounted( async () => {
   renderedMarkdown.value = await marked(content.value);
 })
 
-onBeforeRouteLeave( async () => {
+
+onBeforeRouteUpdate(async () => {
   await saveNote();
 })
 
@@ -91,7 +92,7 @@ onBeforeRouteLeave( async () => {
 <template>
   <div class="flex flex-col flex-wrap justify-center w-screen max-w-screen-md m-auto">
     <div class="flex flex-col">
-      <div class="flex flex-row flex-wrap justify-center">
+      <div class="flex flex-row flex-wrap justify-center mt-5">
         <button
             type="button"
             class="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700"
@@ -111,7 +112,7 @@ onBeforeRouteLeave( async () => {
 
       <textarea
           ref="titleArea"
-          class="w-screen max-w-screen-md font-bold text-4xl text-center resize-none"
+          class="w-screen max-w-screen-md font-bold text-4xl text-center resize-none p-2"
           v-model="title"
           placeholder="edit me"
           :disabled="viewMode">
@@ -121,27 +122,27 @@ onBeforeRouteLeave( async () => {
         <p class="m-2">Last modification {{ new Date(lastmodify).toLocaleString() }}</p>
       </div>
       <div class="flex justify-center">
-        <input type="text" v-model="category" :disabled="viewMode" class="text-center m-2 focus:outline-none text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+        <input type="text" v-model="category" :disabled="viewMode" class="text-center m-2 bg-blue-700 rounded-lg text-white p-2">
       </div>
       <!-- show if only todoData is not empty -->
       <div>
-        <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode"></todoList>
+        <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode" class="m-2"></todoList>
         <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2" :disabled="viewMode">add todo list</button>
       </div>
       <div v-if="viewMode" class="flex justify-center">
         <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>
       </div>
-      <div v-else class="flex justify-center resize-none" >
-      <textarea
+      <div v-else class="flex justify-center resize-none p-2" >
+        <textarea
           ref="contentArea"
           class="w-screen max-w-screen-md min-h-[200px] resize-none"
           v-model="content"
           placeholder="edit me"
           :disabled="viewMode">
-      </textarea>
+        </textarea>
       </div>
 
-      <div class="flex flex-col justify-center flex-wrap w-screen max-w-screen-md m-auto">
+      <div class="flex flex-col justify-center flex-wrap w-screen max-w-screen-md m-auto p-2">
         <p class="text-center">Owners:</p>
         <div class="flex">
           <label for="open_to_anyone">open to anyone</label>

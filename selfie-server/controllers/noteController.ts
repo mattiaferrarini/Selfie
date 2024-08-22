@@ -4,7 +4,16 @@ const max_preview_length = 600;
 export const getall = async (req: any, res: any) => {
     const username = req.user?.username
     const all_notes = await Note.find({owners: { $in: [username] }})
-    const all_notes_shrinked = all_notes.map((note: any) => { return { _id: note._id, content: note.content.substring(0, max_preview_length),title: note.title, creation: note.creation, lastmodify: note.lastmodify, category: note.category }})
+    const all_notes_shrinked = all_notes.map(
+        (note: any) => { return {
+            _id: note._id,
+            content: note.content.substring(0, max_preview_length),
+            title: note.title,
+            creation: note.creation,
+            lastmodify: note.lastmodify,
+            category: note.category,
+            contentLength: note.content.length // for note ordering
+        }})
     res.status(200).send(all_notes_shrinked)
 }
 

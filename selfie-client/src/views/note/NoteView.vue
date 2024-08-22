@@ -6,6 +6,30 @@ import {marked} from "marked";
 
 const notes = ref();
 
+type ordertype = "alphabetical" | "date" | "length";
+const order = ref<ordertype>("date");
+
+const changeOrder = () => {
+  if (order.value === "alphabetical") {
+    order.value = "date";
+  } else if (order.value === "date") {
+    order.value = "length";
+  } else {
+    order.value = "alphabetical";
+  }
+  OrderNote(order.value);
+};
+
+const OrderNote = (type: ordertype) => {
+  if (type === "alphabetical") {
+    notes.value.sort((a: any, b: any) => a.title.localeCompare(b.title));
+  } else if (type === "date") {
+    notes.value.sort((a: any, b: any) => -(new Date(b.lastmodify).getTime() - new Date(a.lastmodify).getTime()));
+  } else {
+    notes.value.sort((a: any, b: any) => b.contentLength - a.contentLength);
+  }
+}
+
 const getnotes = async () => {
   notes.value = await noteService.getall();
 };
@@ -25,14 +49,16 @@ const newnote = async () => {
 
 onMounted(async () => {
   await getnotes();
+  OrderNote(order.value);
 });
 
 </script>
 
 <template>
   <div class="p-3">
-    <div class="flex justify-center">
-      <button class="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700" @click="newnote()">new note</button>
+    <div class="flex justify-center gap-5 pt-5 pb-5">
+      <button class="bg-green-700 rounded-lg p-3" @click="newnote()">new note</button>
+      <button class="bg-yellow-400 rounded-xl p-3" @click="changeOrder()">order by {{ order }}</button>
     </div>
 
     <div class="flex flex-row flex-wrap justify-center m-auto gap-3">
