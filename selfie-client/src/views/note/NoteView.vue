@@ -3,6 +3,9 @@ import {ref, onMounted} from "vue";
 import noteService from "@/services/noteService";
 import router from "@/router";
 import {marked} from "marked";
+import {useDateStore} from "@/stores/dateStore";
+
+const dateStore = useDateStore();
 
 const notes = ref();
 
@@ -37,9 +40,9 @@ const getnotes = async () => {
 const newnote = async () => {
   const note = await noteService.create(
       "",
-      `new note ${new Date()}`,
-      `${new Date()}`,
-      `${new Date()}`,
+      `new note ${dateStore.getCurrentDate().toLocaleString()}`,
+      `${dateStore.getCurrentDate()}`,
+      `${dateStore.getCurrentDate()}`,
       "uncategorized"
   );
 

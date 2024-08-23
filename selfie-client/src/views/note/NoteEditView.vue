@@ -7,7 +7,10 @@ import { useTextareaAutosize } from '@vueuse/core'
 import VueMultiselect from 'vue-multiselect'
 import { marked } from 'marked'
 import todoList from "@/components/todoList.vue"
-import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router";
+import {onBeforeRouteUpdate} from "vue-router";
+import {useDateStore} from "@/stores/dateStore";
+
+const dateStore = useDateStore();
 
 // declaring reactive variables
 const { textarea: contentArea, input: content } = useTextareaAutosize();
@@ -55,7 +58,7 @@ const saveNote = async () => {
   if (open_to_anyone.value) {
     owners.value = users.value;
   }
-  await noteService.modify(id, title.value, content.value, new Date(), category.value, owners.value, todoData.value);
+  await noteService.modify(id, title.value, content.value, dateStore.getCurrentDate(), category.value, owners.value, todoData.value);
   await router.push("/note");
 };
 
@@ -80,6 +83,9 @@ onMounted( async () => {
   await getUserNames();
   await getNote();
   renderedMarkdown.value = await marked(content.value);
+  if (content.value.length <= 0) {
+    viewMode.value = false;
+  }
 })
 
 
@@ -119,7 +125,7 @@ onBeforeRouteUpdate(async () => {
       </textarea>
       <div class="flex flex-row flex-wrap justify-center">
         <p class="m-2">Creation date: {{ new Date(creation).toLocaleString() }}</p>
-        <p class="m-2">Last modification {{ new Date(lastmodify).toLocaleString() }}</p>
+        <p class="m-2">Last modification: {{ new Date(lastmodify).toLocaleString() }}</p>
       </div>
       <div class="flex justify-center">
         <input type="text" v-model="category" :disabled="viewMode" class="text-center m-2 bg-blue-700 rounded-lg text-white p-2">
