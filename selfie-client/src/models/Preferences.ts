@@ -24,7 +24,8 @@ export class Preferences {
     home: {
         calendarWeekly: boolean;
         calendarContent: CalendarContent;
-        notesDescription: boolean;
+        notesCategory: boolean;
+        noteNumber: number;
         pomodoroType: PomodoroType;
     };
     notificationType: NotificationType;
@@ -40,7 +41,8 @@ export class Preferences {
         home = {
             calendarWeekly: false,
             calendarContent: CalendarContent.ALL,
-            notesDescription: false,
+            notesCategory: false,
+            noteNumber: 5,
             pomodoroType: PomodoroType.SETTINGS
         },
         notificationType = NotificationType.BOTH,

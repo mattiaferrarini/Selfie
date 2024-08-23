@@ -219,7 +219,7 @@ const clearActivityNotifications = async (activity: IActivity) => {
 // returns the number of repetitions for a late activity an a specific date
 // according to the activity's notification settings
 const getNumberOfActivityNotifications = (activity: IActivity, date: Date) => {
-    let res = 1;
+    let res;
     switch (activity.notification.repeat) {
         case 'daily':
             res = 1; 
