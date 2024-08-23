@@ -103,7 +103,6 @@ export default defineComponent({
   },
   methods: {
     async fetchData() {
-      console.log("EXECUTED");
       this.startOfDay = timeService.getStartOfDay(this.date);
       this.endOfDay = timeService.getEndOfDay(this.date);
       this.endOfEndOfWeek = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
@@ -116,7 +115,6 @@ export default defineComponent({
 
       this.computeEventsWithDates();
       this.computeSortedActivities();
-      console.log(this.uncompletedActivitiesThisWeek, this.activitiesThisWeek);
     },
     getEventsForPeriod(start: Date, end: Date): CalendarEvent[] {
       return this.eventsWithDates.filter((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => {

@@ -58,7 +58,8 @@ const saveNote = async () => {
   if (open_to_anyone.value) {
     owners.value = users.value;
   }
-  await noteService.modify(id, title.value, content.value, dateStore.getCurrentDate(), category.value, owners.value, todoData.value);
+  const date = new Date();
+  await noteService.modify(id, title.value, content.value, date, category.value, owners.value, todoData.value);
   await router.push("/note");
 };
 

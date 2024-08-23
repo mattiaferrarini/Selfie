@@ -38,11 +38,12 @@ const getnotes = async () => {
 };
 
 const newnote = async () => {
+  const date = new Date();
   const note = await noteService.create(
       "",
-      `new note ${dateStore.getCurrentDate().toLocaleString()}`,
-      `${dateStore.getCurrentDate()}`,
-      `${dateStore.getCurrentDate()}`,
+      `new note ${date.toLocaleString()}`,
+      `${date.toISOString()}`,
+      `${date.toISOString()}`,
       "uncategorized"
   );
 

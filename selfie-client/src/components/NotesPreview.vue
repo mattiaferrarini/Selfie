@@ -37,13 +37,7 @@ onMounted(async () => {
 <template>
   <div class="p-4 bg-white rounded-lg shadow border">
     <h3 class="text-lg font-semibold text-gray-800">Recent Notes</h3>
-    <ul class="list-disc">
-      <!--<router-link v-for="note in noteList" :key="note._id" :to="`/note/${note._id}`">
-        <li class="text-gray-600 flex flex-row justify-between pt-2">
-          <h3>{{ note.title }}</h3>
-          <p v-if="category" class="bg-purple-700 rounded-xl p-1 text-white">{{ note.category }}</p>
-        </li>
-      </router-link>-->
+    <ul class="list-disc pl-5">
       <li v-for="note in noteList" :key="note._id">
         <router-link :to="`/note/${note._id}`">
           <div class="text-gray-600 flex flex-row justify-between pt-2">
