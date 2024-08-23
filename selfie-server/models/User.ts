@@ -43,7 +43,8 @@ export interface IUser extends Document {
         home: {
             calendarWeekly: boolean;
             calendarContent: CalendarContent;
-            notesDescription: boolean;
+            notesCategory: boolean;
+            noteNumber: number;
             pomodoroType: PomodoroType;
         };
         notificationType: NotificationType;
@@ -111,8 +112,12 @@ const UserSchema: Schema = new Schema<IUser>({
                 enum: ['all', 'events', 'activities'],
                 default: 'all'
             },
-            notesDescription: {
+            notesCategory: {
                 type: Boolean,
+                required: true
+            },
+            noteNumber: {
+                type: Number,
                 required: true
             },
             pomodoroType: {
