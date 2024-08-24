@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center w-full py-8 px-4 sm:p-8">
+    <<<<<<< HEAD <div class="flex justify-center w-full py-8 px-4 sm:p-8">
         <div class="rounded-lg shadow-md overflow-hidden w-full max-w-[600px]">
             <div class="text-center w-full p-2 bg-emerald-600">
                 <h3 class="font-bold text-white">Activities</h3>
@@ -8,12 +8,12 @@
                 <ul class="my-4" v-if="sortedActivities.length > 0">
                     <li v-for="activity in sortedActivities" :key="activity.id">
                         <hr>
-                        <div class="flex align-center justify-between cursor-pointer py-1.5"
+                        <div class="flex align-center justify-between p-5 cursor-pointer"
                             @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                             <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                             <div class="flex gap-4">
                                 {{ activity.pomodoro ? activity.pomodoro.completedCycles[username] + '/' +
-                                    activity.pomodoro.cycles + ' cicli' : '' }}
+                                    activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}
                                 <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon
                                         name="md-modeeditoutline"></v-icon></button>
                                 {{ timeMethods.formatDayMonth(activity.deadline) }}
@@ -29,7 +29,7 @@
                 <p class="my-2 text-gray-700 text-center" v-else>No activities scheduled to end in this period.</p>
             </div>
         </div>
-    </div>
+        </div>
 </template>
 
 <script lang="ts">

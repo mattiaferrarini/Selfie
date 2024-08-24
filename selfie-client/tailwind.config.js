@@ -29,7 +29,10 @@ module.exports = {
             },
         },
     },
-    plugins: [addVariablesForColors],
+    plugins: [
+        addVariablesForColors,
+        require('@tailwindcss/typography')
+    ],
 }
 
 function addVariablesForColors({addBase, theme}) {

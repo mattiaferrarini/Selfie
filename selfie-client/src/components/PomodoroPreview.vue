@@ -66,6 +66,14 @@ export default defineComponent({
       this.settings = pomodoroPreferences;
     }
     this.stats = await activityService.getPomodoroStats();
+  },
+  watch: {
+    date: {
+      immediate: true,
+      async handler() {
+        this.stats = await activityService.getPomodoroStats();
+      }
+    }
   }
 });
 </script>

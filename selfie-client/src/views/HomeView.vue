@@ -40,11 +40,17 @@
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
               showNotesTooltip ? ' rotate-180' : '']"/>
           </div>
-          <NotesPreview :date=date :desc="notesDescription"/>
+          <NotesPreview :date=date :category="notesCategory" :number="noteNumber"/>
           <div v-if="showNotesTooltip"
-               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
-            <label for="description" class="font-semibold mr-2">Descrizione</label>
-            <input type="checkbox" v-model="notesDescription" @change="updatePreferences" id="description"/>
+               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
+            <div>
+              <label for="description" class="font-semibold mr-2">Categoria</label>
+              <input type="checkbox" v-model="notesCategory" @change="updatePreferences" id="description"/>
+            </div>
+            <div>
+              <label for="number" class="font-semibold mr-2">Numero</label>
+              <input type="number" min="1" v-model="noteNumber" @change="updatePreferences" id="number"/>
+            </div>
           </div>
         </div>
         <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showPomodoroTooltip)">
@@ -103,7 +109,8 @@ export default defineComponent({
 
     const calendarWeekly = ref(homePreferences.calendarWeekly);
     const calendarContent = ref(homePreferences.calendarContent);
-    const notesDescription = ref(homePreferences.notesDescription);
+    const notesCategory = ref(homePreferences.notesCategory);
+    const noteNumber = ref(homePreferences.noteNumber);
     const pomodoroType = ref(homePreferences.pomodoroType);
 
     const showChatModal = ref(false);
@@ -128,7 +135,8 @@ export default defineComponent({
         home: {
           calendarWeekly: calendarWeekly.value,
           calendarContent: calendarContent.value,
-          notesDescription: notesDescription.value,
+          notesCategory: notesCategory.value,
+          noteNumber: noteNumber.value,
           pomodoroType: pomodoroType.value
         }
       });
@@ -150,7 +158,8 @@ export default defineComponent({
       setChatModal,
       calendarWeekly,
       calendarContent,
-      notesDescription,
+      notesCategory,
+      noteNumber,
       pomodoroType,
       updatePreferences,
       showChatModal,

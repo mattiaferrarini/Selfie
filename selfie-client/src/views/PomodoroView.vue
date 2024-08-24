@@ -183,11 +183,12 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, watch} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
 import router from "@/router";
 import activityService from "@/services/activityService";
+import {useDateStore} from "@/stores/dateStore";
 
 export default defineComponent({
   data() {
@@ -215,27 +216,52 @@ export default defineComponent({
   },
   created() {
     const pomodoroPreferences = useAuthStore().user.preferences.pomodoro;
-    if (pomodoroPreferences) {
+    if (router.currentRoute.value.params.activityId) {
+      this.activityId = router.currentRoute.value.params.activityId as string;
+      activityService.getActivityById(this.activityId).then((activity) => {
+        this.workDuration = activity.pomodoro.options.workDuration;
+        this.pauseDuration = activity.pomodoro.options.pauseDuration;
+        this.numberOfCycles = activity.pomodoro.options.numberOfCycles;
+        this.counter = (activity.pomodoro.options.numberOfCycles - activity.pomodoro.completedCycles[this.username]) * 60 * (this.workDuration + this.pauseDuration)
+      });
+    } else if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
-    if (router.currentRoute.value.params.activityId) {
-      this.activityId = router.currentRoute.value.params.activityId as string;
-      activityService.getActivityById(this.activityId).then((activity) => {
-        this.numberOfCycles = activity.pomodoro.cycles;
-        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles[this.username]) * 60 * (this.workDuration + this.pauseDuration)
-      });
-    }
+    const dateStore = useDateStore();
+    watch(
+        () => dateStore.timeDiff,
+        (newTimeDiff) => {
+          if (this.timing) {
+            this.counter = Math.trunc(Math.min(Math.max(this.counter - newTimeDiff / 1000, 0), this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)));
+            if (this.activityId)
+              activityService.modifyActivity({
+                id: this.activityId,
+                pomodoro: {
+                  options: {
+                    workDuration: this.workDuration,
+                    pauseDuration: this.pauseDuration,
+                    numberOfCycles: this.numberOfCycles,
+                  },
+                  completedCycles: {
+                    [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                  }
+                }
+              });
+          }
+        },
+        {immediate: true}
+    );
   },
   computed: {
     formattedCounter(): string {
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
       let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60)
       let seconds = cycle_time % 60;
-      // pad seconds and if minutes == 0 set it to workDuration
-      !minutes && (minutes = this.workDuration);
+      // set minutes if it's the start of a cycle and pad seconds
+      (this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) && (minutes = this.workDuration);
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     },
     pauseOrWork(): string {
@@ -249,32 +275,42 @@ export default defineComponent({
     },
   },
   methods: {
-    // TODO: update database in relevant methods?
     playOrPause() {
       if (this.timing) {
         clearInterval(this.intervalRef);
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
-          if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
+          let remainingCycleTime = this.counter % ((this.workDuration + this.pauseDuration) * 60);
+          if (this.activityId && remainingCycleTime == 0) {
             activityService.modifyActivity({
               id: this.activityId,
               pomodoro: {
-                cycles: this.numberOfCycles,
+                options: {
+                  workDuration: this.workDuration,
+                  pauseDuration: this.pauseDuration,
+                  numberOfCycles: this.numberOfCycles,
+                },
                 completedCycles: {
                   [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
                 }
               }
             });
           }
-          // TODO: check and notify the user
-          if (this.counter <= 0) {
+          if ((remainingCycleTime == this.pauseDuration * 60 || remainingCycleTime == 0) && this.counter > 0) {
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: remainingCycleTime == 0 ? 'Pause time is over!' : 'Work time is over!',
+            });
+          } else if (this.counter <= 0) {
             clearInterval(this.intervalRef);
             this.counter = 0;
             this.timing = false;
             if (this.activityId) {
               activityService.modifyActivity({id: this.activityId, done: true});
             }
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: 'Pomodoro is over!',
+            });
           }
         }, 1000);
       }
@@ -283,10 +319,14 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
-      activityService.modifyActivity({
+      this.activityId && activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles,
+          },
           completedCycles: {
             [this.username]: this.numberOfCycles - cycle
           }
@@ -308,13 +348,27 @@ export default defineComponent({
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      profileService.updatePreferences({
-        pomodoro: {
-          workDuration: this.workDuration,
-          pauseDuration: this.pauseDuration,
-          numberOfCycles: this.numberOfCycles
-        }
-      });
+      if (this.activityId) {
+        activityService.modifyActivity({
+          id: this.activityId,
+          pomodoro: {
+            options: {
+              workDuration: this.workDuration,
+              pauseDuration: this.pauseDuration,
+              numberOfCycles: this.numberOfCycles
+            },
+            completedCycles: {}
+          }
+        });
+      } else {
+        profileService.updatePreferences({
+          pomodoro: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          }
+        });
+      }
       this.showModal = false;
     },
     openEditModal() {
@@ -326,10 +380,14 @@ export default defineComponent({
     },
     saveEditChanges() {
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
-      activityService.modifyActivity({
+      this.activityId && activityService.modifyActivity({
         id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          },
           completedCycles: {[this.username]: this.setCycleNumber - 1}
         }
       });

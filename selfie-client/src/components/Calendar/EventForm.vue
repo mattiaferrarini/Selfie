@@ -102,7 +102,7 @@
           When
           <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed"
             @change="enforceRepetitionCoherence" class="text-center rounded-md">
-            <option value="atEvent">Time of event</option>
+            <option value="0 minutes">Time of event</option>
             <option value="5 minutes">5 min before</option>
             <option value="15 minutes">15 min before</option>
             <option value="30 minutes">30 min before</option>
@@ -118,7 +118,7 @@
           <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed"
             class="text-center rounded-md">
             <option value="never">Never</option>
-            <option v-if="repetitionOptionAllowed('1 minute')" value="minute">Every minute</option>
+            <option v-if="repetitionOptionAllowed('1 minute')" value="1 minute">Every minute</option>
             <option v-if="repetitionOptionAllowed('5 minutes')" value="5 minutes">Every 5 minutes</option>
             <option v-if="repetitionOptionAllowed('15 minutes')" value="15 minutes">Every 15 minutes</option>
             <option v-if="repetitionOptionAllowed('30 minutes')" value="30 minutes">Every 30 minutes</option>
@@ -219,7 +219,7 @@ export default defineComponent({
       if (!this.modifying) {
         // intialize default values for new event
         this.newEvent.timezone = moment.tz.guess();
-        this.newEvent.start = timeService.roundTime(this.currentDate);
+        this.newEvent.start = timeService.roundTime(new Date());
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
         this.newEvent.participants = [
@@ -325,21 +325,16 @@ export default defineComponent({
       }
     },
     repetitionOptionAllowed(option: string): boolean {
-      if (this.newEvent.notification.when === 'atEvent') {
-        return false;
-      }
-      else {
-        const whenParts = this.newEvent.notification.when.split(' ');
-        const optionParts = option.split(' ');
+      const whenParts = this.newEvent.notification.when.split(' ');
+      const optionParts = option.split(' ');
 
-        const whenUnit = this.mapUnitToInt(whenParts[1]);
-        const whenValue = Number(whenParts[0]);
+      const whenUnit = this.mapUnitToInt(whenParts[1]);
+      const whenValue = Number(whenParts[0]);
 
-        const optionUnit = this.mapUnitToInt(optionParts[1]);
-        const optionValue = Number(optionParts[0]);
+      const optionUnit = this.mapUnitToInt(optionParts[1]);
+      const optionValue = Number(optionParts[0]);
 
-        return (optionUnit < whenUnit) || (optionUnit === whenUnit && optionValue < whenValue);
-      }
+      return (optionUnit < whenUnit) || (optionUnit === whenUnit && optionValue < whenValue);
     },
     mapUnitToInt(unit: string): number {
       switch (unit) {
@@ -379,7 +374,7 @@ export default defineComponent({
       return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
     },
     repeatedNotificationAllowed(): boolean {
-      return this.newEvent.notification.when !== 'atEvent';
+      return this.newEvent.notification.when !== '0 minutes';
     },
     formattedStartDate: {
       get(): string {

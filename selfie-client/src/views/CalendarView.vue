@@ -35,7 +35,7 @@ export default defineComponent({
     const dateStore = useDateStore();
 
     /* to handle the time period for which events are loaded */
-    const currentDate = computed(() => dateStore.currentDate);
+    const currentDate = computed(() => dateStore.getCurrentDate());
     const focusDate = ref(new Date(dateStore.getCurrentDate()));
     const rangeStartDate = ref(new Date());
     const rangeEndDate = ref(new Date());
@@ -308,6 +308,8 @@ export default defineComponent({
       const [start, end] = getRangeDates();
       rangeStartDate.value = start;
       rangeEndDate.value = end;
+
+      console.log(new Date());
 
       // Fetch the content of the view
       fetchUserEvents();
