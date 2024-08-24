@@ -98,6 +98,7 @@ export default defineComponent({
             this.confirmationMessage = '';
         },
         async confirmAction(){
+            this.confirmationMessage = '';
             try {
                 await resourceService.deleteResource(this.resourceToDelete);
             }

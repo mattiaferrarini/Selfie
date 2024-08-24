@@ -40,7 +40,9 @@ import {
     MdMarkemailunreadOutlined,
     MdBlock,
     MdEvent,
-    MdEventavailable
+    MdEventavailable,
+    MdArrowforwardios,
+    MdArrowbackiosnew
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 import {useAuthStore} from "@/stores/authStore";
@@ -54,7 +56,7 @@ addIcons(CoHome, BiCalendar3, BiChatDots, MdStickynote2Outlined, MdTimerSharp, B
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
     MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, MdNavigatenext, MdNavigatebefore, FaUndo, MdAdd,
     BiChevronExpand, CoOptions, BiSave, MdDone, MdRemovecircleoutline, BiCircleFill, HiSearch, HiViewGridAdd, MdDelete, 
-    MdMarkemailunreadOutlined, BiChatDots, MdBlock, MdEvent, MdEventavailable);
+    MdMarkemailunreadOutlined, BiChatDots, MdBlock, MdEvent, MdEventavailable, MdArrowforwardios, MdArrowbackiosnew);
 
 // setup automatic response to 401 (Unauthenticated)
 axios.interceptors.response.use((response: any) => {

@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600 z-10" v-if="isAuthenticated">
+    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600 z-20" v-if="isAuthenticated">
       <div class="container mx-auto flex justify-between text-gray-700">
         <div class="flex items-center">
           <router-link to="/"

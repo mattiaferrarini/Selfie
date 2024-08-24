@@ -335,15 +335,15 @@ export default defineComponent({
 
 <template>
   <div class="calendar-view animate-fade-in">
-    <nav class="text-gray-700 p-4 sm:p-8">
-      <div class="flex justify-between mb-2">
-        <div>
-          <select id="view" name="view" v-model="view" class="mr-2 p-1 h-full rounded" @change="onViewChange">
+    <nav class="text-gray-700 py-4 px-2 sm:px-4">
+      <div class="flex justify-between items-center h-full">
+        <div class="h-full flex gap-0.5 flex-wrap">
+          <select id="view" name="view" v-model="view" class="mr-0.5 px-1 py-1.5 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onViewChange">
             <option value="day">Day</option>
             <option value="week">Week</option>
             <option value="month">Month</option>
           </select>
-          <select id="content" name="content" v-model="content" class="p-1 h-full rounded" @change="onContentChange">
+          <select id="content" name="content" v-model="content" class="px-1 py-1.5 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onContentChange">
             <option value="appointments">Appointments</option>
             <option value="events">Events</option>
             <option value="activities">Activities</option>
@@ -351,11 +351,17 @@ export default defineComponent({
             <option value="resources">Resources</option>
           </select>
         </div>
-        <div class="flex items-center button-group">
-          <button @click="resetCalendar" class="p-1"><v-icon name="fa-undo"></v-icon></button>
-          <div class="flex items-center">
-            <button @click="prev" class="p-1"><v-icon name="md-navigatebefore"></v-icon></button>
-            <button @click="next" class="p-1"><v-icon name="md-navigatenext"></v-icon></button>
+        <div class="flex-1">
+          <div class="flex items-center justify-end gap-0.5">
+            <button @click="resetCalendar" class="bg-gray-400 rounded-full size-8 sm:size-10 flex justify-center items-center">
+              <v-icon name="fa-undo" class="text-white w-full h-full p-2 sm:p-2.5"></v-icon>
+            </button>
+            <button @click="prev" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
+              <v-icon name="md-arrowbackiosnew" class="text-white w-full h-full mr-0.5 p-1.5 sm:p-2"></v-icon>
+            </button>
+            <button @click="next" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
+              <v-icon name="md-arrowforwardios" class="text-white w-full h-full ml-0.5 p-1.5 sm:p-2"></v-icon>
+            </button>
           </div>
         </div>
       </div>
@@ -368,14 +374,17 @@ export default defineComponent({
       </div>
     </nav>
 
-    <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false" class="cursor-pointer z-0">
-      <template #trigger>
-        <div class="clickable-text flex items-center justify-center">
-          <h2 class="text-2xl font-semibold">{{ currentDisplayedPeriodString }}</h2>
-          <v-icon name="bi-chevron-expand"></v-icon>
-        </div>
-      </template>
-    </VueDatePicker>
+    <div class="w-full flex justify-center items-center">
+      <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false"
+        class="cursor-pointer z-10 max-w-[250px]">
+        <template #trigger>
+          <div class="clickable-text flex items-center justify-center">
+            <h2 class="text-2xl font-bold text-gray-700">{{ currentDisplayedPeriodString }}</h2>
+            <v-icon name="bi-chevron-expand"></v-icon>
+          </div>
+        </template>
+      </VueDatePicker>
+    </div>
 
     <AppointmentsCalendar v-if="showAppointments" @modifyEvent="modifyEvent" @modifyActivity="modifyActivity"
       @undoActivity="undoActivity" @markAsDone="markAsDone" @modify-unavailability="modifyUnavailability"
@@ -389,9 +398,12 @@ export default defineComponent({
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">
       <ul class="mr-4 mb-4 self-start" v-if="showAddOptions">
-        <li><button class="add-button" @click.stop="openAddEventForm"><v-icon name="md-event" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Event</button></li>
-        <li><button class="add-button mt-1" @click.stop="openAddActivityForm"><v-icon name="md-eventavailable" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Activity</button></li>
-        <li><button class="add-button mt-1" @click.stop="openUnavailabilityForm"><v-icon name="md-block" class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Unavailability</button></li>
+        <li><button class="add-button" @click.stop="openAddEventForm"><v-icon name="md-event"
+              class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Event</button></li>
+        <li><button class="add-button mt-1" @click.stop="openAddActivityForm"><v-icon name="md-eventavailable"
+              class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Activity</button></li>
+        <li><button class="add-button mt-1" @click.stop="openUnavailabilityForm"><v-icon name="md-block"
+              class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Unavailability</button></li>
       </ul>
       <button @click.stop="openAddOptions" id="open-add-form-btn" v-if="showAddButton"
         class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
@@ -422,7 +434,8 @@ export default defineComponent({
     <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
         <h2 class="text-lg font-bold mb-4">Pending invites</h2>
-        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites" @accept-invite="acceptInvite"/>
+        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"
+          @accept-invite="acceptInvite" />
       </div>
     </div>
 
@@ -430,15 +443,10 @@ export default defineComponent({
 </template>
 
 <style scoped>
-.button-group button {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
 .add-button {
   width: 100%;
   text-align: left;
-  background-color: #f2f2f2;
+  background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding-left: 0.75rem;
   padding-right: 1rem;
@@ -448,8 +456,10 @@ export default defineComponent({
   display: flex;
   align-items: center;
   column-gap: 0.5rem;
-  font-size: 1.125rem; /* 18px */
-  line-height: 1.75rem; /* 28px */
+  font-size: 1.125rem;
+  /* 18px */
+  line-height: 1.75rem;
+  /* 28px */
 }
 
 .add-button:hover {
@@ -465,6 +475,6 @@ export default defineComponent({
 .dp__active_date,
 .dp__today,
 .dp__overlay_cell_active {
-  --dp-primary-color: #10b981;
+  --dp-primary-color: #059669;
 }
 </style>

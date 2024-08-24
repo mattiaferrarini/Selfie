@@ -1,6 +1,5 @@
 <template>
     <div class="absolute inset-0 bg-white rounded-lg w-full h-full overflow-scroll">
-
         <div class="p-4 flex flex-col justify-between w-full h-full">
             <div class="flex flex-col justify-stretch text-center mt-4 mb-4">
                 <h2 class="text-lg font-semibold mb-4">Export Options</h2>
