@@ -8,6 +8,7 @@ let clock: InstalledClock | undefined; // the global clock
 const setGlobalClock = async (date: Date) => {
     if(clock)
         clock.uninstall();
+
     clock = install({ now: date, shouldAdvanceTime: true, shouldClearNativeTimers: true });
 
     try {
