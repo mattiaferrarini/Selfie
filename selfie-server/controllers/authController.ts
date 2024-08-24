@@ -24,7 +24,6 @@ export const register = async (req: any, res: any, next: any) => {
         const newUser = new User({username, realName, email, password, birthday, preferences: default_preferences});
         await newUser.save();
         passport.authenticate('local')(req, res, next);
-        // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
     } catch (err) {
         console.log(err)
         res.status(400).send('Error registering user');
