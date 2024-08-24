@@ -14,6 +14,7 @@ const formatEvent = (event: any) => {
         title: event.title,
         start: event.start,
         end: event.end,
+        timezone: event.timezone,
         repetition: event.repetition,
         location: event.location,
         notification: event.notification,
@@ -95,6 +96,7 @@ export const addEvent = async (req: any, res: any) => {
         title: req.body.title,
         start: req.body.start,
         end: req.body.end,
+        timezone: req.body.timezone,
         repetition: req.body.repetition,
         location: req.body.location,
         notification: req.body.notification,
@@ -127,6 +129,7 @@ export const modifyEvent = async (req: any, res: any) => {
             event.allDay = req.body.allDay;
             event.start = req.body.start;
             event.end = req.body.end;
+            event.timezone = req.body.timezone;
             event.repetition = req.body.repetition;
             event.location = req.body.location;
             event.notification = req.body.notification;

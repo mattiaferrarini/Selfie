@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "realTimeDiff": timeDifference
                 }));
             }
-        ).catch(
+        }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
     }
@@ -164,7 +164,7 @@ const unsubscribe = async () => {
 
 const logout = async () => {
     await unsubscribe();
-    await fetchWithMiddleware(`${API_URL}/logout`, {
+    await fetchWithMiddleware(`${API_URL}/auth/logout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

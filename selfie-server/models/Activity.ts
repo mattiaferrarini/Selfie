@@ -3,6 +3,7 @@ import { model, Schema, Document } from 'mongoose';
 export interface IActivity extends Document{
     title: string;
     done: boolean;
+    start: Date;
     deadline: Date;
     notification: {
         method: string[];
@@ -33,6 +34,9 @@ const ActivitySchema = new Schema({
     done: {
         type: Boolean,
         required: true
+    },
+    start: {
+        type: Date
     },
     deadline: {
         type: Date,

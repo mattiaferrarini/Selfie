@@ -5,6 +5,7 @@ interface IUnavailability extends Document {
     allDay: boolean;
     start: Date;
     end: Date;
+    timezone: string;
     repetition: {
         frequency: string;
         until: string;
@@ -30,6 +31,11 @@ const UnavailabilitySchema = new Schema({
     end: {
         type: Date,
         required: true
+    },
+    timezone: {
+        type: String,
+        required: true,
+        default: 'UTC'
     },
     repetition: {
         frequency: {
