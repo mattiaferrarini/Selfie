@@ -66,17 +66,17 @@
                  class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
               <div class="flex">
                 <div class="flex flex-col">
-                <input type="date" v-model="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md">
-              <input type="time" v-model="selectedTime" class=" text-center p-2 border border-gray-300 rounded-md">
-              </div>
-              <div class="flex flex-col ml-2 gap-y-2">
-                <button @click="setCurrentDate"
-                      class=" bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
-                </button>
-                <button @click="resetDate"
-                      class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
-                </button>
-              </div>
+                  <input type="date" v-model="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md">
+                  <input type="time" v-model="selectedTime" class=" text-center p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="flex flex-col ml-2 gap-y-2">
+                  <button @click="setCurrentDate"
+                          class=" bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
+                  </button>
+                  <button @click="resetDate"
+                          class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+                  </button>
+                </div>
               </div>
               <p v-if="timeMachineMessage.length > 0" class="text-center mt-2">{{ timeMachineMessage }}</p>
             </div>
@@ -111,7 +111,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref} from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import {useAuthStore} from '@/stores/authStore';
 import {storeToRefs} from 'pinia'
 import router from "@/router";
@@ -173,6 +173,7 @@ export default defineComponent({
       timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
       dateStore.setTimeDiff((new Date()).getTime() - oldDate.getTime());
+      dateStore.setRealTimeDiff(0);
 
       displayTimeMachineMessage('Time machine reset.');
     };
@@ -190,6 +191,13 @@ export default defineComponent({
         timeMachineMessage.value = '';
       }, 2000);
     };
+
+    // recover the time machine state
+    onMounted(() => {
+      const date = new Date(new Date().getTime() + dateStore.realTimeDiff);
+      dateStore.realTimeDiff ? timeMachineService.setGlobalClock(date) : timeMachineService.restoreGlobalClock();
+      dateStore.setCurrentDate(date);
+    });
 
     return {
       isAuthenticated,

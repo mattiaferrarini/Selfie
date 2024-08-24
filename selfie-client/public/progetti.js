@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('selectedDate');
     const timeInput = document.getElementById('selectedTime');
     const timeMachineMessage = document.getElementById('timeMachineMessage');
-    let timeDifference = 0;
+    let timeDifference = JSON.parse(localStorage.getItem('date')).realTimeDiff || 0;
 
     const getTimeMachineDate = () => new Date(new Date().getTime() + timeDifference);
 
@@ -77,14 +77,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const resetDate = () => {
-        const date = new Date();
-        dateInput.value = date.toISOString().split('T')[0];
-        timeInput.value = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-        timeDifference = 0;
         fetchWithMiddleware(`${API_URL}/timeMachine/restoreGlobalClock/`, {
             method: 'POST'
-        }).then(
-            () => timeMachineMessage.innerText = 'Time machine restored!'
+        }).then(() => {
+                const date = new Date();
+                dateInput.value = date.toISOString().split('T')[0];
+                timeInput.value = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                timeDifference = 0;
+                timeMachineMessage.innerText = 'Time machine restored!'
+                localStorage.setItem('date', JSON.stringify({
+                    "currentDate": new Date().toISOString(),
+                    "timeDiff": 0,
+                    "realTimeDiff": 0
+                }));
+            }
         ).catch(
             () => timeMachineMessage.innerText = 'Error restoring time machine!'
         );
@@ -94,16 +100,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const newDate = new Date(dateInput.value);
         newDate.setHours(timeInput.value.split(':')[0]);
         newDate.setMinutes(timeInput.value.split(':')[1]);
-        timeDifference = new Date().getTime() - newDate.getTime();
         fetchWithMiddleware(`${API_URL}/timeMachine/setGlobalClock/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({date: newDate})
-        }).then(
-            () => timeMachineMessage.innerText = 'Time machine set!'
-        ).catch(
+        }).then(() => {
+                timeDifference = new Date().getTime() - newDate.getTime();
+                timeMachineMessage.innerText = 'Time machine set!'
+                localStorage.setItem('date', JSON.stringify({
+                    "currentDate": newDate.toISOString(),
+                    "timeDiff": 0,
+                    "realTimeDiff": timeDifference
+                }));
+            }
+        }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
     }
