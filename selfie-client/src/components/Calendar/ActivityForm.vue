@@ -2,13 +2,12 @@
   <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
-        <v-icon name="md-close"/>
+        <v-icon name="md-close" />
       </button>
     </div>
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
-        <label><input type="text" placeholder="Untitled Activity" required
-                      v-model="newActivity.title"></label><br>
+        <label><input type="text" placeholder="Untitled Activity" required v-model="newActivity.title"></label><br>
       </div>
       <hr>
       <div>
@@ -28,7 +27,7 @@
           Participants
           <button type="button" @click="openParticipantsForm" @click.stop>
             {{ newActivity.participants.length }}
-            <v-icon name="md-navigatenext"/>
+            <v-icon name="md-navigatenext" />
           </button>
         </div>
       </div>
@@ -38,7 +37,7 @@
           Sub-activities
           <button type="button" @click="openSubActivitiesForm" @click.stop>
             {{ newActivity.subActivitiesIDs.length }}
-            <v-icon name="md-navigatenext"/>
+            <v-icon name="md-navigatenext" />
           </button>
         </div>
         <hr>
@@ -46,26 +45,27 @@
       <div>
         <div class="flex items-center justify-between w-full gap-4">
           <label> <input type="checkbox" :checked="newActivity.pomodoro != null"
-                         @click="newActivity.pomodoro = newActivity.pomodoro == null ? {options: authStore.user.preferences.pomodoro, completedCycles: {[authStore.user.username]: 0}} : null"/>
+              @click="newActivity.pomodoro = newActivity.pomodoro == null ? { options: authStore.user.preferences.pomodoro, completedCycles: { [authStore.user.username]: 0 } } : null" />
             Pomodoro</label>
         </div>
         <div v-if="newActivity.pomodoro">
           <label class="flex items-center justify-between w-full gap-4">
             <span class="flex-1">Work Duration (minutes)</span>
-            <input type="number" v-model="newActivity.pomodoro.options.workDuration" min="1" class="flex-1" required/>
+            <input type="number" v-model="newActivity.pomodoro.options.workDuration" min="1" class="flex-1" required />
           </label>
           <label class="flex items-center justify-between w-full gap-4">
             <span class="flex-1">Pause Duration (minutes)</span>
-            <input type="number" v-model="newActivity.pomodoro.options.pauseDuration" min="1" class="flex-1" required/>
+            <input type="number" v-model="newActivity.pomodoro.options.pauseDuration" min="1" class="flex-1" required />
           </label>
           <label class="flex items-center justify-between w-full gap-4">
             <span class="flex-1">Cycles</span>
-            <input type="number" v-model="newActivity.pomodoro.options.numberOfCycles" min="1" class="flex-1" required/>
+            <input type="number" v-model="newActivity.pomodoro.options.numberOfCycles" min="1" class="flex-1"
+              required />
           </label>
           <label class="flex items-center justify-between w-full gap-4">
             <span class="flex-1">Completed Cycles</span>
             <input type="number" v-model="newActivity.pomodoro.completedCycles[authStore.user.username]" class="flex-1"
-                   min="0" :max="newActivity.pomodoro.options.numberOfCycles" required/>
+              min="0" :max="newActivity.pomodoro.options.numberOfCycles" required />
           </label>
         </div>
       </div>
@@ -74,9 +74,9 @@
         <div class="flex items-center justify-between w-full gap-4">
           <p>Notification after deadline</p>
           <div class="flex flex-wrap justify-end space-x-4">
-            <label> <input type="checkbox" v-model="newNotificationOptions.os"/> OS</label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.email"/> Email </label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp"/> Whatsapp </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.os" /> OS</label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.email" /> Email </label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
           </div>
         </div>
         <label v-if="false" class="flex items-center justify-between w-full gap-4">
@@ -102,10 +102,8 @@
       </div>
       <hr>
       <div class="flex-col space-y-1 w-full mt-4">
-        <button v-if="modifying" type="button" @click="openExportPanel"
-                class="w-full p-1 rounded-lg bg-gray-300">Export
-          as event
-        </button>
+        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-1 rounded-lg bg-gray-300">Export
+          as event</button>
         <div v-else class="text-center">
           <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import
             activity</label>
@@ -113,33 +111,32 @@
         </div>
         <div class="flex w-full space-x-1">
           <button v-if="modifying" type="button" @click="deleteActivity"
-                  class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete
-          </button>
+            class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
           <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
         </div>
       </div>
     </form>
 
     <ParticipantsForm v-if="showParticipantsForm" :participants="newActivity.participants"
-                      @closeParticipantsForm="handleCloseParticipantsForm"/>
+      @closeParticipantsForm="handleCloseParticipantsForm" />
 
-    <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel"/>
+    <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel" />
 
     <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
-                       @confirm="confirmAction"/>
+      @confirm="confirmAction" />
 
   </div>
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import { defineComponent } from 'vue';
 import ParticipantsForm from './ParticipantsForm.vue';
 import EventExportPanel from './EventExportPanel.vue';
-import {Activity} from '@/models/Activity';
+import { Activity } from '@/models/Activity';
 import timeService from '@/services/timeService';
-import {useAuthStore} from '@/stores/authStore';
+import { useAuthStore } from '@/stores/authStore';
 import activityService from '@/services/activityService';
-import {CalendarEvent} from '@/models/Event';
+import { CalendarEvent } from '@/models/Event';
 import ConfirmationPanel from './ConfirmationPanel.vue';
 
 export default defineComponent({
@@ -166,7 +163,7 @@ export default defineComponent({
   data() {
     return {
       authStore: useAuthStore(),
-      newActivity: {...this.activity},
+      newActivity: { ...this.activity },
       newNotificationOptions: {
         os: this.activity.notification.method.includes('os'),
         email: this.activity.notification.method.includes('email'),
@@ -187,7 +184,7 @@ export default defineComponent({
         // default initialization for new activity
         this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
         this.newActivity.participants = [
-          {username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted'},
+          { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
         ]
       }
     },
@@ -298,5 +295,10 @@ export default defineComponent({
 <style scoped>
 hr {
   margin: 0.5rem 0;
+}
+
+select {
+  padding: 0.25rem;
+  border-radius: 0.375rem;
 }
 </style>

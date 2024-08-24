@@ -61,6 +61,7 @@ export const createInvitesForEvent = async (event: IEvent) => {
                         await addInvite(participant.username, answerDate, event.title, eventId);
                 }
             }
+            event.save();
         }
         catch{
             console.log("Error creating invite");

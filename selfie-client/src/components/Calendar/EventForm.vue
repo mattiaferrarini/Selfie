@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg relative" @click.stop>
+  <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -14,7 +14,7 @@
       <div>
         <label><input type="checkbox" v-model="newEvent.allDay" :disabled="!modificationAllowed"> All-day</label><br>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mt-3">
           <label> Start </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
@@ -22,7 +22,7 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full gap-4">
+        <div class="flex items-center justify-between w-full gap-4 mb-3">
           <label> End </label>
           <div class="flex gap-1">
             <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed" :min="minEndDate">
@@ -30,12 +30,20 @@
               :min="minEndTime">
           </div>
         </div>
+
+        <div class="flex items-center justify-between w-full gap-8">
+          <label for="timezone" class="flex-1">Time Zone</label>
+          <select v-model="newEvent.timezone" id="timezone" class="w-1/2 sm:w-auto text-center rounded-md" :disabled="!modificationAllowed">
+            <option v-for="tz in timeZones" :key="tz" :value="tz" style="word-wrap: break-word;">{{ tz }}</option>
+          </select>
+        </div>
       </div>
       <hr>
       <div>
         <label class="flex items-center justify-between w-full gap-4">
           Repeat
-          <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed">
+          <select name="repeat" v-model="newEvent.repetition.frequency" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="never">Never</option>
             <option v-if="dailyRepetitionAllowed" value="daily">Daily</option>
             <option v-if="weeklyRepetitionAllowed" value="weekly">Weekly</option>
@@ -43,20 +51,21 @@
             <option v-if="yearlyRepetitionAllowed" value="yearly">Yearly</option>
           </select>
         </label>
-        <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNewEvent" class="flex items-center justify-between w-full gap-4 mt-1">
           Until
-          <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed">
+          <select name="until" v-model="newEvent.repetition.until" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="infinity">Infinity</option>
             <option value="n-reps">N repetitions</option>
             <option value="date">Date</option>
           </select>
         </label>
-        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatNTimes" class="flex items-center justify-between w-full gap-4 mt-1">
           Number of repetitions
           <input type="number" min="1" v-model="newEvent.repetition.numberOfRepetitions"
             style="max-width: 4em; text-align: center" :disabled="!modificationAllowed">
         </label>
-        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatUntilDate" class="flex items-center justify-between w-full gap-4 mt-1">
           End date
           <input type="date" v-model="formattedRepeatEndDate" :disabled="!modificationAllowed" :min="minRepEndDate">
         </label>
@@ -89,10 +98,10 @@
               Whatsapp </label>
           </div>
         </div>
-        <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4">
+        <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4 mt-1">
           When
           <select name="whenNotify" v-model="newEvent.notification.when" :disabled="!modificationAllowed"
-            @change="enforceRepetitionCoherence">
+            @change="enforceRepetitionCoherence" class="text-center rounded-md">
             <option value="0 minutes">Time of event</option>
             <option value="5 minutes">5 min before</option>
             <option value="15 minutes">15 min before</option>
@@ -104,9 +113,10 @@
             <option value="1 week">1 week before</option>
           </select>
         </label>
-        <label v-if="repeatedNotificationAllowed" class="flex items-center justify-between w-full gap-4">
+        <label v-if="repeatedNotificationAllowed" class="flex items-center justify-between w-full gap-4 mt-1">
           Repeat
-          <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed">
+          <select name="repeatNotify" v-model="newEvent.notification.repeat" :disabled="!modificationAllowed"
+            class="text-center rounded-md">
             <option value="never">Never</option>
             <option v-if="repetitionOptionAllowed('1 minute')" value="1 minute">Every minute</option>
             <option v-if="repetitionOptionAllowed('5 minutes')" value="5 minutes">Every 5 minutes</option>
@@ -119,17 +129,17 @@
         </label>
       </div>
       <hr>
-      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-4">
-        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-1 rounded-lg bg-gray-300">Export
+      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-8">
+        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Export
           event</button>
-        <div v-else class="text-center">
-          <label id="event-upload" for="fileInput" class="w-full p-1 rounded-lg bg-gray-300 block">Import event</label>
+        <div v-else class="text-center cursor-pointer">
+          <label id="event-upload" for="fileInput" class="w-full p-2 rounded-lg bg-gray-400 block text-white">Import event</label>
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
         <div class="flex w-full space-x-1">
           <button v-if="modifying" type="button" @click="deleteEvent"
-            class="flex-1 bg-red-600 text-white p-1 rounded-lg">Delete</button>
-          <button type="submit" class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+            class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
+          <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
         </div>
       </div>
       <div v-else class="mt-4">
@@ -157,6 +167,7 @@ import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import eventService from '@/services/eventService';
 import ConfirmationPanel from './ConfirmationPanel.vue';
+import moment from 'moment-timezone';
 
 export default defineComponent({
   components: {
@@ -196,7 +207,8 @@ export default defineComponent({
       showParticipantsForm: false,
       authStore: useAuthStore(),
       showExportPanel: false,
-      confirmationMessage: ''
+      confirmationMessage: '',
+      timeZones: moment.tz.names()
     }
   },
   mounted() {
@@ -206,12 +218,17 @@ export default defineComponent({
     onFormVisible() {
       if (!this.modifying) {
         // intialize default values for new event
+        this.newEvent.timezone = moment.tz.guess();
         this.newEvent.start = timeService.roundTime(new Date());
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
         this.newEvent.repetition.endDate = new Date(this.newEvent.end);
         this.newEvent.participants = [
           { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
         ];
+      }
+      else{
+        this.newEvent.start = timeService.makeTimezoneLocal(this.newEvent.start, this.newEvent.timezone);
+        this.newEvent.end = timeService.makeTimezoneLocal(this.newEvent.end, this.newEvent.timezone);
       }
       this.setTimes();
     },
@@ -241,6 +258,9 @@ export default defineComponent({
         this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
         this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
       }
+
+      this.newEvent.start = timeService.convertToTimezone(this.newEvent.start, this.newEvent.timezone);
+      this.newEvent.end = timeService.convertToTimezone(this.newEvent.end, this.newEvent.timezone);
 
       this.$emit('saveEvent', this.newEvent);
     },
@@ -424,5 +444,9 @@ export default defineComponent({
 
 hr {
   margin: 0.5rem 0;
+}
+
+select {
+  padding: 0.25rem;
 }
 </style>

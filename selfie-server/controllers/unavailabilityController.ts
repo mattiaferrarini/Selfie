@@ -10,6 +10,7 @@ const formatUnavailability = (unavailability: any) => {
         allDay: unavailability.allDay,
         start: unavailability.start,
         end: unavailability.end,
+        timezone: unavailability.timezone,
         repetition: unavailability.repetition,
         username: unavailability.username
     };
@@ -51,6 +52,7 @@ export const addUnavailability = async (req: any, res: any) => {
         allDay: req.body.allDay,
         start: req.body.start,
         end: req.body.end,
+        timezone: req.body.timezone,
         repetition: req.body.repetition,
         username: req.body.username
     });
