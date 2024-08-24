@@ -11,14 +11,14 @@
       </div>
     </div>
     <div class="animate-fade-in sm:w-11/12 p-4 mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
-      <div>{{ date }}</div>
+      <div>{{ new Date(date) }}</div>
       <div class="flex mt-4 flex-col sm:flex-row gap-4">
         <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showCalendarTooltip)">
           <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showCalendarTooltip)">
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
               showCalendarTooltip ? ' rotate-180' : '']"/>
           </div>
-          <CalendarPreview :date=date :weekly="calendarWeekly" :content="calendarContent"/>
+          <CalendarPreview :date="new Date(date)" :weekly="calendarWeekly" :content="calendarContent"/>
           <div v-if="showCalendarTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
             <label for="weekly" class="font-semibold">Weekly
@@ -36,7 +36,7 @@
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
               showNotesTooltip ? ' rotate-180' : '']"/>
           </div>
-          <NotesPreview :date=date :category="notesCategory" :number="noteNumber"/>
+          <NotesPreview :date="new Date(date)" :category="notesCategory" :number="noteNumber"/>
           <div v-if="showNotesTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
             <div>
@@ -54,7 +54,7 @@
             <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
               showPomodoroTooltip ? ' rotate-180' : '']"/>
           </div>
-          <PomodoroPreview :date=date :type="pomodoroType"/>
+          <PomodoroPreview :date="new Date(date)" :type="pomodoroType"/>
           <div v-if="showPomodoroTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
             <select v-model="pomodoroType" @change="updatePreferences">
@@ -95,7 +95,7 @@ export default defineComponent({
   setup() {
     const dateStore = useDateStore();
     const homePreferences = useAuthStore().user.preferences.home;
-    const date = storeToRefs(dateStore).currentDate;
+    const date = storeToRefs(dateStore).currentDate
 
     const showCalendarTooltip = ref(false);
     const showNotesTooltip = ref(false);
