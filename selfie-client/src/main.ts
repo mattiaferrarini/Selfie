@@ -19,9 +19,14 @@ import {
     HiSearch,
     HiViewGridAdd,
     MdAdd,
+    MdArrowbackiosnew,
+    MdArrowforwardios,
+    MdBlock,
     MdClose,
     MdDelete,
     MdDone,
+    MdEvent,
+    MdEventavailable,
     MdFlipcameraandroidOutlined,
     MdMarkemailunreadOutlined,
     MdModeeditoutline,
@@ -37,15 +42,7 @@ import {
     MdStickynote2Outlined,
     MdTimerSharp,
     RiLogoutCircleRLine,
-    RiUserSettingsLine,
-    HiViewGridAdd,
-    MdDelete,
-    MdMarkemailunreadOutlined,
-    MdBlock,
-    MdEvent,
-    MdEventavailable,
-    MdArrowforwardios,
-    MdArrowbackiosnew
+    RiUserSettingsLine
 } from "oh-vue-icons/icons";
 import ClickOutside from "@/directives/ClickOutside";
 import {useAuthStore} from "@/stores/authStore";
@@ -58,7 +55,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 addIcons(CoHome, BiCalendar3, BiChatDots, MdStickynote2Outlined, MdTimerSharp, BiCalendar2Range, RiUserSettingsLine, MdPauseRound,
     RiLogoutCircleRLine, GiTimeTrap, MdFlipcameraandroidOutlined, MdRestartalt, MdSkipnext, MdPlayarrowOutlined,
     MdQueuemusic, MdSettingsRound, MdModeeditoutline, MdClose, MdNavigatenext, MdNavigatebefore, FaUndo, MdAdd,
-    BiChevronExpand, CoOptions, BiSave, MdDone, MdRemovecircleoutline, BiCircleFill, HiSearch, HiViewGridAdd, MdDelete, 
+    BiChevronExpand, CoOptions, BiSave, MdDone, MdRemovecircleoutline, BiCircleFill, HiSearch, HiViewGridAdd, MdDelete,
     MdMarkemailunreadOutlined, BiChatDots, MdBlock, MdEvent, MdEventavailable, MdArrowforwardios, MdArrowbackiosnew);
 
 // setup automatic response to 401 (Unauthenticated)

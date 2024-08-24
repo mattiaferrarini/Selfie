@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('visualType').value = auth.user.preferences?.projectsView || 'list';
     document.getElementById('visualType').addEventListener('change', (event) => {
-        console.log(event)
         auth.user.preferences.projectsView = event.target.value;
         localStorage.setItem('auth', JSON.stringify(auth));
         fetchWithMiddleware(`${API_URL}/profile/preferences`, {
@@ -107,14 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({date: newDate})
         }).then(() => {
-                timeDifference = new Date().getTime() - newDate.getTime();
-                timeMachineMessage.innerText = 'Time machine set!'
-                localStorage.setItem('date', JSON.stringify({
-                    "currentDate": newDate.toISOString(),
-                    "timeDiff": 0,
-                    "realTimeDiff": timeDifference
-                }));
-            }
+            timeDifference = new Date().getTime() - newDate.getTime();
+            timeMachineMessage.innerText = 'Time machine set!'
+            localStorage.setItem('date', JSON.stringify({
+                "currentDate": newDate.toISOString(),
+                "timeDiff": 0,
+                "realTimeDiff": timeDifference
+            }));
         }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
