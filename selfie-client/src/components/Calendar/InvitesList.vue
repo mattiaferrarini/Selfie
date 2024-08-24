@@ -2,16 +2,16 @@
     <div class="invite-list">
         <ul>
             <li v-for="(invInf, index) in inviteInfos" :key="index" class="mb-3">
-                <div class="p-2 rounded-lg bg-slate-100">
+                <div class="p-2 rounded-lg bg-slate-200">
                     <div>
-                        <h3 class="font-semibold mb-2">{{ inviteInfos[index].title }}</h3>
+                        <h3 class="font-semibold mb-2 text-gray-700">{{ inviteInfos[index].title }}</h3>
                         <div v-html="formattedDescription(inviteInfos[index].description)"></div>
                     </div>
-                    <div class="flex gap-x-1 mt-4">
-                        <button @click="declineInvite(invInf.invite)" class="flex-1 bg-red-500 action-button">Decline</button>
+                    <div class="flex gap-x-1 mt-4 mb-1">
+                        <button @click="declineInvite(invInf.invite)" class="flex-1 bg-red-600 action-button">Decline</button>
                         <button @click="postponeInvite(invInf.invite)"
                             class="flex-1 bg-gray-400 action-button">Postpone</button>
-                        <button @click="acceptInvite(invInf.invite)" class="flex-1 bg-green-600 action-button">Accept</button>
+                        <button @click="acceptInvite(invInf.invite)" class="flex-1 bg-emerald-600 action-button">Accept</button>
                     </div>
                 </div>
             </li>

@@ -317,7 +317,9 @@ export default defineComponent({
       // Note: events for resource are fetched when the resource is changed
 
       // TODO: change
-      hasPendingInvites.value = (await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value)).length > 0;
+      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
+      hasPendingInvites.value = invites.length > 0;
+      console.log('Pending invites:', invites);
     });
 
     return {
@@ -432,8 +434,8 @@ export default defineComponent({
     </div>
 
     <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div v-click-outside="closeInviteList" class="bg-white m-4 p-4 rounded-lg shadow-lg w-full">
-        <h2 class="text-lg font-bold mb-4">Pending invites</h2>
+      <div v-click-outside="closeInviteList" class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]">
+        <h2 class="text-lg font-bold mb-4 text-gray-800">Pending invites</h2>
         <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"
           @accept-invite="acceptInvite" />
       </div>
