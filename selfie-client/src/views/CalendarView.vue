@@ -338,7 +338,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="calendar-view animate-fade-in">
+  <div class="calendar-view">
     <nav class="text-gray-700 py-4 px-2 sm:px-4">
       <div class="flex justify-between items-center h-full">
         <div class="h-full flex gap-0.5 flex-wrap">
@@ -378,7 +378,7 @@ export default defineComponent({
       </div>
     </nav>
 
-    <div class="w-full flex justify-center items-center">
+    <div class="w-full flex justify-center items-center animate-fade-in">
       <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false"
         class="cursor-pointer z-10 max-w-[250px]">
         <template #trigger>
@@ -395,7 +395,7 @@ export default defineComponent({
       :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
       :include-events="content === 'appointments' || content === 'events' || content === 'resources'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
-      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'" />
+      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'" class="animate-fade-in"/>
 
     <ActivitiesList v-if="content === 'activities'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
       @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view" />

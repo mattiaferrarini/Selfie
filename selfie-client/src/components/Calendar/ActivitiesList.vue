@@ -1,5 +1,5 @@
 <template>
-    <<<<<<< HEAD <div class="flex justify-center w-full py-8 px-4 sm:p-8">
+    <div class="flex justify-center w-full py-8 px-4 sm:p-8">
         <div class="rounded-lg shadow-md overflow-hidden w-full max-w-[600px]">
             <div class="text-center w-full p-2 bg-emerald-600">
                 <h3 class="font-bold text-white">Activities</h3>
@@ -29,7 +29,7 @@
                 <p class="my-2 text-gray-700 text-center" v-else>No activities scheduled to end in this period.</p>
             </div>
         </div>
-        </div>
+    </div>
 </template>
 
 <script lang="ts">
