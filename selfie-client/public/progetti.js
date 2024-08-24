@@ -152,7 +152,7 @@ const unsubscribe = async () => {
 
 const logout = async () => {
     await unsubscribe();
-    await fetchWithMiddleware(`${API_URL}/logout`, {
+    await fetchWithMiddleware(`${API_URL}/auth/logout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
