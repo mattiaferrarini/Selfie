@@ -2,7 +2,7 @@ import { IActivity } from "../models/Activity";
 import timeService from "./timeService";
 import jobs from '../agenda/jobs';
 import { IEvent } from "../models/Event";
-import { agenda } from "../server";
+import { agenda } from "../server-deploy";
 import eventService from "./eventService";
 import { Job } from "agenda";
 
