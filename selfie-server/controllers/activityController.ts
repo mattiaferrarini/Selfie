@@ -81,7 +81,7 @@ export const deleteActivity = async (req: any, res: any) => {
 
         const activity = await Activity.findById(id);
 
-        if(activity){
+        if (activity) {
             await jobSchedulerService.clearActivityNotifications(activity);
             await Activity.findByIdAndDelete(id);
             await inviteController.deleteActivityInvites(id);
@@ -135,7 +135,10 @@ export const modifyActivity = async (req: any, res: any) => {
 
             if (req.body.pomodoro && req.body.pomodoro.completedCycles) {
                 if (!activity.pomodoro)
-                    activity.pomodoro = {options: req.body.pomodoro.options, completedCycles: new Map<string,number>()};
+                    activity.pomodoro = {
+                        options: req.body.pomodoro.options,
+                        completedCycles: new Map<string, number>()
+                    };
                 activity.pomodoro.options = req.body.pomodoro.options;
 
                 Object.entries(req.body.pomodoro.completedCycles).map((object: any) => {
