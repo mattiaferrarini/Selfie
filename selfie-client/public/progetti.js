@@ -127,6 +127,196 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('toggleDateTooltip').addEventListener('click', toggleTooltip);
     document.getElementById('setCurrentDate').addEventListener('click', setCurrentDate);
     document.getElementById('resetDate').addEventListener('click', resetDate);
+
+    const projectModal = document.getElementById('projectModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const projectForm = document.getElementById('projectForm');
+    const projectTitle = document.getElementById('projectTitle');
+    const actorsContainer = document.getElementById('actorsContainer');
+    const addActorButton = document.getElementById('addActor');
+    const phasesContainer = document.getElementById('phasesContainer');
+    const addPhaseButton = document.getElementById('addPhase');
+    const cancelButton = document.getElementById('cancelButton');
+    const addProjectButton = document.getElementById('addProjectButton');
+
+    let isEditing = false;
+    let currentProjectId = null;
+
+    const openModal = (project = null) => {
+        if (project) {
+            isEditing = true;
+            currentProjectId = project.id;
+            modalTitle.innerText = 'Edit Project';
+            projectTitle.value = project.title;
+            populateActors(project.actors);
+            populatePhases(project.phases);
+        } else {
+            isEditing = false;
+            currentProjectId = null;
+            modalTitle.innerText = 'Add Project';
+            projectForm.reset();
+            actorsContainer.innerHTML = '';
+            phasesContainer.innerHTML = '';
+        }
+        projectModal.show();
+    };
+
+    const closeModal = () => {
+        projectModal.hide();
+    };
+
+
+    const addActor = () => {
+        const actorDiv = document.createElement('div');
+        actorDiv.classList.add('actor', 'flex', 'gap-x-1', 'items-center', 'mb-1');
+        actorDiv.innerHTML = `
+            <input type="text" placeholder="Actor Username" class="actorUsername p-2 border border-gray-300 rounded-md" required>
+            <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+        `;
+        actorsContainer.appendChild(actorDiv);
+        actorDiv.querySelector('.removeActorButton').addEventListener('click', () => removeActor(actorDiv));
+    };
+
+    const removeActor = (actorDiv) => {
+        actorDiv.remove();
+    };
+
+    const populateActors = (actors) => {
+        actorsContainer.innerHTML = '';
+        actors.forEach(actor => {
+            const actorDiv = document.createElement('div');
+            actorDiv.classList.add('actor', 'flex', 'gap-x-1', 'items-center', 'mb-1');
+            actorDiv.innerHTML = `
+                <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
+                <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+            `;
+            actorsContainer.appendChild(actorDiv);
+            actorDiv.querySelector('.removeActorButton').addEventListener('click', () => removeActor(actorDiv));
+        });
+    };
+
+    const addPhase = () => {
+        const phaseDiv = document.createElement('fieldset');
+        phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
+        phaseDiv.innerHTML = `
+            <input type="text" placeholder="Phase Title" class="p-2 mt-2 border border-gray-300 rounded-md" required>
+            <div class="activitiesContainer my-2"></div>
+            <button type="button" class="addActivityButton bg-emerald-600 text-white p-2  rounded-md">Add Activity</button>
+            <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
+        `;
+        phasesContainer.appendChild(phaseDiv);
+        phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
+        phaseDiv.querySelector('.removePhaseButton').addEventListener('click', () => removePhase(phaseDiv));
+    };
+
+    const addActivity = (phaseDiv) => {
+        const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+        const activityDiv = document.createElement('fieldset');
+        activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
+        activityDiv.innerHTML = `
+            <input type="text" placeholder="Activity Title" class="p-2 border border-gray-300 rounded-md" required>
+            <input type="checkbox" class="isMilestone"> Milestone
+            <select class="status">
+                <option value="Not started">Not started</option>
+                <option value="In progress">In progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <input type="text" placeholder="Input" class="input p-2 border border-gray-300 rounded-md">
+            <input type="text" placeholder="Output" class="output p-2 border border-gray-300 rounded-md">
+            <input type="text" placeholder="Linked Activity ID" class="linkedActivityId p-2 border border-gray-300 rounded-md">
+            <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
+            <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+        `;
+        activitiesContainer.appendChild(activityDiv);
+        activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
+        activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv));
+    };
+
+    const removePhase = (phaseDiv) => {
+        phaseDiv.remove();
+    };
+
+    const editActivity = (activityDiv) => {
+        // Logic to edit activity
+        console.log('Editing activity:', activityDiv);
+    };
+
+    const removeActivity = (activityDiv) => {
+        activityDiv.remove();
+    };
+
+    const populatePhases = (phases) => {
+        phasesContainer.innerHTML = '';
+        phases.forEach(phase => {
+            const phaseDiv = document.createElement('fieldset');
+            phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
+            phaseDiv.innerHTML = `
+                <input type="text" value="${phase.title}" class="p-2 mt-2 border border-gray-300 rounded-md" required>
+                <div class="activitiesContainer my-2"></div>
+                <button type="button" class="addActivityButton bg-emerald-400 text-white p-2 rounded-md">Add Activity</button>
+                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
+            `;
+            const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+            phase.activities.forEach(activity => {
+                const activityDiv = document.createElement('fieldset');
+                activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
+                activityDiv.innerHTML = `
+                    <input type="text" value="${activity.title}" class="p-2 border border-gray-300 rounded-md" required>
+                    <input type="checkbox" class="isMilestone" ${activity.isMilestone ? 'checked' : ''}> Milestone
+                    <select class="status">
+                        <option value="Not started" ${activity.status === 'Not started' ? 'selected' : ''}>Not started</option>
+                        <option value="In progress" ${activity.status === 'In progress' ? 'selected' : ''}>In progress</option>
+                        <option value="Completed" ${activity.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    </select>
+                    <input type="text" value="${activity.input}" class="input p-2 border border-gray-300 rounded-md">
+                    <input type="text" value="${activity.output}" class="output p-2 border border-gray-300 rounded-md">
+                    <input type="text" value="${activity.linkedActivityId}" class="linkedActivityId p-2 border border-gray-300 rounded-md">
+                    <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
+                    <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+                `;
+                activitiesContainer.appendChild(activityDiv);
+                activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
+                activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv));
+            });
+            phasesContainer.appendChild(phaseDiv);
+            phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
+            phaseDiv.querySelector('.removePhaseButton').addEventListener('click', () => removePhase(phaseDiv));
+        });
+    };
+
+    projectForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const projectData = {
+            owner: auth.user.username,
+            title: projectTitle.value,
+            phases: Array.from(phasesContainer.querySelectorAll('.phase')).map(phaseDiv => ({
+                title: phaseDiv.querySelector('input').value,
+                activities: Array.from(phaseDiv.querySelectorAll('.activity')).map(activityDiv => ({
+                    title: activityDiv.querySelector('input').value,
+                    isMilestone: activityDiv.querySelector('.isMilestone').checked,
+                    status: activityDiv.querySelector('.status').value,
+                    input: activityDiv.querySelector('.input').value,
+                    output: activityDiv.querySelector('.output').value,
+                    linkedActivityId: activityDiv.querySelector('.linkedActivityId').value
+                }))
+            }))
+        };
+
+        if (isEditing) {
+            // Update project logic here
+            console.log('Updating project:', currentProjectId, projectData);
+        } else {
+            // Add project logic here
+            console.log('Adding new project:', projectData);
+        }
+
+        closeModal();
+    });
+
+    addActorButton.addEventListener('click', addActor);
+    addPhaseButton.addEventListener('click', addPhase);
+    cancelButton.addEventListener('click', closeModal);
+    addProjectButton.addEventListener('click', () => openModal());
 });
 
 const API_URL = "http://localhost:3000";
