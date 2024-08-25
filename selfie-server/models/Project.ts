@@ -1,5 +1,15 @@
 import {Document, model, Schema} from "mongoose";
 
+enum ActivityStatus {
+    NonAttivabile = 'Non attivabile',   // non è ancora disponibile l'input relativo
+    Attivabile = 'Attivabile',          //  l'input è presente ma l'attore non ha ancora dichiarato di averla iniziata
+    Attiva = 'Attiva',                  // l'attore ha dichiarato di averla iniziata
+    Conclusa = 'Conclusa',              // l'attore ha dichiarato di averla conclusa ed un output è disponbile
+    Riattivata = 'Riattivata',          // il capo-progetto ha rifiutato l'output e ha richiesto revisioni
+    InRitardo = 'In ritardo',           // la data di conclusione è passata ma l'output non è ancora disponibile
+    Abbandonata = 'Abbandonata'         // la data di conclusione è passata da molto tempo, oppure l'attore ha dichiarato di non volersene più occupare
+}
+
 export interface IProject extends Document {
     owner: string;
     actors: string[];
@@ -8,9 +18,10 @@ export interface IProject extends Document {
         title: string;
         activities: [{
             isMilestone: boolean;
-            status: string;
+            status: ActivityStatus;
             activityId: string;
-            linkedActivityId: string;
+            linkedActivityId: number;
+            localId: number;
             input: string;
             output: string;
         }]
@@ -44,15 +55,19 @@ const ProjectSchema = new Schema({
                     status: {
                         type: String,
                         required: true,
-                        enum: ['Not started', 'In progress', 'Completed']
+                        enum: ['Non attivabile', 'Attivabile', 'Attiva', 'Conclusa', 'Riattivata', 'In ritardo', 'Abbandonata']
                     },
                     activityId: {
                         type: String,
                         required: true
                     },
                     linkedActivityId: {
-                        type: String,
+                        type: Number,
                         required: false
+                    },
+                    localId: {
+                        type: Number,
+                        required: true
                     },
                     input: {
                         type: String,

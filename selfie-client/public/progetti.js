@@ -342,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const projectData = {
             owner: auth.user.username,
+            actors: Array.from(actorsContainer.querySelectorAll('.actorUsername')).map(actorInput => actorInput.value),
             title: projectTitle.value,
             phases: Array.from(phasesContainer.querySelectorAll('.phase')).map(phaseDiv => ({
                 title: phaseDiv.querySelector('input').value,
