@@ -209,29 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
         phaseDiv.querySelector('.removePhaseButton').addEventListener('click', () => removePhase(phaseDiv));
     };
 
-    const addActivity = (phaseDiv) => {
-        const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
-        const activityDiv = document.createElement('fieldset');
-        activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
-        activityDiv.innerHTML = `
-            <input type="text" placeholder="Activity Title" class="p-2 border border-gray-300 rounded-md" required>
-            <input type="checkbox" class="isMilestone"> Milestone
-            <select class="status">
-                <option value="Not started">Not started</option>
-                <option value="In progress">In progress</option>
-                <option value="Completed">Completed</option>
-            </select>
-            <input type="text" placeholder="Input" class="input p-2 border border-gray-300 rounded-md">
-            <input type="text" placeholder="Output" class="output p-2 border border-gray-300 rounded-md">
-            <input type="text" placeholder="Linked Activity ID" class="linkedActivityId p-2 border border-gray-300 rounded-md">
-            <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
-            <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
-        `;
-        activitiesContainer.appendChild(activityDiv);
-        activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
-        activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv));
-    };
-
     const removePhase = (phaseDiv) => {
         phaseDiv.remove();
     };
@@ -241,8 +218,73 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Editing activity:', activityDiv);
     };
 
-    const removeActivity = (activityDiv) => {
+    const generateUniqueId = (phaseDiv) => {
+        if (!phaseDiv.activityCounter) {
+            phaseDiv.activityCounter = 0;
+        }
+        phaseDiv.activityCounter += 1;
+        return phaseDiv.activityCounter;
+    };
+
+    const addActivity = (phaseDiv) => {
+        const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+        const activityDiv = document.createElement('fieldset');
+        const uniqueId = generateUniqueId(phaseDiv);
+
+        // Store the unique ID in the phase-specific list
+        if (!phaseDiv.activityIds) {
+            phaseDiv.activityIds = [];
+        }
+        phaseDiv.activityIds.push(uniqueId);
+
+        activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
+        activityDiv.innerHTML = `
+        ID:${uniqueId}
+        <input type="hidden" class="hidden" value="${uniqueId}"/>
+        <input type="checkbox" class="isMilestone"> Milestone
+        <input type="text" placeholder="Input" class="input p-2 border border-gray-300 rounded-md">
+        <input type="text" placeholder="Output" class="output p-2 border border-gray-300 rounded-md">
+        <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
+            <option value="">None</option>
+            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
+        </select>
+        <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
+        <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+    `;
+        activitiesContainer.appendChild(activityDiv);
+        activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
+        activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
+
+        // Add event listener to linkedActivityId select element
+        const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
+        const inputElement = activityDiv.querySelector('.input');
+        linkedActivityIdSelect.addEventListener('change', () => {
+            inputElement.disabled = linkedActivityIdSelect.value !== '';
+            inputElement.value = linkedActivityIdSelect.value !== '' ? 'Output of ' + linkedActivityIdSelect.value : '';
+        });
+
+        // Update all linkedActivityId dropdowns within the same phase
+        activitiesContainer.querySelectorAll('.linkedActivityId').forEach(select => {
+            select.innerHTML = `
+            <option value="">None</option>
+            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
+        `;
+        });
+    };
+
+    const removeActivity = (activityDiv, phaseDiv) => {
+        const uniqueId = Number(activityDiv.querySelector('input.hidden').value);
+        phaseDiv.activityIds = phaseDiv.activityIds.filter(id => id !== uniqueId);
         activityDiv.remove();
+
+        // Update all linkedActivityId dropdowns within the same phase
+        const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+        activitiesContainer.querySelectorAll('.linkedActivityId').forEach(select => {
+            select.innerHTML = `
+            <option value="">None</option>
+            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
+        `;
+        });
     };
 
     const populatePhases = (phases) => {
@@ -251,32 +293,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const phaseDiv = document.createElement('fieldset');
             phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
             phaseDiv.innerHTML = `
-                <input type="text" value="${phase.title}" class="p-2 mt-2 border border-gray-300 rounded-md" required>
-                <div class="activitiesContainer my-2"></div>
-                <button type="button" class="addActivityButton bg-emerald-400 text-white p-2 rounded-md">Add Activity</button>
-                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
-            `;
+            <input type="text" value="${phase.title}" class="p-2 mt-2 border border-gray-300 rounded-md" required>
+            <div class="activitiesContainer my-2"></div>
+            <button type="button" class="addActivityButton bg-emerald-400 text-white p-2 rounded-md">Add Activity</button>
+            <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
+        `;
             const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+            phaseDiv.activityIds = [];
+            phaseDiv.activityCounter = 0;
             phase.activities.forEach(activity => {
                 const activityDiv = document.createElement('fieldset');
+                const uniqueId = generateUniqueId(phaseDiv);
+                phaseDiv.activityIds.push(uniqueId);
                 activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
                 activityDiv.innerHTML = `
-                    <input type="text" value="${activity.title}" class="p-2 border border-gray-300 rounded-md" required>
+                    ID:${uniqueId}
+                    <input type="hidden" class="hidden" value="${uniqueId}"/>
                     <input type="checkbox" class="isMilestone" ${activity.isMilestone ? 'checked' : ''}> Milestone
-                    <select class="status">
-                        <option value="Not started" ${activity.status === 'Not started' ? 'selected' : ''}>Not started</option>
-                        <option value="In progress" ${activity.status === 'In progress' ? 'selected' : ''}>In progress</option>
-                        <option value="Completed" ${activity.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                    </select>
                     <input type="text" value="${activity.input}" class="input p-2 border border-gray-300 rounded-md">
                     <input type="text" value="${activity.output}" class="output p-2 border border-gray-300 rounded-md">
-                    <input type="text" value="${activity.linkedActivityId}" class="linkedActivityId p-2 border border-gray-300 rounded-md">
+                    <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
+                        <option value="">None</option>
+                        ${phaseDiv.activityIds.map(id => `<option value="${id}" ${activity.linkedActivityId === id ? 'selected' : ''}>${id}</option>`).join('')}
+                    </select>
                     <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
                     <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
                 `;
+
+                // Add event listener to linkedActivityId select element
+                const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
+                const inputElement = activityDiv.querySelector('.input');
+                linkedActivityIdSelect.addEventListener('change', () => {
+                    inputElement.disabled = linkedActivityIdSelect.value !== '';
+                    inputElement.value = linkedActivityIdSelect.value !== '' ? 'Output of ' + linkedActivityIdSelect.value : '';
+                });
+
                 activitiesContainer.appendChild(activityDiv);
                 activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
-                activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv));
+                activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
             });
             phasesContainer.appendChild(phaseDiv);
             phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
@@ -292,9 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
             phases: Array.from(phasesContainer.querySelectorAll('.phase')).map(phaseDiv => ({
                 title: phaseDiv.querySelector('input').value,
                 activities: Array.from(phaseDiv.querySelectorAll('.activity')).map(activityDiv => ({
-                    title: activityDiv.querySelector('input').value,
+                    localId: activityDiv.querySelector('input.hidden').value,
                     isMilestone: activityDiv.querySelector('.isMilestone').checked,
-                    status: activityDiv.querySelector('.status').value,
                     input: activityDiv.querySelector('.input').value,
                     output: activityDiv.querySelector('.output').value,
                     linkedActivityId: activityDiv.querySelector('.linkedActivityId').value
