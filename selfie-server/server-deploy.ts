@@ -12,15 +12,18 @@ import notificationRoutes from './routes/notification';
 import userRoutes from './routes/user';
 import resourceRoutes from './routes/resource';
 import inviteRoutes from './routes/invite';
+import timeMachineRoutes from './routes/timeMachine';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
-import {ensureAuthenticated} from "./middlewares/authMiddleware";
-import http from "node:http";
-import WebSocket from "ws";
-import {IUser} from "./models/User";
-import {handleConnection} from "./ws/wsHandler";
+import { ensureAuthenticated } from "./middlewares/authMiddleware";
+import * as http from "node:http";
+import { IUser } from "./models/User";
+import WebSocket from 'ws';
+import { handleConnection } from "./ws/wsHandler";
+import { Agenda } from 'agenda';
+import jobs from './agenda/jobs';
 
 dotenv.config({ path: __dirname + '/.env.local' });
 
@@ -35,7 +38,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 // serve static files in selfie-client/dist
 const client_build_dir = __dirname + '/../selfie-client/dist';
@@ -52,9 +55,45 @@ mongoose.connect(mongouri)
         console.log('Connected to MongoDB');
     })
     .catch(err => {
-        console.error(`mongouri: ${mongouri}`);
         console.error('Error connecting to MongoDB', err);
     });
+
+// Initialize Agenda
+const agenda = new Agenda({
+    db: {
+        address: mongouri,
+        collection: 'jobs'
+    },
+    processEvery: '20 seconds'
+});
+
+(async function () {
+    try {
+        // Start agenda
+        await agenda.start();
+        
+        // Purge all jobs
+        //await agenda.purge();
+
+        // Define jobs
+        await jobs.defineJobs(agenda);
+        console.log('Agenda started');
+    }
+    catch (error) {
+        console.error('Failed to start agenda:', error);
+    }
+})();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    await agenda.stop();
+    process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+    await agenda.stop();
+    process.exit(0);
+});
 
 // Session configuration
 const sessionMiddleware = session({
@@ -82,10 +121,11 @@ app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 app.use('/user', ensureAuthenticated, userRoutes);
 app.use('/resource', ensureAuthenticated, resourceRoutes);
 app.use('/invite', ensureAuthenticated, inviteRoutes);
+app.use('/timeMachine', timeMachineRoutes);
 
 const server = http.createServer(app);
 
-const wss = new WebSocket.Server({server});
+const wss = new WebSocket.Server({ server });
 
 const userConnections = new Map<string, WebSocket[]>();
 wss.on('connection', (ws, req: any) => {
@@ -107,3 +147,5 @@ wss.on('connection', (ws, req: any) => {
 });
 
 server.listen(PORT);
+
+export { agenda };

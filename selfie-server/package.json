@@ -6,6 +6,8 @@
   "scripts": {
     "start": "ts-node-dev server.ts",
     "start-deploy": "ts-node-dev server-deploy.ts",
+    "test-deploy": "tsc --build; node server-deploy.js",
+    "test-compile": "tsc --build; node server.js",
     "build": "tsc --build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
