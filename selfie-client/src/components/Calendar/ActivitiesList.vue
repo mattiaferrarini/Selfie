@@ -8,7 +8,7 @@
                 <ul class="my-4" v-if="sortedActivities.length > 0">
                     <li v-for="activity in sortedActivities" :key="activity.id">
                         <hr>
-                        <div class="flex align-center justify-between p-5 cursor-pointer"
+                        <div class="flex align-center justify-between py-1.5 cursor-pointer"
                             @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                             <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                             <div class="flex gap-4">
