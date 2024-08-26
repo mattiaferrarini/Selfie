@@ -45,7 +45,9 @@ const ActivitySchema = new Schema({
     notification: {
         method: {
             type: [String],
-            required: true
+            required: true,
+            default: [],
+            enum: ['push', 'email']
         },
         when: {
             type: String,

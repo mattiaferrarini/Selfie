@@ -78,9 +78,8 @@
                 <div class="flex items-center justify-between w-full gap-4">
                     <p>Notification after deadline</p>
                     <div class="flex flex-wrap justify-end space-x-4">
-                        <label> <input type="checkbox" v-model="newNotificationOptions.os" /> OS</label>
+                        <label> <input type="checkbox" v-model="newNotificationOptions.push" /> Push</label>
                         <label> <input type="checkbox" v-model="newNotificationOptions.email" /> Email </label>
-                        <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" /> Whatsapp </label>
                     </div>
                 </div>
                 <label v-if="false" class="flex items-center justify-between w-full gap-4 mt-1">
@@ -204,9 +203,8 @@ export default defineComponent({
             authStore: useAuthStore(),
             newActivity: { ...this.activity },
             newNotificationOptions: {
-                os: this.activity.notification.method.includes('os'),
+                push: this.activity.notification.method.includes('push'),
                 email: this.activity.notification.method.includes('email'),
-                whatsapp: this.activity.notification.method.includes('whatsapp')
             },
             showParticipantsForm: false,
             showSubActivities: false,
@@ -257,14 +255,11 @@ export default defineComponent({
             event.preventDefault();
 
             this.newActivity.notification.method = [];
-            if (this.newNotificationOptions.os)
-                this.newActivity.notification.method.push('os');
+            if (this.newNotificationOptions.push)
+                this.newActivity.notification.method.push('push');
 
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
-
-            if (this.newNotificationOptions.whatsapp)
-                this.newActivity.notification.method.push('whatsapp');
 
             this.saveActivity(this.newActivity);
         },
@@ -370,7 +365,7 @@ export default defineComponent({
     },
     computed: {
         notifyAfterDeadline(): boolean {
-            return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
+            return this.newNotificationOptions.push || this.newNotificationOptions.email;
         },
         formattedEndDate: {
             get(): string {

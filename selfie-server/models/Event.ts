@@ -79,7 +79,8 @@ const EventSchema = new Schema({
         method: { 
             type: [String], 
             required: true,
-            default: [] 
+            default: [],
+            enum: ['push', 'email']
         },
         when: { 
             type: String, 

@@ -90,12 +90,10 @@
         <div class="flex items-center justify-between w-full gap-4">
           Notification
           <div class="flex flex-wrap justify-end space-x-4">
-            <label> <input type="checkbox" v-model="newNotificationOptions.os" :disabled="!modificationAllowed" />
-              OS</label>
+            <label> <input type="checkbox" v-model="newNotificationOptions.push" :disabled="!modificationAllowed" />
+              Push</label>
             <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed" />
               Email </label>
-            <label> <input type="checkbox" v-model="newNotificationOptions.whatsapp" :disabled="!modificationAllowed" />
-              Whatsapp </label>
           </div>
         </div>
         <label v-if="notifyNewEvent" class="flex items-center justify-between w-full gap-4 mt-1">
@@ -198,9 +196,8 @@ export default defineComponent({
     return {
       newEvent: { ...this.event },
       newNotificationOptions: {
-        os: this.event.notification.method.includes('os'),
+        push: this.event.notification.method.includes('push'),
         email: this.event.notification.method.includes('email'),
-        whatsapp: this.event.notification.method.includes('whatsapp')
       },
       newStartTime: '',
       newEndTime: '',
@@ -243,12 +240,10 @@ export default defineComponent({
       event.preventDefault();
 
       this.newEvent.notification.method = [];
-      if (this.newNotificationOptions.os)
-        this.newEvent.notification.method.push('os');
+      if (this.newNotificationOptions.push)
+        this.newEvent.notification.method.push('push');
       if (this.newNotificationOptions.email)
         this.newEvent.notification.method.push('email');
-      if (this.newNotificationOptions.whatsapp)
-        this.newEvent.notification.method.push('whatsapp');
 
       if (this.newEvent.allDay) {
         this.newEvent.start.setHours(0, 0, 0, 0);
@@ -371,7 +366,7 @@ export default defineComponent({
       return this.newEvent.repetition.until === 'date';
     },
     notifyNewEvent(): boolean {
-      return this.newNotificationOptions.os || this.newNotificationOptions.email || this.newNotificationOptions.whatsapp;
+      return this.newNotificationOptions.push || this.newNotificationOptions.email;
     },
     repeatedNotificationAllowed(): boolean {
       return this.newEvent.notification.when !== '0 minutes';
