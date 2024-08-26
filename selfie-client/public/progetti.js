@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({projectsView: event.target.value})
         });
         const ganttView = document.getElementById('ganttView');
-        const listView = document.getElementById('listView');
         if (event.target.value === 'gantt') {
             ganttView.classList.remove('hidden');
             listView.classList.add('hidden');
@@ -226,6 +225,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return phaseDiv.activityCounter;
     };
 
+    const addLinkedActivityEventListener = (activityDiv) => {
+        const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
+        const inputElement = activityDiv.querySelector('.input');
+        linkedActivityIdSelect.addEventListener('change', () => {
+            inputElement.disabled = linkedActivityIdSelect.value !== '';
+            inputElement.value = linkedActivityIdSelect.value !== '' ? 'Output of #' + linkedActivityIdSelect.value : '';
+        });
+    }
+
+    const updateLinkedActivities = (activitiesContainer, phaseDiv) => {
+        activitiesContainer.querySelectorAll('.linkedActivityId').forEach(select => {
+            const value = select.value;
+            select.innerHTML = `
+                <option value="">None</option>
+                ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
+            `;
+            select.value = value;
+        });
+    }
+
     const addActivity = (phaseDiv) => {
         const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
         const activityDiv = document.createElement('fieldset');
@@ -244,16 +263,21 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="checkbox" class="isMilestone"> Milestone
         <input type="text" placeholder="Input" class="input p-2 border border-gray-300 rounded-md">
         <input type="text" placeholder="Output" class="output p-2 border border-gray-300 rounded-md">
+        <label>Linked Activity:
         <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
             <option value="">None</option>
             ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
         </select>
+        </label>
+        <label>Status:
         <select class="status p-2 border border-gray-300 rounded-md" required>
-                <option value="NotStarted" selected>Not Started</option>
-                <option value="Started">Started</option>
-                <option value="Concluded">Concluded</option>
-                <option value="Rejected">Rejected</option>
-            </select>
+            <option value="NotStarted" selected>Not Started</option>
+            <option value="Started">Started</option>
+            <option value="Concluded">Concluded</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Abandoned">Abandoned</option>
+        </select>
+        </label>
         <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
         <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
     `;
@@ -261,21 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
         activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
         activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
 
-        // Add event listener to linkedActivityId select element
-        const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
-        const inputElement = activityDiv.querySelector('.input');
-        linkedActivityIdSelect.addEventListener('change', () => {
-            inputElement.disabled = linkedActivityIdSelect.value !== '';
-            inputElement.value = linkedActivityIdSelect.value !== '' ? 'Output of ' + linkedActivityIdSelect.value : '';
-        });
+        addLinkedActivityEventListener(activityDiv);
 
-        // Update all linkedActivityId dropdowns within the same phase
-        activitiesContainer.querySelectorAll('.linkedActivityId').forEach(select => {
-            select.innerHTML = `
-            <option value="">None</option>
-            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
-        `;
-        });
+        updateLinkedActivities(activitiesContainer, phaseDiv);
     };
 
     const removeActivity = (activityDiv, phaseDiv) => {
@@ -283,14 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
         phaseDiv.activityIds = phaseDiv.activityIds.filter(id => id !== uniqueId);
         activityDiv.remove();
 
-        // Update all linkedActivityId dropdowns within the same phase
         const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
-        activitiesContainer.querySelectorAll('.linkedActivityId').forEach(select => {
-            select.innerHTML = `
-            <option value="">None</option>
-            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
-        `;
-        });
+        updateLinkedActivities(activitiesContainer, phaseDiv);
     };
 
     const populatePhases = (phases) => {
@@ -318,28 +324,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="checkbox" class="isMilestone" ${activity.isMilestone ? 'checked' : ''}> Milestone
                     <input type="text" value="${activity.input}" class="input p-2 border border-gray-300 rounded-md">
                     <input type="text" value="${activity.output}" class="output p-2 border border-gray-300 rounded-md">
+                    <label>Linked Activity:
                     <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
                         <option value="">None</option>
                         ${phaseDiv.activityIds.map(id => `<option value="${id}" ${activity.linkedActivityId === id ? 'selected' : ''}>${id}</option>`).join('')}
                     </select>
+                    </label>
+                    <label>Status:
                     <select class="status p-2 border border-gray-300 rounded-md" required>
                         <option value="NotStarted">Not Started</option>
                         <option value="Started">Started</option>
                         <option value="Concluded">Concluded</option>
                         <option value="Rejected">Rejected</option>
+                        <option value="Abandoned">Abandoned</option>
                     </select>
+                    </label>
                     <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
                     <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
                 `;
                 activityDiv.querySelector('.status').value = activity.status;
 
-                // Add event listener to linkedActivityId select element
-                const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
-                const inputElement = activityDiv.querySelector('.input');
-                linkedActivityIdSelect.addEventListener('change', () => {
-                    inputElement.disabled = linkedActivityIdSelect.value !== '';
-                    inputElement.value = linkedActivityIdSelect.value !== '' ? 'Output of ' + linkedActivityIdSelect.value : '';
-                });
+                addLinkedActivityEventListener(activityDiv);
 
                 activitiesContainer.appendChild(activityDiv);
                 activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
@@ -351,8 +356,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const errorMessage = document.getElementById('errorMessage');
+
+    const showError = (message) => {
+        errorMessage.innerText = message;
+        errorMessage.classList.remove('hidden');
+        errorMessage.scrollIntoView({block: 'center', behavior: 'smooth'});
+    };
+
+    const hideError = () => {
+        errorMessage.innerText = '';
+        errorMessage.classList.add('hidden');
+    };
+
     projectForm.addEventListener('submit', (event) => {
         event.preventDefault();
+        hideError();
         const projectData = {
             owner: auth.user.username,
             actors: Array.from(actorsContainer.querySelectorAll('.actorUsername')).map(actorInput => actorInput.value),
@@ -374,17 +393,111 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update project logic here
             console.log('Updating project:', currentProjectId, projectData);
         } else {
+            fetchWithMiddleware(`${API_URL}/project/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectData)
+            }).then(response => response.json()).then(data => {
+                if (data.hasOwnProperty("error"))
+                    showError(data.error);
+                else {
+                    projects.push(data);
+                    showProjects();
+                    closeModal();
+                }
+            })
             // Add project logic here
             console.log('Adding new project:', projectData);
         }
-
-        closeModal();
     });
 
     addActorButton.addEventListener('click', addActor);
     addPhaseButton.addEventListener('click', addPhase);
     cancelButton.addEventListener('click', closeModal);
     addProjectButton.addEventListener('click', () => openModal());
+
+    let projects = [];
+    const projectSelector = document.querySelector('#selectedProject');
+
+    const showProjects = () => {
+        const value = projectSelector.value;
+        projectSelector.innerHTML = `
+            ${projects.map(project => `<option value="${project.id}">${project.title}</option>`).join('')}
+        `;
+        projectSelector.value = value;
+    }
+
+    projectSelector.addEventListener('change', () => {
+        const project = projects.find(project => project.id === projectSelector.value);
+        auth.user.preferences.projectsView === 'gantt' ? showGantt(project) : showList(project);
+    });
+
+    const listView = document.getElementById('listView');
+
+    const showGantt = (project) => {
+
+    };
+
+    const showList = (project) => {
+        listView.innerHTML = '';
+
+        const activities = project.phases.flatMap(phase =>
+            phase.activities.map(activity => ({
+                ...activity,
+                phaseTitle: phase.title
+            }))
+        );
+
+        /*activities.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (dateA < dateB) return -1;
+            if (dateA > dateB) return 1;
+            return a.actor.localeCompare(b.actor);
+        });*/
+
+        const activityList = activities.map(activity => {
+            let status;
+            if (activity.input === "") {
+                status = "Non attivabile";
+            } else if (activity.status === "NotStarted") {
+                status = "Attivabile";
+            } else if (activity.status === "Rejected") {
+                status = "Riattivata";
+            } else if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity.deadline) {
+                status = "Abbandonata";
+            } else if (activity.activity.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
+                status = "In ritardo";
+            } else if (activity.status === "Concluded" && activity.output !== "") {
+                status = "Conclusa";
+            } else {
+                status = "Attiva";
+            }
+            return `
+        <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
+            <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
+            <div><strong>Actor:</strong> ${activity.activity?.participants.map(participant => participant.username).join('')}</div>
+            <div><strong>Starting Date:</strong> ${new Date(activity.activity?.start).toLocaleDateString()}</div>
+            <div><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
+            <div><strong>Status:</strong> ${status}</div>
+            <div><strong>Input:</strong> ${activity.input}</div>
+            <div><strong>Output:</strong> ${activity.output}</div>
+        </li>
+    `
+        }).join('');
+
+        // Insert the generated HTML into the listView element
+        listView.innerHTML = `<ul class="activity-list list-none p-0">${activityList}</ul>`;
+    };
+
+    fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
+        projects = data;
+        showProjects();
+        projectSelector.selectedIndex = 0;
+        auth.user.preferences.projectsView === 'gantt' ? showGantt(projects[0]) : showList(projects[0]);
+    });
 });
 
 const API_URL = "http://localhost:3000";

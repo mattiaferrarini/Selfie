@@ -39,7 +39,7 @@ export const deleteProject = async (req: any, res: any) => {
     }
 }
 
-const deleteAllActivities = async (project: any) => {
+const deleteAllProjectActivities = async (project: any) => {
     project.phases.map((phase: any) => {
         phase.activities.map(async (activity: any) => {
             await deleteActivityById(activity.activityId);
@@ -82,7 +82,7 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
 
 export const modifyStatus = async (req: any, res: any) => {
     const {id} = req.params;
-    const {status, activityId} = req.body;
+    const {status, input, output, activityId} = req.body;
 
     if (!ActivityStatus.hasOwnProperty(status)) {
         res.status(400).send({error: 'Invalid status'});
@@ -103,6 +103,9 @@ export const modifyStatus = async (req: any, res: any) => {
             }
 
             phaseActivity.status = status;
+            phaseActivity.output = output;
+            if (phaseActivity.linkedActivityId == "")
+                phaseActivity.input = input;
             await project.save();
             res.status(200).send
         } else {
@@ -135,7 +138,7 @@ export const modifyProject = async (req: any, res: any) => {
         project.actors = actors;
         project.title = title;
 
-        await deleteAllActivities(project);
+        await deleteAllProjectActivities(project);
 
         const activitiesCreated = await createActivities(phases, req, res);
         if (!activitiesCreated) {
@@ -191,6 +194,6 @@ export const addProject = async (req: any, res: any) => {
         });
         res.status(201).send(savedProject);
     } catch (error) {
-        res.status(400).send({error: 'Error adding project'});
+        res.status(400).send({error: 'Error adding project' + error});
     }
 }
