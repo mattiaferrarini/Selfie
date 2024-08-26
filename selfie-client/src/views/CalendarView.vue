@@ -118,6 +118,7 @@ export default defineComponent({
     watch(currentDate, async () => {
       console.log('Current date changed');
       focusDate.value = new Date(currentDate.value);
+      checkInvites();
     });
 
     /* Navigation and date handling */
@@ -219,12 +220,15 @@ export default defineComponent({
 
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: any) => {
+      /*
       if (modifying.value) {
         const index = rangeActivities.value.findIndex(activity => activity.id === newActivity.id);
         rangeActivities.value[index] = newActivity;
       } else {
         rangeActivities.value.push(newActivity);
       }
+        */
+      fetchActivities();
       hideAllForms();
     };
     const markAsDone = async (activity: Activity) => {
@@ -236,8 +240,8 @@ export default defineComponent({
       const res = await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
-      activityService.deleteActivity(activity);
-      rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
+      //rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
+      fetchActivities();
       hideAllForms();
     };
 
@@ -284,6 +288,10 @@ export default defineComponent({
           rangeActivities.value.push(activity);
       }
     }
+    const checkInvites = async () => {
+      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
+      hasPendingInvites.value = invites.length > 0;
+    };
 
     /* Computed properties */
     const showForm = computed(() => {
@@ -318,10 +326,8 @@ export default defineComponent({
       fetchResources();
       // Note: events for resource are fetched when the resource is changed
 
-      // TODO: change
-      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
-      hasPendingInvites.value = invites.length > 0;
-      console.log('Pending invites:', invites);
+      // Check for pending invites
+      checkInvites();
     });
 
     return {
@@ -378,13 +384,14 @@ export default defineComponent({
       </div>
     </nav>
 
-    <div class="w-full flex justify-center items-center animate-fade-in">
+    <main class="animate-fade-in">
+      <div class="w-full flex justify-center items-center">
       <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false"
         class="cursor-pointer z-10 max-w-[250px]">
         <template #trigger>
           <div class="clickable-text flex items-center justify-center">
             <h2 class="text-2xl font-bold text-gray-700">{{ currentDisplayedPeriodString }}</h2>
-            <v-icon name="bi-chevron-expand"></v-icon>
+            <v-icon name="bi-chevron-expand" class="h-full"></v-icon>
           </div>
         </template>
       </VueDatePicker>
@@ -395,13 +402,14 @@ export default defineComponent({
       :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
       :include-events="content === 'appointments' || content === 'events' || content === 'resources'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
-      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'" class="animate-fade-in"/>
+      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'"/>
 
     <ActivitiesList v-if="content === 'activities'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
-      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view" />
+      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view"/>
+    </main>
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">
-      <ul class="mr-4 mb-4 self-start" v-if="showAddOptions">
+      <ul class="mr-4 mb-4 self-start animate-appear-in-order" v-if="showAddOptions">
         <li><button class="add-button" @click.stop="openAddEventForm"><v-icon name="md-event"
               class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Event</button></li>
         <li><button class="add-button mt-1" @click.stop="openAddActivityForm"><v-icon name="md-eventavailable"
@@ -415,24 +423,17 @@ export default defineComponent({
       </button>
     </div>
 
-    <div v-if="hasPendingInvites" class="fixed bottom-4 left-4">
-      <button @click.stop="openInviteList"
-        class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
-        <v-icon name="md-markemailunread-outlined" class="w-full h-full"></v-icon>
-      </button>
-    </div>
-
     <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
-        :modification-allowed="eventModificationAllowd" class="m-4" />
+        :modification-allowed="eventModificationAllowd"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
         :current-date="currentDate" class="m-4" />
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
         @delete-unavailability="deleteUnavailability" @save-unavailability="saveUnavailability"
-        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" class="m-4" />
+        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate"/>
     </div>
 
     <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -441,6 +442,13 @@ export default defineComponent({
         <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"
           @accept-invite="acceptInvite" />
       </div>
+    </div>
+
+    <div v-if="hasPendingInvites" class="fixed bottom-4 left-4">
+      <button @click.stop="openInviteList"
+        class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
+        <v-icon name="md-markemailunread-outlined" class="w-full h-full"></v-icon>
+      </button>
     </div>
 
   </div>

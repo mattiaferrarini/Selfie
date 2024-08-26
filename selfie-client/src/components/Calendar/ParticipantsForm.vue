@@ -6,10 +6,10 @@
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
                     <input type="text" placeholder="Add username" v-model="newUsername"
-                        class="border border-gray-300 p-1 flex-grow">
-                    <button @click="addParticipant" class="px-2 bg-gray-300"><v-icon name="md-add"></v-icon></button>
+                        class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md">
+                    <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md"><v-icon name="md-add"></v-icon></button>
                 </div>
-                <p v-if="noMessagesDisplayed" class="mt-2 text-gray-600">Save to invite all participants.</p>
+                <p v-if="noMessagesDisplayed" class="mt-2 text-gray-600">Save in calendar to invite all participants.</p>
                 <p v-if="successfulAdd" class="mt-2 text-gray-600">The user was added.</p>
                 <p v-if="failureAdd" class="mt-2 text-red-600">{{ failureText }}</p>
                 <button v-if="yourselfMissing" @click="addYoursef"
@@ -20,19 +20,19 @@
                 <ul>
                     <li v-for="(participant, index) in sortedParticipants" :key="index"
                         class="flex justify-between items-center">
-                        <p>{{ participant.username }} </p>
                         <div class="flex items-center">
-                            <v-icon name="bi-circle-fill" class="mr-2" :class="participant.status"></v-icon>
-                            <button @click="removeParticipant(participant)" v-if="modificationAllowed"><v-icon
-                                    name="md-removecircleoutline"></v-icon></button>
+                            <v-icon name="bi-circle-fill" class="mr-1" :class="participant.status"></v-icon>
+                            <p>{{ participant.username }} </p>
                         </div>
+                        <button @click="removeParticipant(participant)" v-if="modificationAllowed"><v-icon
+                            name="md-removecircleoutline"></v-icon></button>
                     </li>
                 </ul>
             </div>
         </div>
         <div class="justify-self-end flex w-full space-x-1 mt-8">
             <button type="button" @click="cancelChanges"
-                class="flex-1 bg-gray-400 text-white rounded-lg p-2">Back</button>
+                class="flex-1 bg-gray-400 text-white rounded-lg p-2">Cancel</button>
             <button type="submit" @click="saveChanges" v-if="modificationAllowed"
                 class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
         </div>

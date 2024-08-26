@@ -78,20 +78,26 @@ export const getActivityById = async (req: any, res: any) => {
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
     try {
-
-        const activity = await Activity.findById(id);
-
-        if(activity){
-            await jobSchedulerService.clearActivityNotifications(activity);
-            await Activity.findByIdAndDelete(id);
-            await inviteController.deleteActivityInvites(id);
-        }
-
+        await recursiveDeleteActivity(id);
         res.status(204).send();
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
 }
+
+const recursiveDeleteActivity = async (id: string) => {
+    const activity = await Activity.findById(id);
+
+        if(activity){
+            await Promise.all(activity.subActivitiesIDs.map(async (subActivityID: string) => {
+                recursiveDeleteActivity(subActivityID);
+            }));
+
+            await jobSchedulerService.clearActivityNotifications(activity);
+            await Activity.findByIdAndDelete(id);
+            await inviteController.deleteActivityInvites(id);
+        }
+    }
 
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
@@ -118,6 +124,7 @@ export const addActivity = async (req: any, res: any) => {
         }
         await newActivity.save();
         await inviteController.createInvitesForActivity(newActivity);
+        await jobSchedulerService.scheduleActivityNotification(newActivity);
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
@@ -158,6 +165,9 @@ export const modifyActivity = async (req: any, res: any) => {
 
             await inviteController.createInvitesForActivity(activity);
             await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
+            await jobSchedulerService.updateLateActivityNotification(activity);
+
+            // TODO: remove deleted subactivities from participants
 
             res.status(200).send(formatActivity(activity));
         } else {

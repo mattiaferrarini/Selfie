@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
+  <div class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />

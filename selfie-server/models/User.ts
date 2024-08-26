@@ -114,11 +114,13 @@ const UserSchema: Schema = new Schema<IUser>({
             },
             notesCategory: {
                 type: Boolean,
-                required: true
+                required: true,
+                default: false
             },
             noteNumber: {
                 type: Number,
-                required: true
+                required: true,
+                default: 5
             },
             pomodoroType: {
                 type: String,
