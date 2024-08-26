@@ -375,9 +375,9 @@ export default defineComponent({
           </div>
         </div>
       </div>
-      <div v-if="content === 'resources'">
+      <div v-if="content === 'resources'" class="mt-1">
         <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource"
-          class="mr-2 p-2 h-full rounded" @change="onResourceChange">
+          class="mr-2 p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
         <p v-else>No resources available.</p>
