@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openModal = (project = null) => {
         if (project) {
             isEditing = true;
-            currentProjectId = project.id;
+            currentProjectId = project._id;
             modalTitle.innerText = 'Edit Project';
             projectTitle.value = project.title;
             populateActors(project.actors);
@@ -311,23 +311,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
         `;
             const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
-            phaseDiv.activityIds = [];
-            phaseDiv.activityCounter = 0;
             phase.activities.forEach(activity => {
                 const activityDiv = document.createElement('fieldset');
-                const uniqueId = generateUniqueId(phaseDiv);
-                phaseDiv.activityIds.push(uniqueId);
                 activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
                 activityDiv.innerHTML = `
-                    ID:${uniqueId}
-                    <input type="hidden" class="hidden" value="${uniqueId}"/>
+                    ID:${activity.localId}
+                    <input type="hidden" class="hidden" value="${activity.localId}"/>
                     <input type="checkbox" class="isMilestone" ${activity.isMilestone ? 'checked' : ''}> Milestone
-                    <input type="text" value="${activity.input}" class="input p-2 border border-gray-300 rounded-md">
+                    <input type="text" value="${activity.input}" class="input p-2 border border-gray-300 rounded-md"  ${activity.linkedActivityId != null ? 'disabled' : ''}>
                     <input type="text" value="${activity.output}" class="output p-2 border border-gray-300 rounded-md">
                     <label>Linked Activity:
                     <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
                         <option value="">None</option>
-                        ${phaseDiv.activityIds.map(id => `<option value="${id}" ${activity.linkedActivityId === id ? 'selected' : ''}>${id}</option>`).join('')}
+                        ${phase.activities.map(act => `<option value="${act.localId}" ${activity.linkedActivityId === act.localId ? 'selected' : ''}>${act.localId}</option>`).join('')}
                     </select>
                     </label>
                     <label>Status:
@@ -390,7 +386,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (isEditing) {
-            // Update project logic here
+            fetchWithMiddleware(`${API_URL}/project/${currentProjectId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectData)
+            }).then(response => response.json()).then(data => {
+                if (data.hasOwnProperty("error"))
+                    showError(data.error);
+                else {
+                    projects[projects.findIndex(project => project._id === currentProjectId)] = data;
+                    showProjects();
+                    closeModal();
+                }
+            })
             console.log('Updating project:', currentProjectId, projectData);
         } else {
             fetchWithMiddleware(`${API_URL}/project/`, {
@@ -408,7 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     closeModal();
                 }
             })
-            // Add project logic here
             console.log('Adding new project:', projectData);
         }
     });
@@ -424,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showProjects = () => {
         const value = projectSelector.value;
         projectSelector.innerHTML = `
-            ${projects.map(project => `<option value="${project.id}">${project.title}</option>`).join('')}
+            ${projects.map(project => `<option value="${project._id}">${project.title}</option>`).join('')}
         `;
         projectSelector.value = value;
     }
@@ -478,19 +487,82 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
         <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
             <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
+            <div><strong>Title:</strong>${activity.activity?.title}</div> 
             <div><strong>Actor:</strong> ${activity.activity?.participants.map(participant => participant.username).join('')}</div>
             <div><strong>Starting Date:</strong> ${new Date(activity.activity?.start).toLocaleDateString()}</div>
             <div><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
             <div><strong>Status:</strong> ${status}</div>
             <div><strong>Input:</strong> ${activity.input}</div>
             <div><strong>Output:</strong> ${activity.output}</div>
+            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}">Edit</button>
         </li>
     `
         }).join('');
 
-        // Insert the generated HTML into the listView element
-        listView.innerHTML = `<ul class="activity-list list-none p-0">${activityList}</ul>`;
+        listView.innerHTML = `
+            <button type="button" class="edit-project-button bg-emerald-500 text-white p-2 mb-2 rounded-md">Edit Project</button>
+            <ul class="activity-list list-none p-0">${activityList}</ul>`;
+
+        document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
+
+        document.querySelectorAll('.edit-activity-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                openEditActivityModal(activities.find(activity => activity.activityId === event.target.dataset.activityId));
+            });
+        });
     };
+
+    const editProjectActivityModal = document.getElementById('editProjectActivityModal');
+    const editActivityForm = document.getElementById('editActivityForm');
+    const editErrorMessage = document.getElementById('editErrorMessage');
+    const editActivityId = document.getElementById('editActivityId');
+    const editInput = document.getElementById('editInput');
+    const editOutput = document.getElementById('editOutput');
+    const editStatus = document.getElementById('editStatus');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+
+    const openEditActivityModal = (activity) => {
+        editActivityId.value = activity.activityId;
+        editInput.value = activity.input;
+        editOutput.value = activity.output;
+        editStatus.value = activity.status;
+        editProjectActivityModal.show();
+    };
+
+    const closeEditActivityModal = () => {
+        editProjectActivityModal.hide();
+    };
+
+    editActivityForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const updatedActivity = {
+            activityId: editActivityId.value,
+            input: editInput.value,
+            output: editOutput.value,
+            status: editStatus.value
+        };
+        fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedActivity)
+        }).then(response => response.json()).then(data => {
+            if (data.hasOwnProperty("error"))
+                editErrorMessage.innerText = data.error;
+            else {
+                const project = projects.find(project => project._id === projectSelector.value);
+                const activity = project.phases.flatMap(phase => phase.activities).find(activity => activity.activityId === editActivityId.value);
+                activity.input = updatedActivity.input;
+                activity.output = updatedActivity.output;
+                activity.status = updatedActivity.status;
+                showList(project);
+            }
+        });
+        closeEditActivityModal();
+    });
+
+    cancelEditButton.addEventListener('click', closeEditActivityModal);
 
     fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
         projects = data;

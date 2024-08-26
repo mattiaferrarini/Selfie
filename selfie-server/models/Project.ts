@@ -5,6 +5,7 @@ export enum ActivityStatus {
     Started = 'Started',
     Concluded = 'Concluded',
     Rejected = 'Rejected',
+    Abandoned = 'Abandoned'
 }
 
 export interface IProject extends Document {
@@ -52,7 +53,7 @@ const ProjectSchema = new Schema({
                     status: {
                         type: String,
                         required: true,
-                        enum: ['NotStarted', 'Started', 'Concluded', 'Rejected']
+                        enum: ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
                     },
                     activityId: {
                         type: String,

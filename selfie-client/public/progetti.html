@@ -168,10 +168,8 @@
             </label>
         </div>
         <div id="listView">
-
         </div>
         <div id="ganttView">
-
         </div>
 
         <!-- Button and Modal to add -->
@@ -205,6 +203,30 @@
                 <div class="flex justify-end gap-x-2">
                     <button type="button" id="cancelButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel
                     </button>
+                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
+                </div>
+            </form>
+        </modal-component>
+
+        <modal-component id="editProjectActivityModal">
+            <h2 class="text-xl font-bold mb-4">Edit Activity</h2>
+            <div id="editErrorMessage" class="hidden text-red-500"></div>
+            <form id="editActivityForm" class="flex flex-col gap-y-2">
+                <input type="hidden" id="editActivityId">
+                <label for="editInput">Input:</label>
+                <input type="text" id="editInput" class="p-2 border border-gray-300 rounded-md">
+                <label for="editOutput">Output:</label>
+                <input type="text" id="editOutput" class="p-2 border border-gray-300 rounded-md">
+                <label for="editStatus">Status:</label>
+                <select id="editStatus" class="p-2 border border-gray-300 rounded-md" required>
+                    <option value="NotStarted">Not Started</option>
+                    <option value="Started">Started</option>
+                    <option value="Concluded">Concluded</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Abandoned">Abandoned</option>
+                </select>
+                <div class="flex justify-end gap-x-2">
+                    <button type="button" id="cancelEditButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel</button>
                     <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
                 </div>
             </form>
