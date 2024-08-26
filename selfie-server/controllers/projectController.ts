@@ -107,7 +107,7 @@ export const modifyStatus = async (req: any, res: any) => {
             if (phaseActivity.linkedActivityId == "")
                 phaseActivity.input = input;
             await project.save();
-            res.status(200).send
+            res.status(200).send(project);
         } else {
             res.status(404).send({error: "Activity doesn't exist!"});
         }

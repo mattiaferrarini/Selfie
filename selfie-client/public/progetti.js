@@ -445,6 +445,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const listView = document.getElementById('listView');
 
+    const getStatusFromActivity = (activity) => {
+        let status;
+        if (activity.input === "") {
+            status = "Non attivabile";
+        } else if (activity.status === "NotStarted") {
+            status = "Attivabile";
+        } else if (activity.status === "Rejected") {
+            status = "Riattivata";
+        } else if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity?.deadline) {
+            status = "Abbandonata";
+        } else if (activity.activity?.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
+            status = "In ritardo";
+        } else if (activity.status === "Concluded" && activity.output !== "") {
+            status = "Conclusa";
+        } else {
+            status = "Attiva";
+        }
+        return status;
+    }
+
     const showGantt = (project) => {
 
     };
@@ -468,22 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });*/
 
         const activityList = activities.map(activity => {
-            let status;
-            if (activity.input === "") {
-                status = "Non attivabile";
-            } else if (activity.status === "NotStarted") {
-                status = "Attivabile";
-            } else if (activity.status === "Rejected") {
-                status = "Riattivata";
-            } else if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity.deadline) {
-                status = "Abbandonata";
-            } else if (activity.activity.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
-                status = "In ritardo";
-            } else if (activity.status === "Concluded" && activity.output !== "") {
-                status = "Conclusa";
-            } else {
-                status = "Attiva";
-            }
+            const status = getStatusFromActivity(activity);
             return `
         <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
             <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
@@ -541,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
             output: editOutput.value,
             status: editStatus.value
         };
+        let project = projects.find(project => project._id === projectSelector.value);
         fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
             method: 'POST',
             headers: {
@@ -551,11 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.hasOwnProperty("error"))
                 editErrorMessage.innerText = data.error;
             else {
-                const project = projects.find(project => project._id === projectSelector.value);
-                const activity = project.phases.flatMap(phase => phase.activities).find(activity => activity.activityId === editActivityId.value);
-                activity.input = updatedActivity.input;
-                activity.output = updatedActivity.output;
-                activity.status = updatedActivity.status;
+                project = data;
                 showList(project);
             }
         });
