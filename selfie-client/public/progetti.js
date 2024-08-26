@@ -248,6 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <option value="">None</option>
             ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
         </select>
+        <select class="status p-2 border border-gray-300 rounded-md" required>
+                <option value="NotStarted" selected>Not Started</option>
+                <option value="Started">Started</option>
+                <option value="Concluded">Concluded</option>
+                <option value="Rejected">Rejected</option>
+            </select>
         <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
         <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
     `;
@@ -316,9 +322,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <option value="">None</option>
                         ${phaseDiv.activityIds.map(id => `<option value="${id}" ${activity.linkedActivityId === id ? 'selected' : ''}>${id}</option>`).join('')}
                     </select>
+                    <select class="status p-2 border border-gray-300 rounded-md" required>
+                        <option value="NotStarted">Not Started</option>
+                        <option value="Started">Started</option>
+                        <option value="Concluded">Concluded</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
                     <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
                     <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
                 `;
+                activityDiv.querySelector('.status').value = activity.status;
 
                 // Add event listener to linkedActivityId select element
                 const linkedActivityIdSelect = activityDiv.querySelector('.linkedActivityId');
@@ -347,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             phases: Array.from(phasesContainer.querySelectorAll('.phase')).map(phaseDiv => ({
                 title: phaseDiv.querySelector('input').value,
                 activities: Array.from(phaseDiv.querySelectorAll('.activity')).map(activityDiv => ({
+                    status: activityDiv.querySelector('.status').value, // Add status field
                     localId: activityDiv.querySelector('input.hidden').value,
                     isMilestone: activityDiv.querySelector('.isMilestone').checked,
                     input: activityDiv.querySelector('.input').value,

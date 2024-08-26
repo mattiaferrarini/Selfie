@@ -1,13 +1,10 @@
 import {Document, model, Schema} from "mongoose";
 
 export enum ActivityStatus {
-    NonAttivabile = 'Non attivabile',   // non è ancora disponibile l'input relativo
-    Attivabile = 'Attivabile',          // l'input è presente ma l'attore non ha ancora dichiarato di averla iniziata
-    Attiva = 'Attiva',                  // l'attore ha dichiarato di averla iniziata
-    Conclusa = 'Conclusa',              // l'attore ha dichiarato di averla conclusa ed un output è disponbile
-    Riattivata = 'Riattivata',          // il capo-progetto ha rifiutato l'output e ha richiesto revisioni
-    InRitardo = 'In ritardo',           // la data di conclusione è passata ma l'output non è ancora disponibile
-    Abbandonata = 'Abbandonata'         // la data di conclusione è passata da molto tempo, oppure l'attore ha dichiarato di non volersene più occupare
+    NotStarted = 'NotStarted',
+    Started = 'Started',
+    Concluded = 'Concluded',
+    Rejected = 'Rejected',
 }
 
 export interface IProject extends Document {
@@ -55,7 +52,7 @@ const ProjectSchema = new Schema({
                     status: {
                         type: String,
                         required: true,
-                        enum: ['Non attivabile', 'Attivabile', 'Attiva', 'Conclusa', 'Riattivata', 'In ritardo', 'Abbandonata']
+                        enum: ['NotStarted', 'Started', 'Concluded', 'Rejected']
                     },
                     activityId: {
                         type: String,
