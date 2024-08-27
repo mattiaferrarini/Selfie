@@ -1,7 +1,7 @@
 class GanttComponent extends HTMLElement {
     constructor() {
         super();
-        this._projects = {};
+        this._project = {};
         this.myStyle = document.createElement('style');
         this.content = document.createElement('div');
     }
@@ -53,14 +53,14 @@ class GanttComponent extends HTMLElement {
     }
 
     renderHeading() {
-        if (!this._projects) {
+        if (!this._project) {
             return '';
         }
         return `
         <div>
-            <h1>${this._projects.title}</h1>
-            <p>Owner: ${this._projects.owner}</p>
-            <p>Actors: ${this._projects.actors}</p>
+            <h1>${this._project.title}</h1>
+            <p>Owner: ${this._project.owner}</p>
+            <p>Actors: ${this._project.actors}</p>
         </div>
         `
     }
@@ -88,13 +88,14 @@ class GanttComponent extends HTMLElement {
         `
     }
 
-    set projects(projects) {
-        this._projects = projects;
+    set project(project) {
+        this._project = project;
+        console.log(this._project);
         this.render();
     }
 
-    get projects() {
-        return this._projects;
+    get project() {
+        return this._project;
     }
 }
 

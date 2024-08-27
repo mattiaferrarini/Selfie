@@ -14,6 +14,7 @@ selfie-server/package-lock.json
 
 # build files
 selfie-client/dist/
+selfie-client/public/tailwind.css
 selfie-server/**/*.js
 
 # Log files
