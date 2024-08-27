@@ -79,7 +79,7 @@
       <div>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
-          <button type="button" @click="openParticipantsForm" @click.stop>
+          <button type="button" @click="openParticipantsForm" @click.stop :disabled="!modificationAllowed">
             {{ newEvent.participants.length }}
             <v-icon name="md-navigatenext" />
           </button>

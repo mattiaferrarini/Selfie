@@ -176,6 +176,7 @@ export default defineComponent({
       dateStore.setRealTimeDiff(0);
 
       displayTimeMachineMessage('Time machine reset.');
+      initializeDate();
     };
 
     const initializeDate = () => {

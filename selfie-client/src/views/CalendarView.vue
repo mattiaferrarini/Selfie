@@ -72,6 +72,7 @@ export default defineComponent({
     };
     const fetchActivities = async () => {
       rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      console.log(rangeActivities.value);
     };
     const fetchUnavailabilities = async () => {
       rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);

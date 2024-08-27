@@ -243,7 +243,7 @@ export default defineComponent({
         },
         isLateActivity(activity: Activity, date: Date): boolean {
             const startOfDay = timeMethods.getStartOfDay(date);
-            return !activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today);
+            return !activity.done && activity.deadline < timeMethods.getEndOfDay(this.today);
         }
     },
     computed: {
@@ -317,6 +317,10 @@ export default defineComponent({
 
 .clickable-item {
     cursor: pointer;
+}
+
+.clickable-item:hover {
+    background-color: #f3f4f6;
 }
 
 .late {
