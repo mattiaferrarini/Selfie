@@ -1,3 +1,5 @@
+import { fetchWithMiddleware, API_URL} from "./utilities.js";
+
 class ConditionalRender extends HTMLElement {
     constructor() {
         super();
@@ -576,44 +578,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-const API_URL = "http://localhost:3000";
-
-const forceLogout = () => {
-    localStorage.removeItem('auth');
-    window.location.href = '/#/login';
-}
-
-async function fetchWithMiddleware(url, options) {
-    const response = await fetch(url, {
-        ...options,
-        credentials: 'include'
-    });
-    if (response.status === 401) {
-        forceLogout();
-    }
-    return response;
-}
-
-const unsubscribe = async () => {
-    const registration = await navigator.serviceWorker.getRegistration();
-    const subscription = await registration?.pushManager.getSubscription();
-    await registration?.unregister();
-    await fetchWithMiddleware(`${API_URL}/notification/unsubscribe`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({endpoint: subscription?.endpoint})
-    });
-}
-
-const logout = async () => {
-    await unsubscribe();
-    await fetchWithMiddleware(`${API_URL}/auth/logout`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-    });
-}
