@@ -479,13 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }))
         );
 
-        /*activities.sort((a, b) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
+        activities.sort((a, b) => {
+            const dateA = new Date(a.activity.deadline);
+            const dateB = new Date(b.activity.deadline);
             if (dateA < dateB) return -1;
             if (dateA > dateB) return 1;
-            return a.actor.localeCompare(b.actor);
-        });*/
+            return a.activity.participants.map(participant => participant.username).includes(auth.user.username) ? -1 : 1;
+        });
 
         const activityList = activities.map(activity => {
             const status = getStatusFromActivity(activity);
@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         listView.innerHTML = `
-            <button type="button" class="edit-project-button bg-emerald-500 text-white p-2 mb-2 rounded-md">Edit Project</button>
+            <div class="inline-flex items-center mb-2">Project: <h3 class="text-2xl p-2">${project.title}</h3><button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button></div>
             <ul class="activity-list list-none p-0">${activityList}</ul>`;
 
         document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));

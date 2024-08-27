@@ -41,8 +41,8 @@ export default defineComponent({
         }
         await authStore.clearAuthData();
         const data = await authService.login(username.value, password.value);
-        authStore.setUser(data.user);
-        router.push({name: 'home'})
+        await authStore.setUser(data.user);
+        await router.push({name: 'home'})
       } catch (error: any) {
         errorMessage.value = error;
       }
