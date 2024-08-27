@@ -24,12 +24,15 @@
     "@types/node-pushnotifications": "^1.0.8",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
+    "@types/sinonjs__fake-timers": "^8.1.5",
     "nodemon": "^3.1.4",
     "typescript": "^5.5.2"
   },
   "dependencies": {
+    "@sinonjs/fake-timers": "^11.2.2",
     "@types/nodemailer": "^6.4.15",
     "@types/ws": "^8.5.11",
+    "agenda": "^5.0.0",
     "bcryptjs": "^2.4.3",
     "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",

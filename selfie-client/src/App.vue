@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600 z-10" v-if="isAuthenticated">
+    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600 z-20" v-if="isAuthenticated">
       <div class="container mx-auto flex justify-between text-gray-700">
         <div class="flex items-center">
           <router-link to="/"
@@ -32,7 +32,7 @@
           </router-link>
           <router-link :to="{ name: 'note' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
-                       active-class="text-emerald-700 sm:border-teal-500">
+                       :class="{ 'text-emerald-700 sm:border-teal-500': $route.name === 'note' || $route.name === 'note-edit' }">
             <span class="hidden sm:block">Note</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="md-stickynote2-outlined" class="h-full w-full"/>
@@ -64,11 +64,21 @@
             </button>
             <div v-if="showTooltip"
                  class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-              <input type="date" v-model="selectedDate" @change="setCurrentDate"
-                     class="p-2 border border-gray-300 rounded-md">
-              <button @click="resetDate"
-                      class="ml-2 bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
-              </button>
+              <div class="flex">
+                <div class="flex flex-col">
+                  <input type="date" v-model="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md">
+                  <input type="time" v-model="selectedTime" class=" text-center p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="flex flex-col ml-2 gap-y-2">
+                  <button @click="setCurrentDate"
+                          class=" bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
+                  </button>
+                  <button @click="resetDate"
+                          class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+                  </button>
+                </div>
+              </div>
+              <p v-if="timeMachineMessage.length > 0" class="text-center mt-2">{{ timeMachineMessage }}</p>
             </div>
           </div>
           <router-link to="/admin" v-if="isAdmin"
@@ -101,13 +111,15 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref} from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import {useAuthStore} from '@/stores/authStore';
 import {storeToRefs} from 'pinia'
 import router from "@/router";
 import {useDateStore} from "@/stores/dateStore";
 import authService from "@/services/authService";
 import {useWebSocketStore} from "@/stores/wsStore";
+import timeMachineService from "@/services/timeMachineService";
+import timeService from "@/services/timeService";
 
 export default defineComponent({
   setup() {
@@ -120,6 +132,9 @@ export default defineComponent({
 
     const showTooltip = ref(false);
     const selectedDate = ref('');
+    const selectedTime = ref('');
+
+    const timeMachineMessage = ref('');
 
     const logout = () => {
       authService.logout();
@@ -133,7 +148,7 @@ export default defineComponent({
     }
 
     const toggleTooltip = () => {
-      selectedDate.value = dateStore.getCurrentDate().toISOString().split('T')[0];
+      initializeDate();
       showTooltip.value = !showTooltip.value;
     };
 
@@ -141,14 +156,48 @@ export default defineComponent({
       showTooltip.value = false;
     };
 
-    const setCurrentDate = () => {
-      dateStore.setCurrentDate(new Date(selectedDate.value));
+    const setCurrentDate = async () => {
+      const oldDate = new Date();
+      const date = new Date(selectedDate.value);
+      date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
+
+      await timeMachineService.setGlobalClock(date);
+      dateStore.setCurrentDate(date);
+      dateStore.setTimeDiff(date.getTime() - oldDate.getTime());
+
+      displayTimeMachineMessage('Time machine set.');
     };
 
     const resetDate = () => {
+      const oldDate = new Date();
+      timeMachineService.restoreGlobalClock();
       dateStore.setCurrentDate(new Date());
-      selectedDate.value = (new Date()).toISOString().split('T')[0];
+      dateStore.setTimeDiff((new Date()).getTime() - oldDate.getTime());
+      dateStore.setRealTimeDiff(0);
+
+      displayTimeMachineMessage('Time machine reset.');
     };
+
+    const initializeDate = () => {
+      const now = new Date();
+      const translatedDate = new Date(now.getTime() - now.getTimezoneOffset() * 60 * 1000);
+      selectedDate.value = translatedDate.toISOString().split('T')[0];
+      selectedTime.value = timeService.formatTime(now);
+    };
+
+    const displayTimeMachineMessage = (message: string) => {
+      timeMachineMessage.value = message;
+      setTimeout(() => {
+        timeMachineMessage.value = '';
+      }, 2000);
+    };
+
+    // recover the time machine state
+    onMounted(() => {
+      const date = new Date(new Date().getTime() + dateStore.realTimeDiff);
+      dateStore.realTimeDiff ? timeMachineService.setGlobalClock(date) : timeMachineService.restoreGlobalClock();
+      dateStore.setCurrentDate(date);
+    });
 
     return {
       isAuthenticated,
@@ -158,9 +207,11 @@ export default defineComponent({
       showTooltip,
       toggleTooltip,
       selectedDate,
+      selectedTime,
       setCurrentDate,
       resetDate,
       closeTooltip,
+      timeMachineMessage
     };
   },
 });

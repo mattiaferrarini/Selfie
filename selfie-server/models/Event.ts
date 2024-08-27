@@ -5,6 +5,7 @@ export interface IEvent extends Document {
     allDay: boolean;
     start: Date;
     end: Date;
+    timezone: string;
     repetition: {
         frequency: string;
         until: string;
@@ -43,6 +44,11 @@ const EventSchema = new Schema({
         type: Date, 
         required: true,
         default: Date.now 
+    },
+    timezone: { 
+        type: String, 
+        required: true,
+        default: 'UTC' 
     },
     repetition: {
         frequency: { 
@@ -93,4 +99,5 @@ const EventSchema = new Schema({
     }]
 });
 
-export default model<IEvent>('Event', EventSchema);
+const Event = model<IEvent>('Event', EventSchema);
+export default Event;

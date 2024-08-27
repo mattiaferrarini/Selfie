@@ -15,12 +15,12 @@ export const useAuthStore = defineStore('auth', {
         isAdmin: false
     }),
     actions: {
-        setUser(user: any) {
+        async setUser(user: any) {
             this.user = user;
             this.isAuthenticated = true;
             this.isAdmin = user.isAdmin;
             useWebSocketStore().connect();
-            notificationService.subscribe();
+            await notificationService.subscribe();
         },
         setBirthday(birthday: Date) {
             this.user.birthday = birthday;

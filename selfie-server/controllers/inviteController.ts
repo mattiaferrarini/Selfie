@@ -6,6 +6,8 @@ import {IEvent} from "../models/Event";
 import { IActivity } from "../models/Activity";
 import * as resourceController from "./resourceController";
 import * as unavailabilityController from "./unavailabilityController";
+import notificationController from "./notificationController";
+import { findByUsername } from "./userController";
 
 const formatInvite = (invite: IInvite) => {
     return {
@@ -50,15 +52,16 @@ export const createInvitesForEvent = async (event: IEvent) => {
                     if(!await eventController.otherEventsOverlap(participant.username, event))
                         participant.status = 'accepted';
                     else if(!await inviteAlreadyExists(participant.username, eventId))
-                        await addInvite(participant.username, answerDate, eventId);
+                        await addInvite(participant.username, answerDate, event.title, eventId);
                 }
                 else{ // user
                     if(!await unavailabilityController.isUserFreeForEvent(participant.username, event))
                         participant.status = 'declined';
                     else if(!await inviteAlreadyExists(participant.username, eventId))
-                        await addInvite(participant.username, answerDate, eventId);
+                        await addInvite(participant.username, answerDate, event.title, eventId);
                 }
             }
+            event.save();
         }
         catch{
             console.log("Error creating invite");
@@ -75,14 +78,14 @@ export const createInvitesForActivity = async (activity: IActivity) => {
         const participant = participants[i];
         try{
             if(participant.status === 'pending' && !await inviteAlreadyExists(participant.username, undefined, activityId)) {
-                await addInvite(participant.username, answerDate, undefined, activityId);
+                await addInvite(participant.username, answerDate, activity.title, undefined, activityId);
             }
         }
         catch{}
     }
 }
 
-export const addInvite = async(inviteeUsername: string, answerDate: Date, eventId?: string, activityId?: string) => {
+export const addInvite = async(inviteeUsername: string, answerDate: Date, title: string, eventId?: string, activityId?: string) => {
     const newInvite = new Invite({
         inviteeUsername: inviteeUsername,
         eventId: eventId,
@@ -92,6 +95,13 @@ export const addInvite = async(inviteeUsername: string, answerDate: Date, eventI
 
     try{
         await newInvite.save();
+
+        const user = await findByUsername(inviteeUsername);
+        const notificationTitle = `Invite to join ${title}`;
+        const body = `You have been invited to join ${title}. You can accept, decline or postpone the invite from the Calendar.`;
+
+        if(user)
+            await notificationController.sendNotification(user, { title: notificationTitle, body: body });
     }
     catch (error){
         console.log(error);

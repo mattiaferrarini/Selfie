@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 const getFirstDayOfWeek = (date: Date): Date => {
     const currentDay = date.getDay();
     const offsetFromStartOfWeek = currentDay === 0 ? 6 : currentDay - 1;
@@ -207,6 +209,40 @@ const formatTime = (date: Date): string => {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
+const convertToTimezone = (date: Date, timezone: string): Date => {
+    const pad = (num: any) => num.toString().padStart(2, '0');
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1); // Months are zero-based
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+
+    const str = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+    return new Date(moment.tz(str, timezone).format());
+}
+
+const makeTimezoneLocal = (date: Date, timezone: string): Date => {
+    const pad = (num: any) => num.toString().padStart(2, '0');
+
+    const year = date.getUTCFullYear();
+    const month = pad(date.getUTCMonth() + 1); // Months are zero-based
+    const day = pad(date.getUTCDate());
+    const hours = pad(date.getUTCHours());
+    const minutes = pad(date.getUTCMinutes());
+
+    const str = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+    const formatted = moment.utc(str).tz(timezone).format();
+    const parts = formatted.split('T');
+    const dateStr = parts[0];
+    const hStr = parts[1].split(':')[0];
+    const mStr = parts[1].split(':')[1];
+
+    return new Date(dateStr + 'T' + hStr + ':' + mStr + ':00');
+}
+
 export default {
     getFirstDayOfWeek,
     getLastDayOfWeek,
@@ -238,5 +274,7 @@ export default {
     sameDay,
     sameWeek,
     sameMonth,
-    sameYear
+    sameYear,
+    convertToTimezone,
+    makeTimezoneLocal
 };

@@ -1,7 +1,7 @@
 <template>
     <div class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll flex flex-col justify-between">
         <div>
-            <h2 class="text-lg font-semibold mb-2">Participants</h2>
+            <h2 class="text-lg font-semibold mb-2 mt-2">Participants</h2>
             <div class="mb-3" v-if="modificationAllowed">
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
@@ -32,9 +32,9 @@
         </div>
         <div class="justify-self-end flex w-full space-x-1 mt-8">
             <button type="button" @click="cancelChanges"
-                class="flex-1 bg-gray-400 text-white p-1 rounded-lg">Back</button>
+                class="flex-1 bg-gray-400 text-white rounded-lg p-2">Back</button>
             <button type="submit" @click="saveChanges" v-if="modificationAllowed"
-                class="flex-1 bg-emerald-600 text-white p-1 rounded-lg">Save</button>
+                class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
         </div>
     </div>
 </template>

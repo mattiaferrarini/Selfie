@@ -15,8 +15,14 @@ export class Activity {
     }[];
     subActivitiesIDs: string[];
     pomodoro: null | undefined | {
-        cycles: number;
-        completedCycles: number;
+        options: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
+        completedCycles: {
+            [username: string]: number
+        };
     };
 
     constructor(
@@ -30,7 +36,7 @@ export class Activity {
         } = {
             method: [],
             when: 'atEvent',
-            repeat: 'never'
+            repeat: 'daily'
         },
         participants: {
             username: string;

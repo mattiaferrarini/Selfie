@@ -4,7 +4,8 @@ const {default: flattenColorPalette} = require("tailwindcss/lib/util/flattenColo
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
-        './src/**/*.{vue,js,ts,jsx,tsx}'
+        './src/**/*.{vue,js,ts,jsx,tsx}',
+        './public/*.{html,js}'
     ],
     theme: {
         extend: {
@@ -29,7 +30,10 @@ module.exports = {
             },
         },
     },
-    plugins: [addVariablesForColors],
+    plugins: [
+        addVariablesForColors,
+        require('@tailwindcss/typography')
+    ],
 }
 
 function addVariablesForColors({addBase, theme}) {
