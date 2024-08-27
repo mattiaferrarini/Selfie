@@ -8,10 +8,11 @@
     <title>Selfie</title>
     <script src="notification.js"></script>
     <script src="sw.js"></script>
-    <script src="modalComponent.js"></script>
-    <script src="clickOutsideComponent.js"></script>
-    <script src="progetti.js" defer></script>
-    <link rel="stylesheet" href="tailwind.css"/>
+    <script type="module" src="modalComponent.js"></script>
+    <script type="module" src="clickOutsideComponent.js"></script>
+    <script type="module" src="ganttComponent.js"></script>
+    <script type="module" src="progetti.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="./tailwind.css"/>
 </head>
 <body>
 <noscript>
@@ -40,7 +41,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="/#/about"
+                <a href="/#/calendar"
                    class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
                     <span class="hidden sm:block">Calendario</span>
                     <div class="block sm:hidden h-7 w-7">
@@ -101,15 +102,19 @@
                         border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
                             <div class="flex">
                                 <div class="flex flex-col">
-                                    <input type="date" id="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md">
-                                    <input type="time" id="selectedTime" class=" text-center p-2 border border-gray-300 rounded-md">
+                                    <input type="date" id="selectedDate"
+                                           class="p-2 mb-2 border border-gray-300 rounded-md">
+                                    <input type="time" id="selectedTime"
+                                           class=" text-center p-2 border border-gray-300 rounded-md">
                                 </div>
                                 <div class="flex flex-col ml-2 gap-y-2">
                                     <button id="setCurrentDate"
-                                            class="bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
+                                            class="bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">
+                                        Set
                                     </button>
                                     <button id="resetDate"
-                                            class="bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+                                            class="bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">
+                                        Reset
                                     </button>
                                 </div>
                             </div>
@@ -151,24 +156,27 @@
             </div>
         </div>
     </nav>
-    <div class="flex flex-col min-h-screen p-3 pt-12 sm:pt-16 mt-1">
-        <div class="w-full h-full">
+    <div class="flex flex-col min-h-screen p-3 pt-14 sm:pt-20">
+        <div class="w-full h-full mb-3">
             <label for="visualType">Visualizzazione:</label>
             <select id="visualType">
                 <option value="list">Lista</option>
                 <option value="gantt">Gantt</option>
             </select>
+            <label for="selectedProject">Progetto:
+                <select id="selectedProject">
+                </select>
+            </label>
         </div>
         <div id="listView">
-
         </div>
         <div id="ganttView">
-
+            <gantt-component id="ganttComponent"></gantt-component>
         </div>
 
         <!-- Button and Modal to add -->
         <div class="flex flex-col fixed bottom-4 right-4">
-            <button onclick="document.getElementById('addModal').show()"
+            <button id="addProjectButton"
                     class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
                 <svg data-v-6482da86="" class="ov-icon w-full h-full" aria-hidden="true" width="19.2" height="19.2"
                      viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
@@ -177,9 +185,53 @@
                 </svg>
             </button>
         </div>
-        <modal-component id="addModal">
-            <h2 class="text-xl font-bold mb-4">Modal Title</h2>
-            <p>Modal content goes here...</p>
+        <modal-component id="projectModal">
+            <h2 id="modalTitle" class="text-xl font-bold mb-4">Add/Edit Project</h2>
+            <div id="errorMessage" class="hidden text-red-500"></div>
+            <form id="projectForm" class="flex flex-col gap-y-2">
+                <input type="text" id="projectTitle" placeholder="Project Title"
+                       class="p-2 border border-gray-300 rounded-md" required>
+                <div class="overflow-y-auto max-h-[60vh] border rounded p-1">
+                    <div id="actorsContainer">
+                        <!-- Actors will be dynamically added here -->
+                    </div>
+                    <button type="button" id="addActor" class="bg-emerald-700 text-white p-2 rounded-md">Add Actor
+                    </button>
+                    <div id="phasesContainer">
+                        <!-- Phases and activities will be dynamically added here -->
+                    </div>
+                </div>
+                <button type="button" id="addPhase" class="bg-emerald-700 text-white p-2 rounded-md">Add Phase</button>
+                <div class="flex justify-end gap-x-2">
+                    <button type="button" id="cancelButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel
+                    </button>
+                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
+                </div>
+            </form>
+        </modal-component>
+
+        <modal-component id="editProjectActivityModal">
+            <h2 class="text-xl font-bold mb-4">Edit Activity</h2>
+            <div id="editErrorMessage" class="hidden text-red-500"></div>
+            <form id="editActivityForm" class="flex flex-col gap-y-2">
+                <input type="hidden" id="editActivityId">
+                <label for="editInput">Input:</label>
+                <input type="text" id="editInput" class="p-2 border border-gray-300 rounded-md">
+                <label for="editOutput">Output:</label>
+                <input type="text" id="editOutput" class="p-2 border border-gray-300 rounded-md">
+                <label for="editStatus">Status:</label>
+                <select id="editStatus" class="p-2 border border-gray-300 rounded-md" required>
+                    <option value="NotStarted">Not Started</option>
+                    <option value="Started">Started</option>
+                    <option value="Concluded">Concluded</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Abandoned">Abandoned</option>
+                </select>
+                <div class="flex justify-end gap-x-2">
+                    <button type="button" id="cancelEditButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel</button>
+                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
+                </div>
+            </form>
         </modal-component>
     </div>
 </div>

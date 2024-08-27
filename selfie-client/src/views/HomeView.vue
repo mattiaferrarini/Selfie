@@ -10,11 +10,11 @@
         <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
       </div>
     </div>
-    <div class="animate-fade-in w-11/12 p-4 mt-3 mb-4 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in w-11/12 p-4 mt-3 mb-4 sm:p-5 rounded-lg shadow-md shadow-emerald-600 bg-white">
       <h1 class="text-2xl sm:text-4xl font-bold text-emerald-600">Welcome, {{ realName }}!</h1>
       <h3 class="mt-2 sm:text-xl text-gray-700"> Manage your private, social and academic life with Selfie.</h3>
     </div>
-    <div class="animate-fade-in w-11/12 p-4 mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in w-11/12 p-4 mt-3 sm:p-5 rounded-lg shadow-md shadow-emerald-600 bg-white">
       <div>{{ date }}</div>
       <div class="flex mt-4 flex-col sm:flex-row gap-4">
         <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showCalendarTooltip)">

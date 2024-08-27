@@ -1,5 +1,13 @@
 import {Document, model, Schema} from "mongoose";
 
+export enum ActivityStatus {
+    NotStarted = 'NotStarted',
+    Started = 'Started',
+    Concluded = 'Concluded',
+    Rejected = 'Rejected',
+    Abandoned = 'Abandoned'
+}
+
 export interface IProject extends Document {
     owner: string;
     actors: string[];
@@ -8,9 +16,10 @@ export interface IProject extends Document {
         title: string;
         activities: [{
             isMilestone: boolean;
-            status: string;
+            status: ActivityStatus;
             activityId: string;
-            linkedActivityId: string;
+            linkedActivityId: number;
+            localId: number;
             input: string;
             output: string;
         }]
@@ -44,15 +53,19 @@ const ProjectSchema = new Schema({
                     status: {
                         type: String,
                         required: true,
-                        enum: ['Not started', 'In progress', 'Completed']
+                        enum: ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
                     },
                     activityId: {
                         type: String,
                         required: true
                     },
                     linkedActivityId: {
-                        type: String,
+                        type: Number,
                         required: false
+                    },
+                    localId: {
+                        type: Number,
+                        required: true
                     },
                     input: {
                         type: String,

@@ -12,6 +12,8 @@ import notificationRoutes from './routes/notification';
 import userRoutes from './routes/user';
 import resourceRoutes from './routes/resource';
 import inviteRoutes from './routes/invite';
+import timeMachineRoutes from './routes/timeMachine';
+import projectRoutes from './routes/project';
 import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
@@ -82,6 +84,8 @@ app.use('/unavailability', ensureAuthenticated, unavailabilityRoutes);
 app.use('/user', ensureAuthenticated, userRoutes);
 app.use('/resource', ensureAuthenticated, resourceRoutes);
 app.use('/invite', ensureAuthenticated, inviteRoutes);
+app.use('/timeMachine', timeMachineRoutes);
+app.use('/project', ensureAuthenticated, projectRoutes);
 
 const server = http.createServer(app);
 
