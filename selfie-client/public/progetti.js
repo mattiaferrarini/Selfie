@@ -50,9 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.value === 'gantt') {
             ganttView.classList.remove('hidden');
             listView.classList.add('hidden');
+            showGantt(projects.find(project => project._id === projectSelector.value));
         } else {
             ganttView.classList.add('hidden');
             listView.classList.remove('hidden');
+            showList(projects.find(project => project._id === projectSelector.value));
         }
     });
 
