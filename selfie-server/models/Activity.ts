@@ -3,7 +3,7 @@ import { model, Schema, Document } from 'mongoose';
 export interface IActivity extends Document{
     title: string;
     done: boolean;
-    start: Date;
+    start?: Date;
     deadline: Date;
     notification: {
         method: string[];

@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("adminLink").classList.remove("hidden");
     }
 
+    const ganttView = document.getElementById('ganttView');
+
     document.getElementById('visualType').value = auth.user.preferences?.projectsView || 'list';
     document.getElementById('visualType').addEventListener('change', (event) => {
         auth.user.preferences.projectsView = event.target.value;
@@ -46,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({projectsView: event.target.value})
         });
-        const ganttView = document.getElementById('ganttView');
         if (event.target.value === 'gantt') {
             ganttView.classList.remove('hidden');
             listView.classList.add('hidden');
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showList(projects.find(project => project._id === projectSelector.value));
         }
     });
+    auth.user.preferences?.projectsView === 'gantt' && ganttView.classList.remove('hidden');
 
     let showTooltip = false;
     const conditionalRenderElement = document.getElementById('dateConditionalRender');

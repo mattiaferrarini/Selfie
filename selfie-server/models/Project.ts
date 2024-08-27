@@ -10,14 +10,6 @@ export enum ActivityStatus {
     Abandoned = 'Abandoned'
 }
 
-export enum ActivityStatus {
-    NotStarted = 'NotStarted',
-    Started = 'Started',
-    Concluded = 'Concluded',
-    Rejected = 'Rejected',
-    Abandoned = 'Abandoned'
-}
-
 export interface IProject extends Document {
     owner: string;
     actors: string[];
