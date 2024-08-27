@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,228 +13,299 @@
     <script type="module" src="clickOutsideComponent.js"></script>
     <script type="module" src="ganttComponent.js"></script>
     <script type="module" src="progetti.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="./tailwind.css"/>
+    <link rel="stylesheet" type="text/css" href="./tailwind.css" />
 </head>
+
 <body>
-<noscript>
-    <strong>We're sorry but Web Components don't work properly without JavaScript enabled.
-        Please enable it to continue.</strong>
-</noscript>
-<div id="app" class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600">
-        <div class="container mx-auto flex justify-between text-gray-700">
-            <div class="flex items-center">
-                <a href="/"
-                   class="font-bold mr-2 sm:mr-3 sm:text-xl sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <div class="flex items-center">
-                        <div class="hidden sm:flex items-center">
-                            <img src="selfie.jpeg" alt="bradipo che si fa un selfie"
-                                 class="min-w-8 h-8 w-8 rounded-full inline-block"/>
-                            Selfie
+    <noscript>
+        <strong>We're sorry but Web Components don't work properly without JavaScript enabled.
+            Please enable it to continue.</strong>
+    </noscript>
+    <div id="app" class="min-h-screen bg-gray-100">
+        <nav class="bg-white shadow p-1 sm:p-2 fixed top-0 right-0 left-0 shadow-emerald-600">
+            <div class="container mx-auto flex justify-between text-gray-700">
+                <div class="flex items-center">
+                    <a href="/"
+                        class="font-bold mr-2 sm:mr-3 sm:text-xl sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <div class="flex items-center">
+                            <div class="hidden sm:flex items-center">
+                                <img src="selfie.jpeg" alt="bradipo che si fa un selfie"
+                                    class="min-w-8 h-8 w-8 rounded-full inline-block" />
+                                Selfie
+                            </div>
+                            <div class="block sm:hidden h-7 w-7">
+                                <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                    viewBox="-51.2 -51.2 614.4 614.4" fill="currentColor" style="font-size: 1.2em;">
+                                    <path fill="var(--ci-primary-color, currentColor)"
+                                        d="M469.666 216.45L271.078 33.749a34 34 0 00-47.062.98L41.373 217.373 32 226.745V496h176V328h96v168h176V225.958zM248.038 56.771c.282 0 .108.061-.013.18-.125-.119-.269-.18.013-.18zM448 464H336V328a32 32 0 00-32-32h-96a32 32 0 00-32 32v136H64V240L248.038 57.356c.013-.012.014-.023.024-.035L448 240z"
+                                        class="ci-primary"></path>
+                                </svg>
+                            </div>
                         </div>
+                    </a>
+                    <a href="/#/calendar"
+                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <span class="hidden sm:block">Calendario</span>
                         <div class="block sm:hidden h-7 w-7">
                             <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                                 viewBox="-51.2 -51.2 614.4 614.4" fill="currentColor" style="font-size: 1.2em;">
-                                <path fill="var(--ci-primary-color, currentColor)"
-                                      d="M469.666 216.45L271.078 33.749a34 34 0 00-47.062.98L41.373 217.373 32 226.745V496h176V328h96v168h176V225.958zM248.038 56.771c.282 0 .108.061-.013.18-.125-.119-.269-.18.013-.18zM448 464H336V328a32 32 0 00-32-32h-96a32 32 0 00-32 32v136H64V240L248.038 57.356c.013-.012.014-.023.024-.035L448 240z"
-                                      class="ci-primary"></path>
+                                viewBox="-1.6 -1.6 19.2 19.2" fill="currentColor" style="font-size: 1.2em;">
+                                <path
+                                    d="M14 0H2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z">
+                                </path>
+                                <path
+                                    d="M6.5 7a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm-9 3a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm-9 3a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2z">
+                                </path>
                             </svg>
                         </div>
-                    </div>
-                </a>
-                <a href="/#/calendar"
-                   class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <span class="hidden sm:block">Calendario</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="-1.6 -1.6 19.2 19.2" fill="currentColor" style="font-size: 1.2em;">
-                            <path d="M14 0H2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"></path>
-                            <path d="M6.5 7a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm-9 3a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm-9 3a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2zm3 0a1 1 0 100-2 1 1 0 000 2z"></path>
-                        </svg>
-                    </div>
-                </a>
-                <a href="/#/note"
-                   class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <span class="hidden sm:block">Note</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
-                            <path fill="none" d="M0 0h24v24H0z"></path>
-                            <path d="M19 5v9h-5v5H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10l6-6V5c0-1.1-.9-2-2-2zm-7 11H7v-2h5v2zm5-4H7V8h10v2z"></path>
-                        </svg>
-                    </div>
-                </a>
-                <a href="/#/pomodoro"
-                   class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <span class="hidden sm:block">Pomodoro</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
-                            <path fill="none" d="M0 0h24v24H0z"></path>
-                            <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0012 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a8.994 8.994 0 007.03-14.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"></path>
-                        </svg>
-                    </div>
-                </a>
-                <a href="/progetti.html"
-                   class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl text-emerald-700 sm:border-teal-500">
-                    <span class="hidden sm:block">Progetti</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="-1.6 -1.6 19.2 19.2" fill="currentColor" style="font-size: 1.2em;">
-                            <path d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM2 2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1H2z"></path>
-                            <path d="M2.5 4a.5.5 0 01.5-.5h10a.5.5 0 01.5.5v1a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V4zM9 8a1 1 0 011-1h5v2h-5a1 1 0 01-1-1zm-8 2h4a1 1 0 110 2H1v-2z"></path>
-                        </svg>
-                    </div>
-                </a>
-            </div>
-            <div class="flex items-center">
-                <click-outside id="clickOutsideElement">
-                    <button id="toggleDateTooltip"
-                            class="font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl">
-                        <!--  showTooltip ? 'text-teal-100 bg-teal-700': 'text-teal-900' -->
-                        <span class="h-7 w-7 block">
+                    </a>
+                    <a href="/#/note"
+                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <span class="hidden sm:block">Note</span>
+                        <div class="block sm:hidden h-7 w-7">
                             <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                                 viewBox="-35.84 -35.84 583.68 583.68" fill="currentColor" style="font-size: 1.2em;"><path
-                                    d="M255.656 22.75c-131.173 0-237.72 33.326-237.72 74.344.002 22.39 32.41 42.59 82.564 56.22-17.407-8.91-27.53-19.216-27.53-30.47 0-32.128 81.75-58.53 182.686-58.53 100.937 0 183.25 26.4 183.25 58.53 0 11.194-10.3 21.59-27.53 30.47 49.843-13.627 81.968-33.91 81.968-56.22 0-41.018-106.514-74.344-237.688-74.344zM147.47 103.094v30.094h216.28v-30.094H147.47zm4.374 48.78V361.94h18.687V151.875h-18.686zm39.125 0c.698 61.812 25.325 96.435 52.81 103.814-27.847 7.475-52.776 42.9-52.843 106.25h128.188c-.066-63.353-24.952-98.766-52.78-106.25 27.468-7.386 52.05-41.998 52.75-103.813H190.968zm147.936 0V361.94h18.688V151.875h-18.688zM100.5 360.72c-50.153 13.626-82.563 33.827-82.563 56.217 0 41.018 106.546 74.344 237.72 74.344 131.173 0 237.687-33.325 237.687-74.342 0-22.31-32.125-42.593-81.97-56.22 17.232 8.88 27.532 19.244 27.532 30.438 0 32.13-82.313 58.563-183.25 58.563S72.97 423.283 72.97 391.155c0-11.254 10.123-21.528 27.53-30.437zm46.97 19.905v30.063h216.28v-30.063H147.47z"></path></svg>
+                                viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path
+                                    d="M19 5v9h-5v5H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10l6-6V5c0-1.1-.9-2-2-2zm-7 11H7v-2h5v2zm5-4H7V8h10v2z">
+                                </path>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="/#/pomodoro"
+                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <span class="hidden sm:block">Pomodoro</span>
+                        <div class="block sm:hidden h-7 w-7">
+                            <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path
+                                    d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0012 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a8.994 8.994 0 007.03-14.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z">
+                                </path>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="/progetti.html"
+                        class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl text-emerald-700 sm:border-teal-500">
+                        <span class="hidden sm:block">Progetti</span>
+                        <div class="block sm:hidden h-7 w-7">
+                            <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                viewBox="-1.6 -1.6 19.2 19.2" fill="currentColor" style="font-size: 1.2em;">
+                                <path
+                                    d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM2 2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1H2z">
+                                </path>
+                                <path
+                                    d="M2.5 4a.5.5 0 01.5-.5h10a.5.5 0 01.5.5v1a.5.5 0 01-.5.5H3a.5.5 0 01-.5-.5V4zM9 8a1 1 0 011-1h5v2h-5a1 1 0 01-1-1zm-8 2h4a1 1 0 110 2H1v-2z">
+                                </path>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <click-outside id="clickOutsideElement">
+                        <button id="toggleDateTooltip"
+                            class="font-semibold sm:p-1 mr-2 sm:mr-3 border-2 border-teal-900 hover:border-teal-500 hover:text-teal-500 rounded-xl">
+                            <!--  showTooltip ? 'text-teal-100 bg-teal-700': 'text-teal-900' -->
+                            <span class="h-7 w-7 block">
+                                <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                    viewBox="-35.84 -35.84 583.68 583.68" fill="currentColor" style="font-size: 1.2em;">
+                                    <path
+                                        d="M255.656 22.75c-131.173 0-237.72 33.326-237.72 74.344.002 22.39 32.41 42.59 82.564 56.22-17.407-8.91-27.53-19.216-27.53-30.47 0-32.128 81.75-58.53 182.686-58.53 100.937 0 183.25 26.4 183.25 58.53 0 11.194-10.3 21.59-27.53 30.47 49.843-13.627 81.968-33.91 81.968-56.22 0-41.018-106.514-74.344-237.688-74.344zM147.47 103.094v30.094h216.28v-30.094H147.47zm4.374 48.78V361.94h18.687V151.875h-18.686zm39.125 0c.698 61.812 25.325 96.435 52.81 103.814-27.847 7.475-52.776 42.9-52.843 106.25h128.188c-.066-63.353-24.952-98.766-52.78-106.25 27.468-7.386 52.05-41.998 52.75-103.813H190.968zm147.936 0V361.94h18.688V151.875h-18.688zM100.5 360.72c-50.153 13.626-82.563 33.827-82.563 56.217 0 41.018 106.546 74.344 237.72 74.344 131.173 0 237.687-33.325 237.687-74.342 0-22.31-32.125-42.593-81.97-56.22 17.232 8.88 27.532 19.244 27.532 30.438 0 32.13-82.313 58.563-183.25 58.563S72.97 423.283 72.97 391.155c0-11.254 10.123-21.528 27.53-30.437zm46.97 19.905v30.063h216.28v-30.063H147.47z">
+                                    </path>
+                                </svg>
+                            </span>
+                        </button>
+                        <conditional-render id="dateConditionalRender">
+                            <div slot="true" class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2
+                        border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
+                                <div class="flex">
+                                    <div class="flex flex-col">
+                                        <input type="date" id="selectedDate"
+                                            class="p-2 mb-2 border border-gray-300 rounded-md">
+                                        <input type="time" id="selectedTime"
+                                            class=" text-center p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="flex flex-col ml-2 gap-y-2">
+                                        <button id="setCurrentDate"
+                                            class="bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">
+                                            Set
+                                        </button>
+                                        <button id="resetDate"
+                                            class="bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <p id="timeMachineMessage" class="text-center mt-2"></p>
+                            </div>
+                        </conditional-render>
+                    </click-outside>
+                    <a href="/#/admin" id="adminLink"
+                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl hidden"><span
+                            class="hidden sm:block">Admin</span>
+                        <div class="block sm:hidden h-7 w-7">
+                            <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="font-size: 1.2em;">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="/#/profile"
+                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <span class="hidden sm:block">Profilo</span>
+                        <div class="block sm:hidden h-7 w-7">
+                            <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                viewBox="0 0 24 24" fill="currentColor" style="font-size: 1.2em;">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path
+                                    d="M12 14v2a6 6 0 00-6 6H4a8 8 0 018-8zm0-1c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm2.595 7.812a3.51 3.51 0 010-1.623l-.992-.573 1-1.732.992.573A3.496 3.496 0 0117 14.645V13.5h2v1.145c.532.158 1.012.44 1.405.812l.992-.573 1 1.732-.992.573a3.51 3.51 0 010 1.622l.992.573-1 1.732-.992-.573a3.496 3.496 0 01-1.405.812V22.5h-2v-1.145a3.496 3.496 0 01-1.405-.812l-.992.573-1-1.732.992-.572zM18 19.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z">
+                                </path>
+                            </svg>
+                        </div>
+                    </a>
+                    <button onclick="logout()"
+                        class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
+                        <span class="hidden sm:block">Logout</span>
+                        <span class="block sm:hidden h-7 w-7">
+                            <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
+                                viewBox="0 0 24 24" fill="currentColor" style="font-size: 1.2em;">
+                                <path fill="none" d="M0 0h24v24H0z"></path>
+                                <path
+                                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2a9.985 9.985 0 018 4h-2.71a8 8 0 10.001 12h2.71A9.985 9.985 0 0112 22zm7-6v-3h-8v-2h8V8l5 4-5 4z">
+                                </path>
+                            </svg>
                         </span>
                     </button>
-                    <conditional-render id="dateConditionalRender">
-                        <div slot="true" class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2
-                        border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
-                            <div class="flex">
-                                <div class="flex flex-col">
-                                    <input type="date" id="selectedDate"
-                                           class="p-2 mb-2 border border-gray-300 rounded-md">
-                                    <input type="time" id="selectedTime"
-                                           class=" text-center p-2 border border-gray-300 rounded-md">
-                                </div>
-                                <div class="flex flex-col ml-2 gap-y-2">
-                                    <button id="setCurrentDate"
-                                            class="bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">
-                                        Set
-                                    </button>
-                                    <button id="resetDate"
-                                            class="bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">
-                                        Reset
-                                    </button>
-                                </div>
-                            </div>
-                            <p id="timeMachineMessage" class="text-center mt-2"></p>
-                        </div>
-                    </conditional-render>
-                </click-outside>
-                <a href="/#/admin" id="adminLink"
-                   class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl hidden"><span
-                        class="hidden sm:block">Admin</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                             style="font-size: 1.2em;">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                </a>
-                <a href="/#/profile"
-                   class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <span class="hidden sm:block">Profilo</span>
-                    <div class="block sm:hidden h-7 w-7">
-                        <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2"
-                             viewBox="0 0 24 24" fill="currentColor" style="font-size: 1.2em;">
-                            <path fill="none" d="M0 0h24v24H0z"></path>
-                            <path d="M12 14v2a6 6 0 00-6 6H4a8 8 0 018-8zm0-1c-3.315 0-6-2.685-6-6s2.685-6 6-6 6 2.685 6 6-2.685 6-6 6zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm2.595 7.812a3.51 3.51 0 010-1.623l-.992-.573 1-1.732.992.573A3.496 3.496 0 0117 14.645V13.5h2v1.145c.532.158 1.012.44 1.405.812l.992-.573 1 1.732-.992.573a3.51 3.51 0 010 1.622l.992.573-1 1.732-.992-.573a3.496 3.496 0 01-1.405.812V22.5h-2v-1.145a3.496 3.496 0 01-1.405-.812l-.992.573-1-1.732.992-.572zM18 19.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
-                        </svg>
-                    </div>
-                </a>
-                <button onclick="logout()" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-                    <span class="hidden sm:block">Logout</span>
-                    <span class="block sm:hidden h-7 w-7">
-              <svg class="ov-icon h-full w-full" aria-hidden="true" width="19.2" height="19.2" viewBox="0 0 24 24"
-                   fill="currentColor" style="font-size: 1.2em;"><path fill="none" d="M0 0h24v24H0z"></path><path
-                      d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2a9.985 9.985 0 018 4h-2.71a8 8 0 10.001 12h2.71A9.985 9.985 0 0112 22zm7-6v-3h-8v-2h8V8l5 4-5 4z"></path></svg>
-            </span>
+                </div>
+            </div>
+        </nav>
+        <div class="flex flex-col min-h-screen p-3 pt-14 sm:pt-20">
+            <div class="w-full h-full mb-3">
+                <label for="visualType">Visualization:</label>
+                <select id="visualType" class="p-1 ml-1 mr-4">
+                    <option value="list">List</option>
+                    <option value="gantt">Gantt</option>
+                </select>
+                <label for="selectedProject">Progetto:
+                    <select id="selectedProject" class="p-1 ml-1">
+                    </select>
+                </label>
+            </div>
+            <div id="listView">
+            </div>
+            <div id="ganttView" class="hidden">
+                <gantt-component id="ganttComponent"></gantt-component>
+            </div>
+
+            <!-- Button and Modal to add -->
+            <div class="flex flex-col fixed bottom-4 right-4">
+                <button id="addProjectButton"
+                    class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
+                    <svg data-v-6482da86="" class="ov-icon w-full h-full" aria-hidden="true" width="19.2" height="19.2"
+                        viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+                    </svg>
                 </button>
             </div>
-        </div>
-    </nav>
-    <div class="flex flex-col min-h-screen p-3 pt-14 sm:pt-20">
-        <div class="w-full h-full mb-3">
-            <label for="visualType">Visualizzazione:</label>
-            <select id="visualType">
-                <option value="list">Lista</option>
-                <option value="gantt">Gantt</option>
-            </select>
-            <label for="selectedProject">Progetto:
-                <select id="selectedProject">
-                </select>
-            </label>
-        </div>
-        <div id="listView">
-        </div>
-        <div id="ganttView" class="hidden">
-            <gantt-component id="ganttComponent"></gantt-component>
-        </div>
-
-        <!-- Button and Modal to add -->
-        <div class="flex flex-col fixed bottom-4 right-4">
-            <button id="addProjectButton"
-                    class="bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
-                <svg data-v-6482da86="" class="ov-icon w-full h-full" aria-hidden="true" width="19.2" height="19.2"
-                     viewBox="0.48 0.48 23.04 23.04" fill="currentColor" style="font-size: 1.2em;">
-                    <path fill="none" d="M0 0h24v24H0z"></path>
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
-                </svg>
-            </button>
-        </div>
-        <modal-component id="projectModal">
-            <h2 id="modalTitle" class="text-xl font-bold mb-4">Add/Edit Project</h2>
-            <div id="errorMessage" class="hidden text-red-500"></div>
-            <form id="projectForm" class="flex flex-col gap-y-2">
-                <input type="text" id="projectTitle" placeholder="Project Title"
-                       class="p-2 border border-gray-300 rounded-md" required>
-                <div class="overflow-y-auto max-h-[60vh] border rounded p-1">
-                    <div id="actorsContainer">
-                        <!-- Actors will be dynamically added here -->
+            <modal-component id="projectModal">
+                <h2 id="modalTitle" class="text-xl font-bold mb-4">Add/Edit Project</h2>
+                <div id="errorMessage" class="hidden text-red-500"></div>
+                <form id="projectForm" class="flex flex-col gap-y-2">
+                    <div class="overflow-y-auto max-h-[80vh]">
+                        <div class="border border-gray-300 rounded-md mb-2 flex gap-8 p-2 items-center">
+                            <label for="projectTitle" class="text-lg font-semibold">Title</label>
+                            <input type="text" id="projectTitle" placeholder="Project Title" required class="flex-1 text-center">
+                        </div>
+                        <div class="border rounded-md p-2 border-gray-300">
+                            <h3 class="text-lg font-semibold mb-1">Actors</h3>
+                            <div id="actorsContainer" class="flex flex-wrap gap-1">
+                                <!-- Actors will be dynamically added here -->
+                            </div>
+                            <button type="button" id="addActor"
+                                class="bg-emerald-700 text-white p-2 my-2 rounded-md">Add Actor
+                            </button>
+                        </div>
+                        <div class="border rounded-md p-2 mt-2 border-gray-300">
+                            <h3 class="text-lg font-semibold mb-1">Phases</h3>
+                            <div id="phasesContainer">
+                                <!-- Phases and activities will be dynamically added here -->
+                            </div>
+                            <button type="button" id="addPhase"
+                                class="bg-emerald-700 text-white p-2 my-2 rounded-md">Add Phase</button>
+                        </div>
                     </div>
-                    <button type="button" id="addActor" class="bg-emerald-700 text-white p-2 rounded-md">Add Actor
-                    </button>
-                    <div id="phasesContainer">
-                        <!-- Phases and activities will be dynamically added here -->
+                    <div class="flex justify-end gap-x-1 mt-4">
+                        <button type="button" id="cancelButton" class="bg-gray-500 text-white py-2 px-8 rounded-md">Cancel
+                        </button>
+                        <button type="submit" class="bg-emerald-500 text-white py-2 px-8 rounded-md">Save</button>
                     </div>
-                </div>
-                <button type="button" id="addPhase" class="bg-emerald-700 text-white p-2 rounded-md">Add Phase</button>
-                <div class="flex justify-end gap-x-2">
-                    <button type="button" id="cancelButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel
-                    </button>
-                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
-                </div>
-            </form>
-        </modal-component>
+                </form>
+            </modal-component>
 
-        <modal-component id="editProjectActivityModal">
-            <h2 class="text-xl font-bold mb-4">Edit Activity</h2>
-            <div id="editErrorMessage" class="hidden text-red-500"></div>
-            <form id="editActivityForm" class="flex flex-col gap-y-2">
-                <input type="hidden" id="editActivityId">
-                <label for="editInput">Input:</label>
-                <input type="text" id="editInput" class="p-2 border border-gray-300 rounded-md">
-                <label for="editOutput">Output:</label>
-                <input type="text" id="editOutput" class="p-2 border border-gray-300 rounded-md">
-                <label for="editStatus">Status:</label>
-                <select id="editStatus" class="p-2 border border-gray-300 rounded-md" required>
-                    <option value="NotStarted">Not Started</option>
-                    <option value="Started">Started</option>
-                    <option value="Concluded">Concluded</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Abandoned">Abandoned</option>
-                </select>
-                <div class="flex justify-end gap-x-2">
-                    <button type="button" id="cancelEditButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel</button>
-                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
-                </div>
-            </form>
-        </modal-component>
+            <modal-component id="editActivityModal" style="z-index: 5;">
+                <h2 class="text-xl font-bold mb-4">Edit Activity</h2>
+                <div id="editErrorMessage" class="hidden text-red-500"></div>
+                <form id="editActivityForm" class="flex flex-col gap-y-2">
+                    <input type="hidden" id="editActivityId">
+                    <div>
+                        <label for="editTitle"><input type="text" id="editTitle" required placeholder="Add title"
+                                class="w-full"></label>
+                    </div>
+                    <hr>
+                    <div class="flex flex-col">
+                        <label for="editMilestone"><input id="editMilestone" class="mr-2"
+                                type="checkbox">Milestone</input></label>
+                        <label for="editStatus" class="flex justify-between">Status
+                            <select id="editStatus" class="p-1 ml-2 border border-gray-300 rounded-md" required>
+                                <option value="NotStarted">Not Started</option>
+                                <option value="Started">Started</option>
+                                <option value="Concluded">Concluded</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Abandoned">Abandoned</option>
+                            </select>
+                        </label>
+                    </div>
+                    <hr>
+                    <div class="flex flex-col gap-1">
+                        <label for="editInput" class="flex justify-between">
+                            Input<input type="text" id="editInput"
+                                class="p-1 border border-gray-300 rounded-md text-center">
+                        </label>
+                        <label for="editOutput" class="flex justify-between">
+                            Output<input type="text" id="editOutput"
+                                class="p-1 border border-gray-300 rounded-md text-center">
+                        </label>
+                    </div>
+                    <hr>
+                    <div class="flex flex-col gap-1">
+                        <label for="editStartDate" class="flex justify-between">Start<input id="editStartDate"
+                                type="date" required></label>
+                        <label for="editEndDate" class="flex justify-between">End<input id="editEndDate" type="date"
+                                required></label>
+                    </div>
+                    <hr>
+                    <div class="flex flex-col gap-1">
+                        <p>Participants: ...</p>
+                        <div class="flex w-full gap-1">
+                            <input type="text" class="flex-1 p-1 border border-gray-300 rounded-md"
+                                placeholder="Add a username">
+                            <button type="button" class="bg-blue-500 text-white py-1 px-2 rounded-md">Add
+                                participant</button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="flex justify-end gap-x-1 mt-4">
+                        <button type="button" id="cancelEditButton"
+                            class="bg-gray-500 text-white py-2 px-8 rounded-md">Cancel</button>
+                        <button type="submit" class="bg-emerald-500 text-white py-2 px-8 rounded-md">Save</button>
+                    </div>
+                </form>
+            </modal-component>
+        </div>
     </div>
-</div>
 </body>
+
 </html>

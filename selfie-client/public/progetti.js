@@ -164,19 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
             phasesContainer.innerHTML = '';
         }
         projectModal.show();
+        //editActivityModal.show();
     };
 
     const closeModal = () => {
         projectModal.hide();
     };
 
-
     const addActor = () => {
         const actorDiv = document.createElement('div');
         actorDiv.classList.add('actor', 'flex', 'gap-x-1', 'items-center', 'mb-1');
         actorDiv.innerHTML = `
+            <div class="flex gap-1">
             <input type="text" placeholder="Actor Username" class="actorUsername p-2 border border-gray-300 rounded-md" required>
-            <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+            <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">X</button>
+            </div>
         `;
         actorsContainer.appendChild(actorDiv);
         actorDiv.querySelector('.removeActorButton').addEventListener('click', () => removeActor(actorDiv));
@@ -192,8 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const actorDiv = document.createElement('div');
             actorDiv.classList.add('actor', 'flex', 'gap-x-1', 'items-center', 'mb-1');
             actorDiv.innerHTML = `
-                <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
-                <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">Remove</button>
+                <div class="flex gap-1"> 
+                    <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
+                    <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">X</button>
+                </div>
             `;
             actorsContainer.appendChild(actorDiv);
             actorDiv.querySelector('.removeActorButton').addEventListener('click', () => removeActor(actorDiv));
@@ -204,10 +208,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const phaseDiv = document.createElement('fieldset');
         phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
         phaseDiv.innerHTML = `
-            <input type="text" placeholder="Phase Title" class="p-2 mt-2 border border-gray-300 rounded-md" required>
+            <div class="flex w-full gap-1 mt-2">
+                <input type="text" placeholder="Phase Title" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">X</button>
+            </div>
             <div class="activitiesContainer my-2"></div>
             <button type="button" class="addActivityButton bg-emerald-600 text-white p-2  rounded-md">Add Activity</button>
-            <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
         `;
         phasesContainer.appendChild(phaseDiv);
         phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
@@ -219,8 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const editActivity = (activityDiv) => {
-        // Logic to edit activity
-        console.log('Editing activity:', activityDiv);
+        activityModal.show();
     };
 
     const generateUniqueId = (phaseDiv) => {
@@ -262,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         phaseDiv.activityIds.push(uniqueId);
 
+        /*
         activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
         activityDiv.innerHTML = `
         ID:${uniqueId}
@@ -290,6 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
         activitiesContainer.appendChild(activityDiv);
         activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
         activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
+        */
+       editActivityModal.show();
 
         addLinkedActivityEventListener(activityDiv);
 
@@ -525,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const editProjectActivityModal = document.getElementById('editProjectActivityModal');
+    const editActivityModal = document.getElementById('editActivityModal');
     const editActivityForm = document.getElementById('editActivityForm');
     const editErrorMessage = document.getElementById('editErrorMessage');
     const editActivityId = document.getElementById('editActivityId');
@@ -539,11 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         editInput.value = activity.input;
         editOutput.value = activity.output;
         editStatus.value = activity.status;
-        editProjectActivityModal.show();
+        editActivityModal.show();
     };
 
     const closeEditActivityModal = () => {
-        editProjectActivityModal.hide();
+        editActivityModal.hide();
     };
 
     editActivityForm.addEventListener('submit', (event) => {
