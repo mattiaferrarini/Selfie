@@ -1,8 +1,18 @@
-import Project, {ActivityStatus} from "../models/Project";
+import Project, {ActivityStatus, IProject} from "../models/Project";
 import User from "../models/User";
 import Activity from "../models/Activity";
 import notificationController from "./notificationController";
 import {createActivity, deleteActivityById} from "./activityController";
+
+const formatProject = async (project: IProject) => {
+    project = project.toObject();
+    for (const phase of project.phases) {
+        for (const activity of phase.activities) {
+            activity.activity = await Activity.findById(activity.activityId);
+        }
+    }
+    return project;
+}
 
 export const getAllProjects = async (req: any, res: any) => {
     const username = req.user.username;
@@ -14,7 +24,11 @@ export const getAllProjects = async (req: any, res: any) => {
                 {actors: username}
             ]
         });
-        res.status(200).send(projects);
+
+        const projectsWithActivities = await Promise.all(projects.map(async (project) => {
+            return await formatProject(project);
+        }));
+        res.status(200).send(projectsWithActivities);
     } catch (error) {
         res.status(404).send({error: 'No projects found'});
     }
@@ -107,7 +121,7 @@ export const modifyStatus = async (req: any, res: any) => {
             if (phaseActivity.linkedActivityId == "")
                 phaseActivity.input = input;
             await project.save();
-            res.status(200).send(project);
+            res.status(200).send(await formatProject(project));
         } else {
             res.status(404).send({error: "Activity doesn't exist!"});
         }
@@ -147,7 +161,7 @@ export const modifyProject = async (req: any, res: any) => {
 
         try {
             await project.save();
-            res.status(200).send(project);
+            res.status(200).send(await formatProject(project));
         } catch (error) {
             res.status(400).send({error: 'Error modifying project'});
         }
@@ -192,7 +206,7 @@ export const addProject = async (req: any, res: any) => {
                 });
             }
         });
-        res.status(201).send(savedProject);
+        res.status(201).send(await formatProject(savedProject));
     } catch (error) {
         res.status(400).send({error: 'Error adding project' + error});
     }

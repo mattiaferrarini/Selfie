@@ -47,7 +47,7 @@ export default defineComponent({
           throw "I valori dei campi non possono essere vuoti!";
         }
         const data = await authService.register(username.value, realName.value, email.value, password.value, birthday.value);
-        authStore.setUser(data.user);
+        await authStore.setUser(data.user);
         router.push({name: 'home'})
         // Redirect to a protected page or home
         // this.$router.push('/');

@@ -1,4 +1,6 @@
 import {Document, model, Schema} from "mongoose";
+import ObjectId = Schema.Types.ObjectId;
+import {IActivity} from "./Activity";
 
 export enum ActivityStatus {
     NotStarted = 'NotStarted',
@@ -22,6 +24,7 @@ export interface IProject extends Document {
             localId: number;
             input: string;
             output: string;
+            activity?: IActivity | null;
         }]
     }]
 }
@@ -56,7 +59,7 @@ const ProjectSchema = new Schema({
                         enum: ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
                     },
                     activityId: {
-                        type: String,
+                        type: ObjectId,
                         required: true
                     },
                     linkedActivityId: {
