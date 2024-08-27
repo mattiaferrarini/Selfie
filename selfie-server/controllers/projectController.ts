@@ -4,6 +4,7 @@ import Activity from "../models/Activity";
 import notificationController from "./notificationController";
 import {createActivity, deleteActivityById} from "./activityController";
 
+
 const formatProject = async (project: IProject) => {
     project = project.toObject();
     for (const phase of project.phases) {
