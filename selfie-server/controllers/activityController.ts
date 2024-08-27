@@ -75,22 +75,42 @@ export const getActivityById = async (req: any, res: any) => {
     }
 }
 
+export const deleteActivityById = async (id: any) => {
+    const activity = await Activity.findById(id);
+
+    if (activity) {
+        await jobSchedulerService.clearActivityNotifications(activity);
+        await Activity.findByIdAndDelete(id);
+        await inviteController.deleteActivityInvites(id);
+    }
+}
+
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
     try {
 
-        const activity = await Activity.findById(id);
-
-        if(activity){
-            await jobSchedulerService.clearActivityNotifications(activity);
-            await Activity.findByIdAndDelete(id);
-            await inviteController.deleteActivityInvites(id);
-        }
+        await deleteActivityById(id);
 
         res.status(204).send();
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
+}
+
+export const createActivity = async (newActivity: any, req: any) => {
+    if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
+        const completedCycles = newActivity.pomodoro.completedCycles;
+        const participants = newActivity.participants.map((participant: any) => participant.username);
+
+        participants.forEach((username: string) => {
+            if (username !== req.user.username)
+                completedCycles.set(username, 0);
+        });
+
+        newActivity.pomodoro.completedCycles = completedCycles;
+    }
+    await newActivity.save();
+    await inviteController.createInvitesForActivity(newActivity);
 }
 
 export const addActivity = async (req: any, res: any) => {
@@ -105,19 +125,7 @@ export const addActivity = async (req: any, res: any) => {
     });
 
     try {
-        if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
-            const completedCycles = newActivity.pomodoro.completedCycles;
-            const participants = newActivity.participants.map((participant: any) => participant.username);
-
-            participants.forEach(username => {
-                if (username !== req.user.username)
-                    completedCycles.set(username, 0);
-            });
-
-            newActivity.pomodoro.completedCycles = completedCycles;
-        }
-        await newActivity.save();
-        await inviteController.createInvitesForActivity(newActivity);
+        await createActivity(newActivity, req);
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
@@ -135,7 +143,10 @@ export const modifyActivity = async (req: any, res: any) => {
 
             if (req.body.pomodoro && req.body.pomodoro.completedCycles) {
                 if (!activity.pomodoro)
-                    activity.pomodoro = {options: req.body.pomodoro.options, completedCycles: new Map<string,number>()};
+                    activity.pomodoro = {
+                        options: req.body.pomodoro.options,
+                        completedCycles: new Map<string, number>()
+                    };
                 activity.pomodoro.options = req.body.pomodoro.options;
 
                 Object.entries(req.body.pomodoro.completedCycles).map((object: any) => {

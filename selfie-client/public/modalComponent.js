@@ -4,8 +4,8 @@ class ModalComponent extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
             <link rel="stylesheet" href="tailwind.css"/>
-            <div class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 hidden" id="container">
-                <div class="bg-white p-4 rounded-lg shadow-lg relative max-w-lg mx-auto">
+            <div class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 hidden max-h-screen" id="container">
+                <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-xl mx-auto">
                     <button class="absolute top-0 right-2 text-gray-500 text-lg" id="close-btn">&times;</button>
                     <slot></slot>
                 </div>
