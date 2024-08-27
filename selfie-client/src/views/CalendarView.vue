@@ -18,6 +18,7 @@ import resourceService from '@/services/resourceService';
 import { useDateStore } from '@/stores/dateStore';
 import { Resource } from '@/models/Resource';
 import inviteService from '@/services/inviteService';
+import router from '@/router';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -318,14 +319,28 @@ export default defineComponent({
       rangeStartDate.value = start;
       rangeEndDate.value = end;
 
-      console.log(new Date());
-
       // Fetch the content of the view
-      fetchUserEvents();
-      fetchActivities();
+      await Promise.all([fetchUserEvents(), fetchActivities()]);
+
+      if(router.currentRoute.value.query.view) {
+        view.value = router.currentRoute.value.query.view.toString();
+      }
+
+      if(router.currentRoute.value.query.eventId) {
+        const event = rangeUserEvents.value.find(e => e.id === router.currentRoute.value.query.eventId);
+        if(event) {
+          modifyEvent(event);
+        }
+      }
+      else if(router.currentRoute.value.query.activityId) {
+        const activity = rangeActivities.value.find(a => a.id === router.currentRoute.value.query.activityId);
+        if(activity) {
+          modifyActivity(activity);
+        }
+      }
+
       fetchUnavailabilities();
       fetchResources();
-      // Note: events for resource are fetched when the resource is changed
 
       // Check for pending invites
       checkInvites();
