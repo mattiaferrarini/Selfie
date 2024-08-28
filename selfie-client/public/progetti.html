@@ -256,10 +256,10 @@
                                 class="w-full"></label>
                     </div>
                     <hr>
-                    <div class="flex flex-col">
+                    <div class="flex flex-col gap-1">
                         <label for="editMilestone"><input id="editMilestone" class="mr-2"
                                 type="checkbox">Milestone</input></label>
-                        <label for="editStatus" class="flex justify-between">Status
+                        <label for="editStatus" class="flex justify-between items-center">Status
                             <select id="editStatus" class="p-1 ml-2 border border-gray-300 rounded-md" required>
                                 <option value="NotStarted">Not Started</option>
                                 <option value="Started">Started</option>
@@ -267,6 +267,9 @@
                                 <option value="Rejected">Rejected</option>
                                 <option value="Abandoned">Abandoned</option>
                             </select>
+                        </label>
+                        <label for="editLinkedActivity" class="flex justify-between items-center">Linked activity
+                            <select name="" id="editLinkedActivity" class="p-1 ml-2 border border-gray-300 rounded-md"></select>
                         </label>
                     </div>
                     <hr>
@@ -289,13 +292,34 @@
                     </div>
                     <hr>
                     <div class="flex flex-col gap-1">
-                        <p>Participants: ...</p>
+                        <div class="flex flex-wrap gap-1 item-center" id="actParticipantsContainer">
+                            <div class="flex items-center">
+                                Participants:
+                            </div>
+                        </div>
                         <div class="flex w-full gap-1">
-                            <input type="text" class="flex-1 p-1 border border-gray-300 rounded-md"
+                            <input type="text" id="actNewParticipantUsername" class="flex-1 p-1 border border-gray-300 rounded-md"
                                 placeholder="Add a username">
-                            <button type="button" class="bg-blue-500 text-white py-1 px-2 rounded-md">Add
+                            <button type="button" id="addActivityParticipantButton" class="bg-blue-500 text-white py-1 px-2 rounded-md">Add
                                 participant</button>
                         </div>
+                    </div>
+                    <hr>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between">
+                            <label for="editNotification">Notification after deadline</label>
+                            <div class="flex flex-wrap justify-end space-x-4">
+                                <label> <input type="checkbox" id="editNotifyOS" /> OS</label>
+                                <label> <input type="checkbox" id="editNotifyEmail" /> Email</label>
+                              </div>
+                        </div>
+                        <label for="editRepeatNotify" class="flex justify-between"> Frequency
+                            <select id="editRepeatNotify" class="p-1 ml-2 border border-gray-300 rounded-md">
+                                <option value="daily">Daily</option>
+                                <option value="linear">Increase by 1 every day</option>
+                                <option value="exponential">Multiple 2x every day</option>
+                            </select>
+                        </label>
                     </div>
                     <hr>
                     <div class="flex justify-end gap-x-1 mt-4">

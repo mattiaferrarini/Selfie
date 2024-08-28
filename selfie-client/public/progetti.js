@@ -192,12 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
         actorsContainer.innerHTML = '';
         actors.forEach(actor => {
             const actorDiv = document.createElement('div');
-            actorDiv.classList.add('actor', 'flex', 'gap-x-1', 'items-center', 'mb-1');
+            actorDiv.classList.add('actor', 'flex', 'gap-1');
             actorDiv.innerHTML = `
-                <div class="flex gap-1"> 
-                    <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
-                    <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
-                </div>
+                <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
+                <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             `;
             actorsContainer.appendChild(actorDiv);
             actorDiv.querySelector('.removeActorButton').addEventListener('click', () => removeActor(actorDiv));
@@ -213,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="activitiesContainer my-2"></div>
-            <button type="button" class="addActivityButton bg-emerald-600 text-white p-2  rounded-md">Add Activity</button>
+            <button type="button" class="addActivityButton bg-emerald-400 text-white p-2  rounded-md">Add Activity</button>
         `;
         phasesContainer.appendChild(phaseDiv);
         phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
@@ -317,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         phasesContainer.innerHTML = '';
         phases.forEach(phase => {
             const phaseDiv = document.createElement('fieldset');
-            phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
+            phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
             phaseDiv.innerHTML = `
             <div class="flex w-full gap-1 mt-2">
                 <input type="text" value="${phase.title}" class="flex-1 p-2 border border-gray-300 rounded-md" required>
@@ -539,10 +537,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const editActivityForm = document.getElementById('editActivityForm');
     const editErrorMessage = document.getElementById('editErrorMessage');
     const editActivityId = document.getElementById('editActivityId');
+    const editMilestone = document.getElementById('editMilestone');
+    const editStatus = document.getElementById('editStatus');
     const editInput = document.getElementById('editInput');
     const editOutput = document.getElementById('editOutput');
-    const editStatus = document.getElementById('editStatus');
+    const editStartDate = document.getElementById('editStartDate');
+    const editEndDate = document.getElementById('editEndDate');
+    const addActivityParticipantButton = document.getElementById('addActivityParticipantButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
+    const participantsContainer = editActivityModal.querySelector('#actParticipantsContainer');
+    const usernameInput = editActivityModal.querySelector('#actNewParticipantUsername');
+    const modifyingActivity = false; // whether the activity is being modified or created
 
     const openEditActivityModal = (activity) => {
         editActivityId.value = activity.activityId;
@@ -553,8 +558,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeEditActivityModal = () => {
+
+        if(modifyingActivity) {
+        }
+        else{
+
+        }
+
         editActivityModal.hide();
     };
+
+    addActivityParticipantButton.addEventListener('click', () => {
+        if (usernameInput.value !== '') {
+            const newParticipant = document.createElement('div');
+            newParticipant.classList.add('participant', 'flex', 'gap-x-1', 'items-center', 'p-1', 'rounded-md', 'text-white', 'bg-blue-400');
+            newParticipant.innerHTML = `
+            <p class="username">${usernameInput.value}</p>
+            <button type="button" class="removeParticipantButton"><i class="bi bi-x-lg"></i></button>
+            `;
+            participantsContainer.appendChild(newParticipant);
+            newParticipant.querySelector('.removeParticipantButton').addEventListener('click', () => newParticipant.remove());
+            usernameInput.value = '';
+        }
+    });
 
     editActivityForm.addEventListener('submit', (event) => {
         event.preventDefault();
