@@ -206,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const phaseDiv = document.createElement('fieldset');
         phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
         phaseDiv.innerHTML = `
-            <div class="flex w-full gap-1 mt-2">
+            <div class="flex w-full gap-2">
+                <!--<button type="button" class="toggleActivitesVisButton" text-white"><i class="bi bi-chevron-down"></i></button>-->
                 <input type="text" placeholder="Phase Title" class="flex-1 p-2 border border-gray-300 rounded-md" required>
                 <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
@@ -214,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="addActivityButton bg-emerald-400 text-white p-2  rounded-md">Add Activity</button>
         `;
         phasesContainer.appendChild(phaseDiv);
+        //phaseDiv.querySelector('.toggleActivitesVisButton').addEventListener('click', () => toggleActivitesVisualizations(phaseDiv));
         phaseDiv.querySelector('.addActivityButton').addEventListener('click', () => addActivity(phaseDiv));
         phaseDiv.querySelector('.removePhaseButton').addEventListener('click', () => removePhase(phaseDiv));
     };
@@ -222,9 +224,18 @@ document.addEventListener('DOMContentLoaded', () => {
         phaseDiv.remove();
     };
 
-    const editActivity = (activityDiv) => {
-        editActivityModal.show();
+    /*
+    const toggleActivitesVisualizations = (phaseDiv) => {
+        const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
+        activitiesContainer.classList.toggle('hidden');
+        phaseDiv.querySelector('.addActivityButton').classList.toggle('hidden');
+
+        if (activitiesContainer.classList.contains('hidden'))
+            phaseDiv.querySelector('.toggleActivitesVisButton').style.transform = 'rotate(270deg)';
+        else
+            phaseDiv.querySelector('.toggleActivitesVisButton').style.transform = 'rotate(0deg)';
     };
+    */
 
     const generateUniqueId = (phaseDiv) => {
         if (!phaseDiv.activityCounter) {
@@ -255,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const addActivity = (phaseDiv) => {
+        //editActivityModal.show();
+
         const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
         const activityDiv = document.createElement('fieldset');
         const uniqueId = generateUniqueId(phaseDiv);
@@ -265,41 +278,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         phaseDiv.activityIds.push(uniqueId);
 
-        /*
-        activityDiv.classList.add('activity', 'border-2', 'rounded', 'border-emerald-400', 'p-1', 'mt-2');
+        
+        activityDiv.classList.add('activity', 'border-l-4', 'border-emerald-400', 'p-2', 'mt-4', 'flex', 'flex-col', 'gap-2', 'bg-emerald-50');
         activityDiv.innerHTML = `
-        ID:${uniqueId}
+        <div class="flex justify-between items-center w-full font-bold">
+            <div class="flex gap-2"> 
+                #${uniqueId} 
+                <p class="activityTitle">Activity</p>
+            </div>
+            <div class="flex gap-1">
+                <button type="button" class="editActivityButton bg-yellow-500 text-white px-2 py-1 rounded-md"><i class="bi bi-pencil-fill"></i></button>
+                <button type="button" class="removeActivityButton bg-red-500 text-white px-2 py-1 rounded-md"><i class="bi bi-trash-fill"></i></button>
+            </div>
+        </div>
+        <div class="flex gap-2 items-center justify-between">
+            <label><input type="checkbox" class="isMilestone"> Milestone</label>
+            <label>Status:
+                <select class="status p-2 border border-gray-300 rounded-md" required>
+                    <option value="NotStarted" selected>Not Started</option>
+                    <option value="Started">Started</option>
+                    <option value="Concluded">Concluded</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Abandoned">Abandoned</option>
+                </select>
+            </label>
+            <label>Linked Activity:
+                <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
+                    <option value="">None</option>
+                    ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
+                </select>
+            </label>
+        </div>
+        <div class="flex gap-1">
+            <input type="text" placeholder="Input" class="flex-1 input p-2 border border-gray-300 rounded-md">
+            <input type="text" placeholder="Output" class="flex-1 output p-2 border border-gray-300 rounded-md">
+        </div>
         <input type="hidden" class="hidden" value="${uniqueId}"/>
-        <input type="checkbox" class="isMilestone"> Milestone
-        <input type="text" placeholder="Input" class="input p-2 border border-gray-300 rounded-md">
-        <input type="text" placeholder="Output" class="output p-2 border border-gray-300 rounded-md">
-        <label>Linked Activity:
-        <select class="linkedActivityId p-2 border border-gray-300 rounded-md">
-            <option value="">None</option>
-            ${phaseDiv.activityIds.map(id => `<option value="${id}">${id}</option>`).join('')}
-        </select>
-        </label>
-        <label>Status:
-        <select class="status p-2 border border-gray-300 rounded-md" required>
-            <option value="NotStarted" selected>Not Started</option>
-            <option value="Started">Started</option>
-            <option value="Concluded">Concluded</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Abandoned">Abandoned</option>
-        </select>
-        </label>
-        <button type="button" class="editActivityButton bg-yellow-500 text-white p-2 rounded-md">Edit</button>
-        <button type="button" class="removeActivityButton bg-red-500 text-white p-2 rounded-md">Remove</button>
     `;
         activitiesContainer.appendChild(activityDiv);
-        activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
+        activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv, phaseDiv));
         activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
-        */
-       editActivityModal.show();
+        
+        openActivityModalForAdd(activityDiv, phaseDiv);
 
         addLinkedActivityEventListener(activityDiv);
-
-        updateLinkedActivities(activitiesContainer, phaseDiv);
+        updateLinkedActivities(activitiesContainer, phaseDiv);  
     };
 
     const removeActivity = (activityDiv, phaseDiv) => {
@@ -357,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addLinkedActivityEventListener(activityDiv);
 
                 activitiesContainer.appendChild(activityDiv);
-                activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv));
+                activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv, phaseDiv));
                 activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
             });
             phasesContainer.appendChild(phaseDiv);
@@ -541,14 +564,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const editStatus = document.getElementById('editStatus');
     const editInput = document.getElementById('editInput');
     const editOutput = document.getElementById('editOutput');
+    const editActivityTitle = document.getElementById('editTitle');
     const editStartDate = document.getElementById('editStartDate');
     const editEndDate = document.getElementById('editEndDate');
+    const editNotifyOS = document.getElementById('editNotifyOS');
+    const editNotifyEmail = document.getElementById('editNotifyEmail');
+    const editRepeatNotify = document.getElementById('editRepeatNotify');
     const addActivityParticipantButton = document.getElementById('addActivityParticipantButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
     const participantsContainer = editActivityModal.querySelector('#actParticipantsContainer');
     const usernameInput = editActivityModal.querySelector('#actNewParticipantUsername');
-    const modifyingActivity = false; // whether the activity is being modified or created
 
+    /*
     const openEditActivityModal = (activity) => {
         editActivityId.value = activity.activityId;
         editInput.value = activity.input;
@@ -556,15 +583,88 @@ document.addEventListener('DOMContentLoaded', () => {
         editStatus.value = activity.status;
         editActivityModal.show();
     };
+    */
+
+    let modifyingActivity = false; // whether the activity is being modified or created
+    let selectedActivityDiv = null;
+    let selectedPhaseDiv = null;
+
+    const editActivity = (activityDiv, phaseDiv) => {
+        selectedActivityDiv = activityDiv;
+        selectedPhaseDiv = phaseDiv;
+
+        modifyingActivity = true;
+
+        // populate the edit form with the activity data
+        editActivityTitle.value = activityDiv.activity.title;
+        editStartDate.value = activityDiv.activity.start.toISOString().split('T')[0];
+        editEndDate.value = activityDiv.activity.deadline.toISOString().split('T')[0];
+        editNotifyOS.checked = activityDiv.activity.notification.methods.includes('os');
+        editNotifyEmail.checked = activityDiv.activity.notification.methods.includes('email');
+        editRepeatNotify.value = activityDiv.activity.notification.repeat;
+
+        // populate the participants list
+        participantsContainer.innerHTML = '';
+        activityDiv.activity.participants.forEach(participant => {
+            usernameInput.value = participant.username;
+            addActivityParticipantButton.click(); 
+        });
+        editActivityModal.show();
+    };
+
+    const openActivityModalForAdd = (activityDiv, phaseDiv) => {
+        selectedActivityDiv = activityDiv;
+        selectedPhaseDiv = phaseDiv;
+        modifyingActivity = false;
+        editActivityModal.show();
+    };
+
+    const cancelEditActivity = () => {
+        if(!modifyingActivity) {
+            // an adding operation was interrupted
+            selectedActivityDiv.remove();
+            selectedPhaseDiv.activityIds.pop();
+            selectedPhaseDiv.activityCounter -= 1;
+        }
+        selectedActivityDiv = null;
+        selectedPhaseDiv = null;
+
+        closeEditActivityModal();
+    };
+
+    editActivityForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const newActivity = {};
+        newActivity.title = editActivityTitle.value;
+        newActivity.start = new Date(editStartDate.value);
+        newActivity.deadline = new Date(editEndDate.value);
+        newActivity.notification = {
+            methods: [],
+            repeat: editRepeatNotify.value
+        };
+        if(editNotifyOS.checked) {
+            newActivity.notification.methods.push('os');
+        }
+        if(editNotifyEmail.checked) {
+            newActivity.notification.methods.push('email');
+        }
+        // TODO: fix to add status
+        newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({ username: participantDiv.querySelector('.username').innerText }));
+
+        selectedActivityDiv.querySelector('.activityTitle').innerText = editActivityTitle.value;
+        selectedActivityDiv.activity = newActivity;
+
+        selectedActivityDiv = null;
+        selectedPhaseDiv = null;
+
+        closeEditActivityModal();
+    });
 
     const closeEditActivityModal = () => {
-
-        if(modifyingActivity) {
-        }
-        else{
-
-        }
-
+        editActivityForm.reset();
+        participantsContainer.innerHTML = '';
+        modifyingActivity = false;
         editActivityModal.hide();
     };
 
@@ -582,6 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
+
+    /*
     editActivityForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const updatedActivity = {
@@ -607,8 +710,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         closeEditActivityModal();
     });
+    */
 
-    cancelEditButton.addEventListener('click', closeEditActivityModal);
+    cancelEditButton.addEventListener('click', cancelEditActivity);
 
     fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
         projects = data;
