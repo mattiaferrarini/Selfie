@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actorDiv.innerHTML = `
             <div class="flex gap-1">
             <input type="text" placeholder="Actor Username" class="actorUsername p-2 border border-gray-300 rounded-md" required>
-            <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">X</button>
+            <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
         `;
         actorsContainer.appendChild(actorDiv);
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             actorDiv.innerHTML = `
                 <div class="flex gap-1"> 
                     <input type="text" value="${actor}" class="actorUsername p-2 border border-gray-300 rounded-md" required>
-                    <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md">X</button>
+                    <button type="button" class="removeActorButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
                 </div>
             `;
             actorsContainer.appendChild(actorDiv);
@@ -206,11 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addPhase = () => {
         const phaseDiv = document.createElement('fieldset');
-        phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
+        phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
         phaseDiv.innerHTML = `
             <div class="flex w-full gap-1 mt-2">
                 <input type="text" placeholder="Phase Title" class="flex-1 p-2 border border-gray-300 rounded-md" required>
-                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">X</button>
+                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="activitiesContainer my-2"></div>
             <button type="button" class="addActivityButton bg-emerald-600 text-white p-2  rounded-md">Add Activity</button>
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const editActivity = (activityDiv) => {
-        activityModal.show();
+        editActivityModal.show();
     };
 
     const generateUniqueId = (phaseDiv) => {
@@ -319,10 +319,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const phaseDiv = document.createElement('fieldset');
             phaseDiv.classList.add('phase', 'border-2', 'rounded', 'border-emerald-800', 'p-1', 'mt-2');
             phaseDiv.innerHTML = `
-            <input type="text" value="${phase.title}" class="p-2 mt-2 border border-gray-300 rounded-md" required>
+            <div class="flex w-full gap-1 mt-2">
+                <input type="text" value="${phase.title}" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+                <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
+            </div>
             <div class="activitiesContainer my-2"></div>
             <button type="button" class="addActivityButton bg-emerald-400 text-white p-2 rounded-md">Add Activity</button>
-            <button type="button" class="removePhaseButton bg-red-500 text-white p-2 rounded-md">Remove Phase</button>
         `;
             const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
             phase.activities.forEach(activity => {
