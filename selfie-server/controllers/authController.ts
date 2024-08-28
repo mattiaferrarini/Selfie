@@ -7,7 +7,8 @@ const default_preferences = {
         calendarContent: "all",
         notesCategory: false,
         noteNumber: 5,
-        pomodoroType: "stats"
+        pomodoroType: "stats",
+        onlyAssigned: false
     },
     notificationType: "email",
     notes: {},

@@ -27,6 +27,7 @@ export class Preferences {
         notesCategory: boolean;
         noteNumber: number;
         pomodoroType: PomodoroType;
+        onlyAssigned: boolean;
     };
     notificationType: NotificationType;
     notes: Object; // Adjust the type based on your requirements
@@ -43,7 +44,8 @@ export class Preferences {
             calendarContent: CalendarContent.ALL,
             notesCategory: false,
             noteNumber: 5,
-            pomodoroType: PomodoroType.SETTINGS
+            pomodoroType: PomodoroType.SETTINGS,
+            onlyAssigned: false
         },
         notificationType = NotificationType.BOTH,
         notes = {},
