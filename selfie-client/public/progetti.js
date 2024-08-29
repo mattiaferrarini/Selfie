@@ -1,4 +1,4 @@
-import { fetchWithMiddleware, API_URL} from "./utilities.js";
+import {API_URL, fetchWithMiddleware} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return status;
     }
-    
+
     const showGantt = (project) => {
         console.log('Showing gantt:', project);
         const gantt = document.querySelector("gantt-component");
@@ -497,27 +497,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const activityList = activities.map(activity => {
             const status = getStatusFromActivity(activity);
+            const participants = activity.activity?.participants.map(participant => participant.username);
             return `
         <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
             <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
             <div><strong>Title:</strong>${activity.activity?.title}</div> 
-            <div><strong>Actor:</strong> ${activity.activity?.participants.map(participant => participant.username).join('')}</div>
+            <div><strong>Actor:</strong> ${participants.join('')}</div>
             <div><strong>Starting Date:</strong> ${new Date(activity.activity?.start).toLocaleDateString()}</div>
             <div><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
             <div><strong>Status:</strong> ${status}</div>
             <div><strong>Input:</strong> ${activity.input}</div>
             <div><strong>Output:</strong> ${activity.output}</div>
-            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}">Edit</button>
+            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
         </li>
     `
         }).join('');
 
         listView.innerHTML = `
-            <div class="inline-flex items-center mb-2">Project: <h3 class="text-2xl p-2">${project.title}</h3><button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button></div>
+            <div class="inline-flex items-center mb-2">
+                Project: <h3 class="text-2xl p-2">${project.title}</h3>
+                ${project.owner === auth.user.username
+            ? '<button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button><button type="button" class="delete-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Delete Project</button>'
+            : '<button type="button" class="leave-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Leave Project</button>'}</div>
             <ul class="activity-list list-none p-0">${activityList}</ul>`;
 
-        document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
-
+        if (project.owner === auth.user.username) {
+            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
+            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}`,
+                {method: 'DELETE'}
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                showList(projects[0]);
+            }));
+        } else {
+            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}/leave`,
+                {method: 'POST'}
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                showList(projects[0]);
+            }));
+        }
         document.querySelectorAll('.edit-activity-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 openEditActivityModal(activities.find(activity => activity.activityId === event.target.dataset.activityId));
