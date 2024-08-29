@@ -11,63 +11,63 @@
             Birthday: {{ user?.birthday.substring(0, 10) }}
           </p>
           <p class="text-gray-700 text-base">
-            Tipo Notifiche: {{ user?.preferences.notificationType }}
+            Notification Type: {{ user?.preferences.notificationType }}
           </p>
         </div>
       </div>
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
-        <legend class="text-center text-2xl px-0.5">Cambia Notifiche</legend>
+        <legend class="text-center text-2xl px-0.5">Change Notification</legend>
         <form @submit.stop="changeNotificationType">
-          <label for="notification_mode" class="block text-sm font-medium text-gray-700">Tipo di Notifica</label>
+          <label for="notification_mode" class="block text-sm font-medium text-gray-700">Notification Type</label>
           <select type="password" v-model="notificationType" id="notification_mode"
                   class="w-full px-3 py-2 mb-3 border rounded" required>
             <option value="email">Email</option>
             <option value="push">Web Push</option>
-            <option value="both">Entrambe</option>
+            <option value="both">Both</option>
           </select>
-          <input type="submit" value="Cambia Notifiche"
+          <input type="submit" value="Change Notification"
                  class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="notificationErrorMessage" class="mt-2 text-red-500">{{ notificationErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
-        <legend class="text-center text-2xl px-0.5">Cambia Password</legend>
+        <legend class="text-center text-2xl px-0.5">Change Password</legend>
         <form @submit.stop="changePassword">
-          <label for="old_password" class="block text-sm font-medium text-gray-700">Vecchia Password</label>
+          <label for="old_password" class="block text-sm font-medium text-gray-700">Old Password</label>
           <input type="password" v-model="old_password" id="old_password"
                  class="w-full px-3 py-2 mb-3 border rounded" required
                  placeholder="Old Password"/>
-          <label for="new_password" class="block text-sm font-medium text-gray-700">Nuova Password</label>
+          <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
           <input type="password" v-model="new_password" id="new_password"
                  class="w-full px-3 py-2 mb-3 border rounded" required
                  placeholder="New Password"/>
-          <label for="new_password_r" class="block text-sm font-medium text-gray-700">Ripeti Nuova Password</label>
+          <label for="new_password_r" class="block text-sm font-medium text-gray-700">Repeat New Password</label>
           <input type="password" v-model="new_password_r" id="new_password_r"
                  class="w-full px-3 py-2 mb-3 border rounded" required
                  placeholder="Repeat New Password"/>
-          <input type="submit" value="Cambia Password"
+          <input type="submit" value="Change Password"
                  class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="passErrorMessage" class="mt-2 text-red-500">{{ passErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 p-2 mt-4 sm:p-4">
-        <legend class="text-center text-2xl px-0.5">Cambia Compleanno</legend>
+        <legend class="text-center text-2xl px-0.5">Change Birthday</legend>
         <form @submit.stop="changeBirthday">
-          <label for="birthday" class="block text-sm font-medium text-gray-700">Compleanno</label>
+          <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
           <input type="date" v-model="birthday" id="birthday" :max="(new Date()).toISOString().substring(0,10)"
                  min="1900-01-01" class="w-full px-3 py-2 mb-3 border rounded" required/>
-          <input type="submit" value="Cambia Compleanno"
+          <input type="submit" value="Change Birthday"
                  class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="birthErrorMessage" class="mt-2 text-red-500">{{ birthErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 p-2 mt-4 sm:p-4">
-        <legend class="text-center text-2xl px-0.5">Cambia Nome</legend>
+        <legend class="text-center text-2xl px-0.5">Change Name</legend>
         <form @submit.stop="changeName">
-          <label for="name" class="block text-sm font-medium text-gray-700">Nome Reale</label>
+          <label for="name" class="block text-sm font-medium text-gray-700">Real Name</label>
           <input type="text" v-model="realName" id="name" placeholder="Fabio Rossi"
                  class="w-full px-3 py-2 mb-3 border rounded" required/>
-          <input type="submit" value="Cambia Nome"
+          <input type="submit" value="Change Name"
                  class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
         </form>
         <p v-if="nameErrorMessage" class="mt-2 text-red-500">{{ nameErrorMessage }}</p>
@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref} from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import profileService from "@/services/profileService";
 import {useAuthStore} from "@/stores/authStore";
 import {storeToRefs} from "pinia";
@@ -110,12 +110,12 @@ export default defineComponent({
     const changePassword = async () => {
       try {
         if (new_password.value !== new_password_r.value) {
-          throw "Le password non corrispondono";
+          throw "Passwords do not match!";
         } else if (old_password.value.trim() == "" || new_password.value.trim() == "" || new_password_r.value.trim() == "") {
-          throw "I valori dei campi non possono essere vuoti!";
+          throw "Password cannot be empty!";
         }
         await profileService.changePassword(old_password.value, new_password.value);
-        passErrorMessage.value = "Password cambiata con successo";
+        passErrorMessage.value = "Password successfully changed";
       } catch (error: any) {
         passErrorMessage.value = error;
       }
@@ -125,7 +125,7 @@ export default defineComponent({
       try {
         await profileService.changeBirthday(new Date(birthday.value));
         authStore.setBirthday(birthday.value);
-        birthErrorMessage.value = "Compleanno cambiato con successo";
+        birthErrorMessage.value = "Birthday changed successfully";
       } catch (error: any) {
         birthErrorMessage.value = error;
       }
@@ -134,15 +134,21 @@ export default defineComponent({
     const changeName = async () => {
       try {
         if (realName.value.trim() == "") {
-          throw "Il nome non può essere vuoto!";
+          throw "Name cannot be empty!";
         }
         await profileService.changeRealName(realName.value);
         authStore.setRealName(realName.value);
-        nameErrorMessage.value = "Nome cambiato con successo";
+        nameErrorMessage.value = "Name changed successfully";
       } catch (error: any) {
         nameErrorMessage.value = error;
       }
     };
+
+    onMounted(() => {
+      birthday.value = user.value.birthday.substring(0, 10);
+      realName.value = user.value.realName;
+      notificationType.value = user.value.preferences.notificationType;
+    })
 
     return {
       old_password,
