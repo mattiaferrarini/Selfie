@@ -6,36 +6,12 @@ class GanttComponent extends HTMLElement {
         this.content = document.createElement('div');
         this._row = 1;
         this._timeslice = {start: null, end: null};
+
+        this.INFO_COLS = 5;
     }
 
     connectedCallback() {
         this.attachShadow({ mode: "open" });
-
-        this.myStyle.textContent = `
-        /* (A) GANTT CHART CONTAINER */
-        .gantt {
-            /* (A1) GRID LAYOUT - 7 COLUMNS */
-            display: grid;
-            grid-template-columns: repeat(7, minmax(0, 1fr));
- 
-            /* (A2) "TIMELINE" */
-            background: repeating-linear-gradient(
-                to right, #f2f2f2, #ddd 2px, #fff 2px, #fff 14.25%
-            );
-        }
-        
-        /* (B) CELLS */
-        /* (B1) SHARED CELLS */
-        .gantt div { padding: 10px; }
- 
-         /* (B2) HEADER CELLS */
-        .gantt .head {
-            text-align: center;
-            font-weight: 700;
-            color: #fff;
-            background: #103a99;
-        }
-        `;
 
         this.shadowRoot.appendChild(this.myStyle);
         this.shadowRoot.appendChild(this.content);
@@ -121,17 +97,17 @@ class GanttComponent extends HTMLElement {
         .gantt {
             /* (A1) GRID LAYOUT - 7 COLUMNS */
             display: grid;
-            grid-template-columns: repeat(${numOfCol}, minmax(0, 1fr));
+            grid-template-columns: repeat(${this.INFO_COLS}, auto) repeat(${numOfCol}, minmax(0, 1fr));
  
             /* (A2) "TIMELINE" */
-            background: repeating-linear-gradient(
+            /*background: repeating-linear-gradient(
                 to right, #000000, #ddd 2px, #fff 2px, #fff ${(1/numOfCol)*100}%
-            );
+            );*/
         }
         
         /* (B) CELLS */
         /* (B1) SHARED CELLS */
-        .gantt div { padding: 10px; }
+        /*.gantt div { padding: 10px; }*/
  
          /* (B2) HEADER CELLS */
         .gantt .head {
@@ -140,10 +116,22 @@ class GanttComponent extends HTMLElement {
             color: #fff;
             background: #103a99;
         }
+        
+        .gantt .head + .head {
+            border-left:2px solid red;
+        }
         `;
         let bar = '';
         let dateCol = timeSlice.start;
-        for (let monthnum = 0; monthnum < numOfCol; monthnum++) {
+
+        // info part
+        bar += `<div class="head">Phases and activities</div>`;
+        bar += `<div class="head">Actors</div>`;
+        bar += `<div class="head">Start</div>`;
+        bar += `<div class="head">End</div>`;
+        bar += `<div class="head">Duration</div>`;
+
+        for (let monthnum = this.INFO_COLS; monthnum < numOfCol + this.INFO_COLS; monthnum++) {
             bar += `<div class="head">${dateCol.getDate()}</div>`;
             dateCol = this.nextDay(dateCol);
         }
@@ -153,6 +141,8 @@ class GanttComponent extends HTMLElement {
     renderPhases() {
         let phasesHtml = '';
         for (const phase of this._project.phases) {
+            this._row++;
+            phasesHtml += `<div style="grid-row: ${this._row}; grid-column: 1 / span ${this.INFO_COLS}; font-weight: bold">${phase.title}</div>`;
             phasesHtml += this.renderPhase(phase);
         }
         return phasesHtml;
@@ -190,11 +180,18 @@ class GanttComponent extends HTMLElement {
     }
 
     renderActivity(activity, startDate, endDate) {
-        const startCol = this.dayDiff(this._timeslice.start, startDate) + 1;
+        const startCol = this.dayDiff(this._timeslice.start, startDate) + 1 + this.INFO_COLS;
         const spanNum = this.dayDiff(startDate, endDate);
         this._row++;
 
-        return `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+        let info = `
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1">${activity.activity.title}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1">${activity.activity.participants.map((obj) => obj.username)}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1">${startDate.toLocaleString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1">${endDate.toLocaleString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1">${spanNum}</div>
+        `;
+        return info + `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
     }
 
     getFirstActivity(phase) {
