@@ -4,6 +4,8 @@ class GanttComponent extends HTMLElement {
         this._project = {};
         this.myStyle = document.createElement('style');
         this.content = document.createElement('div');
+        this._row = 1;
+        this._timeslice = {start: null, end: null};
     }
 
     connectedCallback() {
@@ -43,6 +45,7 @@ class GanttComponent extends HTMLElement {
 
 
     render() {
+        this._row = 1;
         this.content.innerHTML = `
         <div class="gantt-container">
             <h1>Gantt chart</h1>
@@ -71,10 +74,8 @@ class GanttComponent extends HTMLElement {
             <!-- bar -->
             ${this.renderBar()}
  
-            <!-- (B) FOLLOWING : TASKS -->
-            <div style="background: #ffdddd; grid-row: 2; grid-column: 1 / span 2">
-                First
-            </div>
+            <!-- TASKS -->
+            ${this.renderPhases()}
             
         </div>
         `
@@ -82,8 +83,9 @@ class GanttComponent extends HTMLElement {
 
     set project(project) {
         this._project = project;
+        this._timeslice = this.getTimeSlice(this._project);
         console.log(this._project);
-        console.log(this.getTimeSlice(this._project));
+        console.log(this._timeslice);
         this.render();
     }
 
@@ -97,7 +99,7 @@ class GanttComponent extends HTMLElement {
     DAY = 24 * this.HOUR;
     WEEK = 7 * this.DAY;
     dayDiff(d1, d2) {
-        return Math.floor((d2 - d1) / this.DAY);
+        return Math.ceil((d2 - d1) / this.DAY);
     }
 
     nextDay(date) {
@@ -111,7 +113,7 @@ class GanttComponent extends HTMLElement {
 
     renderBar() {
         // TODO: done only for monthly view
-        const timeSlice = this.getTimeSlice(this._project);
+        const timeSlice = this._timeslice;
         const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
 
         this.myStyle.textContent = `
@@ -147,6 +149,64 @@ class GanttComponent extends HTMLElement {
         }
         return bar
     }
+
+    renderPhases() {
+        let phasesHtml = '';
+        for (const phase of this._project.phases) {
+            phasesHtml += this.renderPhase(phase);
+        }
+        return phasesHtml;
+    }
+
+    renderPhase(phase) {
+        let phaseHtml = '';
+        if (phase.activities.length <= 0) {
+            return phaseHtml;
+        }
+        let activity = this.getFirstActivity(phase);
+        let startDate = new Date(activity.activity.start);
+        let endDate = new Date(activity.activity.deadline);
+        let localId = activity.localId;
+
+        while (activity) {
+            endDate = new Date(activity.activity.deadline);
+            localId = activity.localId;
+
+            phaseHtml += this.renderActivity(activity, startDate, endDate);
+
+            startDate = endDate;
+            activity = this.getNextActivity(localId, phase.activities);
+        }
+        return phaseHtml;
+    }
+
+    getNextActivity(linkedActivityId, activities) {
+        for (const activity of activities) {
+            if (activity.linkedActivityId === linkedActivityId) {
+                return activity;
+            }
+        }
+        return null;
+    }
+
+    renderActivity(activity, startDate, endDate) {
+        const startCol = this.dayDiff(this._timeslice.start, startDate) + 1;
+        const spanNum = this.dayDiff(startDate, endDate);
+        this._row++;
+
+        return `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+    }
+
+    getFirstActivity(phase) {
+        for (const activity of phase.activities) {
+            if (this.isFirstActivity(activity)) {
+                return activity;
+            }
+        }
+        return null;
+    }
+
+
 
     // extract data for creating gantt
     getTimeSlice(project) {
