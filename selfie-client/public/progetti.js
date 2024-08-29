@@ -1,4 +1,4 @@
-import { fetchWithMiddleware, API_URL} from "./utilities.js";
+import {API_URL, fetchWithMiddleware} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return status;
     }
-    
+
     const showGantt = (project) => {
         console.log('Showing gantt:', project);
         const gantt = document.querySelector("gantt-component");
@@ -514,11 +514,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         listView.innerHTML = `
-            <div class="inline-flex items-center mb-2">Project: <h3 class="text-2xl p-2">${project.title}</h3>${project.owner === auth.user.username ? '<button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button><button type="button" class="delete-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Delete Project</button>' : ''}</div>
+            <div class="inline-flex items-center mb-2">
+                Project: <h3 class="text-2xl p-2">${project.title}</h3>
+                ${project.owner === auth.user.username
+            ? '<button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button><button type="button" class="delete-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Delete Project</button>'
+            : '<button type="button" class="leave-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Leave Project</button>'}</div>
             <ul class="activity-list list-none p-0">${activityList}</ul>`;
 
-        document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
-
+        if (project.owner === auth.user.username) {
+            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
+            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}`,
+                {method: 'DELETE'}
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                showList(projects[0]);
+            }));
+        } else {
+            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}/leave`,
+                {method: 'POST'}
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                showList(projects[0]);
+            }));
+        }
         document.querySelectorAll('.edit-activity-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 openEditActivityModal(activities.find(activity => activity.activityId === event.target.dataset.activityId));
