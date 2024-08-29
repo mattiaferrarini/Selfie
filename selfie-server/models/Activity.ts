@@ -33,7 +33,7 @@ const ActivitySchema = new Schema({
     },
     done: {
         type: Boolean,
-        required: true
+        required: false
     },
     start: {
         type: Date
@@ -49,7 +49,7 @@ const ActivitySchema = new Schema({
         },
         when: {
             type: String,
-            required: true
+            required: false,
         },
         repeat: {
             type: String,

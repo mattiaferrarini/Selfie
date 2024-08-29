@@ -19,7 +19,9 @@ class ModalComponent extends HTMLElement {
 
     handleOutsideClick(event) {
         if (event.target === this.modal) {
-            this.hide();
+            //this.hide();
+            // sarebbe un po' un casino riattivarlo per come funziona l'aggiunta delle 
+            // attività al mondo, quindi per ora lo lascio così
         }
     }
 

@@ -67,7 +67,8 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
     for (const phase of phases) {
         for (const activity of phase.activities) {
             try {
-                const createdActivity = new Activity(activity);
+                activity.activity._id = undefined;
+                const createdActivity = new Activity(activity.activity);
                 await createActivity(createdActivity, req);
                 createdActivitiesIds.push(createdActivity._id as string);
                 activity.activityId = createdActivity._id;
@@ -86,7 +87,7 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
                 for (const activityId of createdActivitiesIds) {
                     await deleteActivityById(activityId);
                 }
-                res.status(400).send({error: 'Error creating activity'});
+                res.status(400).send({error: 'Error creating activity' + error});
                 return false;
             }
         }
@@ -130,6 +131,25 @@ export const modifyStatus = async (req: any, res: any) => {
     }
 }
 
+const checkActorsAndParticipants = async (actors: string[], phases: any, project: any, res: any) => {
+    const actorsExist = await Promise.all(actors.map(async (actor: string) => {
+        return User.exists({username: actor});
+    }));
+
+    if (!actorsExist.every((actor) => actor)) {
+        res.status(400).send({error: 'One or more actors do not exist'});
+        return false;
+    }
+
+    const participants = phases.flatMap((phase: any) => phase.activities).flatMap((activity: any) => activity.activity.participants);
+    if (!participants.every((participant: any) => actors.includes(participant.username) || participant.username === project.owner)) {
+        res.status(400).send({error: 'One or more participants are not actors'});
+        return false;
+    }
+
+    return true;
+}
+
 export const modifyProject = async (req: any, res: any) => {
     const {id} = req.params;
     const {actors, title, phases} = req.body;
@@ -141,12 +161,8 @@ export const modifyProject = async (req: any, res: any) => {
         }
 
         // check that all actor exists
-        const actorsExist = await Promise.all(actors.map(async (actor: string) => {
-            return User.exists({username: actor});
-        }));
-
-        if (!actorsExist.every((actor: boolean) => actor)) {
-            return res.status(400).send({error: 'One or more actors do not exist'});
+        if (!await checkActorsAndParticipants(actors, phases, project, res)) {
+            return; // Stop further execution if actors or participants are invalid
         }
 
         project.actors = actors;
@@ -160,10 +176,11 @@ export const modifyProject = async (req: any, res: any) => {
         }
 
         try {
+            project.phases = phases;
             await project.save();
             res.status(200).send(await formatProject(project));
         } catch (error) {
-            res.status(400).send({error: 'Error modifying project'});
+            res.status(400).send({error: error});
         }
     } else {
         res.status(404).send({error: "Project doesn't exist!"});
@@ -174,13 +191,8 @@ export const addProject = async (req: any, res: any) => {
     const {owner, actors, title, phases} = req.body;
 
     // check that all actor exists
-    const actorsExist = await Promise.all(actors.map(async (actor: string) => {
-        return User.exists({username: actor});
-    }));
-
-    if (!actorsExist.every((actor: boolean) => actor)) {
-        return res.status(400).send({error: 'One or more actors do not exist'});
-    }
+    if (!await checkActorsAndParticipants(actors, phases, {owner, phases}, res))
+        return; // Stop further execution if actors or participants are invalid
 
     const activitiesCreated = await createActivities(phases, req, res);
     if (!activitiesCreated) {
