@@ -44,11 +44,11 @@
           <div v-if="showNotesTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
             <div>
-              <label for="description" class="font-semibold mr-2">Categoria</label>
+              <label for="description" class="font-semibold mr-2">Category</label>
               <input type="checkbox" v-model="notesCategory" @change="updatePreferences" id="description"/>
             </div>
             <div>
-              <label for="number" class="font-semibold mr-2">Numero</label>
+              <label for="number" class="font-semibold mr-2">Number</label>
               <input type="number" min="1" v-model="noteNumber" @change="updatePreferences" id="number"/>
             </div>
           </div>
@@ -65,6 +65,20 @@
               <option value="settings">Impostazioni</option>
               <option value="stats">Statistiche</option>
             </select>
+          </div>
+        </div>
+        <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showProjectsTooltip)">
+          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showProjectsTooltip)">
+            <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
+              showProjectsTooltip ? ' rotate-180' : '']"/>
+          </div>
+          <PorjectPreview :date="new Date(date)" :assigned="onlyAssigned"/>
+          <div v-if="showProjectsTooltip"
+               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
+            <div>
+              <label for="onlyAssigned" class="font-semibold mr-2">Only assigned</label>
+              <input type="checkbox" v-model="onlyAssigned" @change="updatePreferences" id="onlyAssigned"/>
+            </div>
           </div>
         </div>
       </div>
@@ -92,10 +106,11 @@ import ChatView from "@/components/ChatComponent.vue";
 import profileService from "@/services/profileService";
 import {useAuthStore} from "@/stores/authStore";
 import {useWebSocketStore} from "@/stores/wsStore";
+import PorjectPreview from "@/components/ProjectPreview.vue";
 
 export default defineComponent({
   methods: {ref},
-  components: {PomodoroPreview, NotesPreview, CalendarPreview, ChatView},
+  components: {PorjectPreview, PomodoroPreview, NotesPreview, CalendarPreview, ChatView},
   setup() {
     const dateStore = useDateStore();
     const homePreferences = useAuthStore().user.preferences.home;
@@ -106,12 +121,14 @@ export default defineComponent({
     const showCalendarTooltip = ref(false);
     const showNotesTooltip = ref(false);
     const showPomodoroTooltip = ref(false);
+    const showProjectsTooltip = ref(false);
 
     const calendarWeekly = ref(homePreferences.calendarWeekly);
     const calendarContent = ref(homePreferences.calendarContent);
     const notesCategory = ref(homePreferences.notesCategory);
     const noteNumber = ref(homePreferences.noteNumber);
     const pomodoroType = ref(homePreferences.pomodoroType);
+    const onlyAssigned = ref(homePreferences.onlyAssigned);
 
     const showChatModal = ref(false);
     const wsStore = useWebSocketStore();
@@ -137,7 +154,8 @@ export default defineComponent({
           calendarContent: calendarContent.value,
           notesCategory: notesCategory.value,
           noteNumber: noteNumber.value,
-          pomodoroType: pomodoroType.value
+          pomodoroType: pomodoroType.value,
+          onlyAssigned: onlyAssigned.value
         }
       });
     };
@@ -148,10 +166,12 @@ export default defineComponent({
       showCalendarTooltip,
       showNotesTooltip,
       showPomodoroTooltip,
+      showProjectsTooltip,
       refs: {
         showCalendarTooltip,
         showNotesTooltip,
         showPomodoroTooltip,
+        showProjectsTooltip
       },
       toggleTooltip,
       closeTooltip,
@@ -161,6 +181,7 @@ export default defineComponent({
       notesCategory,
       noteNumber,
       pomodoroType,
+      onlyAssigned,
       updatePreferences,
       showChatModal,
       realName
