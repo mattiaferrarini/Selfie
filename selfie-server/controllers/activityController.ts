@@ -21,7 +21,14 @@ export const getActivitiesByUser = async (req: any, res: any) => {
     const {start, end} = req.query;
 
     try {
-        let activities = await Activity.find({"participants.username": username});
+        let activities = await Activity.find({
+            participants: {
+                $elemMatch: {
+                    username: username,
+                    status: 'accepted'
+                }
+            }
+        });
 
         if (start && end) {
             // filter activities whose deadline is in the selected period of time
