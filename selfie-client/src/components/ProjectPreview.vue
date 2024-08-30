@@ -59,7 +59,7 @@ export default defineComponent({
       return this.activities.filter((activity: any) => activity.activity.participants.map((participant: any) => participant.username).includes(this.username));
     },
     selectedActivities(): any[] {
-      return this.assigned ? this.assignedActivities : this.unfinishedActivities;
+      return this.assigned ? this.assignedActivities.slice(0,5) : this.unfinishedActivities.slice(0,5);
     }
   },
   watch: {
