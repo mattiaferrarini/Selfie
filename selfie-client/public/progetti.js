@@ -640,6 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const openEditActivityModal = (activity) => {
         editProjectActivityId.value = activity.activityId;
         editInput.value = activity.input;
+        if (activity.linkedActivityId) {
+            editInput.disabled = true;
+        }
         editOutput.value = activity.output;
         editStatus.value = activity.status;
         editProjectActivityModal.show();
