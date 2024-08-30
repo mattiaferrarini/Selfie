@@ -83,7 +83,7 @@ class GanttComponent extends HTMLElement {
     }
 
     numToMonth(num) {
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         return monthNames[num];
     }
 
@@ -91,23 +91,23 @@ class GanttComponent extends HTMLElement {
         // TODO: done only for monthly view
         const timeSlice = this._timeslice;
         const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
-
         this.myStyle.textContent = `
         /* (A) GANTT CHART CONTAINER */
         .gantt {
-            /* (A1) GRID LAYOUT - 7 COLUMNS */
             display: grid;
-            grid-template-columns: repeat(${this.INFO_COLS}, auto) repeat(${numOfCol}, minmax(0, 1fr));
+            grid-template-columns: repeat(${this.INFO_COLS}, auto) repeat(${numOfCol}, minmax(20px, 1fr));
  
             /* (A2) "TIMELINE" */
             /*background: repeating-linear-gradient(
                 to right, #000000, #ddd 2px, #fff 2px, #fff ${(1/numOfCol)*100}%
             );*/
+            
+            overflow-x: scroll;
         }
         
         /* (B) CELLS */
         /* (B1) SHARED CELLS */
-        /*.gantt div { padding: 10px; }*/
+        .gantt div { padding: 2px; }
  
          /* (B2) HEADER CELLS */
         .gantt .head {
@@ -118,24 +118,92 @@ class GanttComponent extends HTMLElement {
         }
         
         .gantt .head + .head {
-            border-left:2px solid red;
+            border-left:2px solid white;
         }
+        
+        .gantt .head .day {
+            word-break: keep-all;
+            overflow: hidden;
+        }
+        
+        
         `;
         let bar = '';
+        bar += this.renderYears();
+        this._row++;
+        bar += this.renderMonths();
+        this._row++;
+        bar += this.renderInfo();
+        bar += this.renderDays();
+        return bar
+    }
+
+    renderYears() {
+        const timeSlice = this._timeslice;
+        const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
         let dateCol = timeSlice.start;
+        let years = `<div style="grid-row: ${this._row}; grid-column: 1 / span ${this.INFO_COLS}"></div>`;
 
-        // info part
-        bar += `<div class="head">Phases and activities</div>`;
-        bar += `<div class="head">Actors</div>`;
-        bar += `<div class="head">Start</div>`;
-        bar += `<div class="head">End</div>`;
-        bar += `<div class="head">Duration</div>`;
+        let year = dateCol.getFullYear();
+        let savedI = this.INFO_COLS + 1;
 
-        for (let monthnum = this.INFO_COLS; monthnum < numOfCol + this.INFO_COLS; monthnum++) {
-            bar += `<div class="head">${dateCol.getDate()}</div>`;
+        for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
+            if (dateCol.getFullYear() !== year) {
+                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}">${year}</div>`;
+                year = dateCol.getFullYear();
+                savedI = i;
+            }
             dateCol = this.nextDay(dateCol);
         }
-        return bar
+        if (savedI < numOfCol + this.INFO_COLS) {
+            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}">${timeSlice.end.getFullYear()}</div>`;
+        }
+        return years;
+    }
+
+    renderMonths() {
+        const timeSlice = this._timeslice;
+        const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
+        let dateCol = timeSlice.start;
+        let months = `<div style="grid-row: ${this._row}; grid-column: 1 / span ${this.INFO_COLS}"></div>`;
+
+        let month = dateCol.getMonth();
+        let savedI = this.INFO_COLS + 1;
+
+        for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
+            if (dateCol.getMonth() !== month) {
+                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}">${this.numToMonth(month)}</div>`;
+                month = dateCol.getMonth();
+                savedI = i;
+            }
+            dateCol = this.nextDay(dateCol);
+        }
+        if (savedI < numOfCol + this.INFO_COLS) {
+            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
+        }
+        return months;
+    }
+
+    renderInfo() {
+        let info = '';
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 1">Phases and activities</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 2">Actors</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 3">Start</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 4">End</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 5">Duration</div>`;
+        return info;
+    }
+
+    renderDays() {
+        const timeSlice = this._timeslice;
+        const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
+        let dateCol = timeSlice.start;
+        let days = '';
+        for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
+            days += `<div class="head" style="grid-row: ${this._row}; grid-column: ${i}"><span class="day">${dateCol.getDate()}</span></div>`;
+            dateCol = this.nextDay(dateCol);
+        }
+        return days;
     }
 
     renderPhases() {
@@ -210,8 +278,8 @@ class GanttComponent extends HTMLElement {
         let info = `
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1">${activity.activity.title}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1">${activity.activity.participants.map((obj) => obj.username)}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1">${startDate.toLocaleString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1">${endDate.toLocaleString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1">${startDate.toLocaleDateString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1">${endDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1">${spanNum}</div>
         `;
         return info + `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
