@@ -103,7 +103,7 @@ export const deleteActivity = async (req: any, res: any) => {
     }
 }
 
-const recursiveDeleteActivity = async (id: string) => {
+export const recursiveDeleteActivity = async (id: string) => {
     const activity = await Activity.findById(id);
 
         if(activity){
@@ -115,7 +115,7 @@ const recursiveDeleteActivity = async (id: string) => {
             await Activity.findByIdAndDelete(id);
             await inviteController.deleteActivityInvites(id);
         }
-    }
+}
 
 export const createActivity = async (newActivity: any, req: any) => {
     if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {

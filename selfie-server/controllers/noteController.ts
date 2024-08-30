@@ -1,5 +1,6 @@
 import Activity from '../models/Activity';
 import Note from '../models/Note';
+import { recursiveDeleteActivity } from './activityController';
 
 const max_preview_length = 600;
 export const getall = async (req: any, res: any) => {
@@ -53,7 +54,7 @@ export const create = async (req: any, res: any) => {
 export const modify = async (req: any, res: any) => {
     const username = req.user?.username
     try {
-        const note = await Note.findOne({ _id: req.params.id, owners: { $in: [username] }})
+        const note = await Note.findOne({ _id: req.params.id, owners: { $in: [username] }});
         if (note) {
             note.content = req.body.content
             note.title = req.body.title
@@ -62,6 +63,7 @@ export const modify = async (req: any, res: any) => {
             note.owners = req.body.owners
             note.todoList = req.body.todoList
 
+            // update all activities that are linked to the note
             await updateToDoOwners(note.todoList, req.body.owners);
         } else {
             throw new Error("is null")
@@ -88,9 +90,23 @@ const updateToDoOwners = async (todo: any, owners: string[]) => {
 export const remove = async (req: any, res: any) => {
     const username = req.user?.username
     try {
-        await Note.deleteOne({ _id: req.params.id, owners: { $in: [username] }})
-        res.status(204).send()
+        const note = await Note.findOne({ _id: req.params.id, owners: { $in: [username] }});
+
+        if(note){
+            await Note.findByIdAndDelete(req.params.id);
+
+            // delete all activities that are linked to the note
+            await Promise.all(note.todoList.map(async (todoItem: any) => {
+                if(todoItem.activityID) 
+                    await recursiveDeleteActivity(todoItem.activityID);
+            }));
+
+            res.status(204).send();
+        }
+        else{
+            res.status(404).send({ error: "Note doesn't exist!"})
+        }
     } catch {
-        res.status(404).send({ error: "Note doesn't exist!"})
+        res.status(404).send({ error: "Error deleting note!"})
     }
 }
