@@ -46,6 +46,7 @@ export interface IUser extends Document {
             notesCategory: boolean;
             noteNumber: number;
             pomodoroType: PomodoroType;
+            onlyAssigned: boolean;
         };
         notificationType: NotificationType;
         notes: Object;
@@ -127,6 +128,11 @@ const UserSchema: Schema = new Schema<IUser>({
                 required: true,
                 enum: ['settings', 'stats'],
                 default: 'stats'
+            },
+            onlyAssigned: {
+                type: Boolean,
+                required: true,
+                default: false
             }
         },
         notificationType: {

@@ -88,9 +88,9 @@ export default defineComponent({
     };
     const reFetchCalendarContent = async () => {
       await fetchUserEvents();
-      fetchActivities();
-      fetchUnavailabilities();
-      fetchResourceEvents();
+      await fetchActivities();
+      await fetchUnavailabilities();
+      await fetchResourceEvents();
       // Note: resources are not fetched, but only the events for the selected resource
     };
 
@@ -223,11 +223,11 @@ export default defineComponent({
     };
     const markAsDone = async (activity: Activity) => {
       activity.done = true;
-      const res = await activityService.modifyActivity(activity);
+      await activityService.modifyActivity(activity);
     };
     const undoActivity = async (activity: Activity) => {
       activity.done = false;
-      const res = await activityService.modifyActivity(activity);
+      await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
       fetchActivities();

@@ -4,7 +4,7 @@ export interface IActivity extends Document{
     title: string;
     owner: string;
     done: boolean;
-    start: Date;
+    start?: Date;
     deadline: Date;
     notification: {
         method: string[];
@@ -38,7 +38,7 @@ const ActivitySchema = new Schema({
     },
     done: {
         type: Boolean,
-        required: true
+        required: false
     },
     start: {
         type: Date
@@ -56,7 +56,7 @@ const ActivitySchema = new Schema({
         },
         when: {
             type: String,
-            required: true
+            required: false,
         },
         repeat: {
             type: String,

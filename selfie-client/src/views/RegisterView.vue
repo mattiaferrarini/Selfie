@@ -19,7 +19,7 @@
              value="Register"/>
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
-        <router-link to="/login" class="text-emerald-500">Hai già un account? Login</router-link>
+        <router-link to="/login" class="text-emerald-500">Already registered? Login</router-link>
       </div>
     </form>
   </div>
@@ -44,13 +44,11 @@ export default defineComponent({
     const register = async () => {
       try {
         if (username.value.trim() == "" || password.value.trim() == "" || email.value.trim() == "" || realName.value.trim() == "" || birthday.value.trim() == "") {
-          throw "I valori dei campi non possono essere vuoti!";
+          throw "All fields are required";
         }
         const data = await authService.register(username.value, realName.value, email.value, password.value, birthday.value);
-        authStore.setUser(data.user);
+        await authStore.setUser(data.user);
         router.push({name: 'home'})
-        // Redirect to a protected page or home
-        // this.$router.push('/');
       } catch (error: any) {
         errorMessage.value = error;
       }

@@ -15,7 +15,7 @@
              class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded cursor-pointer">
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
-        <router-link to="/register" class="text-emerald-500">Non hai un account? Registrati</router-link>
+        <router-link to="/register" class="text-emerald-500">Not yet registered? Click here!</router-link>
       </div>
     </form>
   </div>
@@ -37,11 +37,12 @@ export default defineComponent({
     const login = async () => {
       try {
         if (username.value.trim() == "" || password.value.trim() == "") {
-          throw "I valori dei campi non possono essere vuoti!";
+          throw "Username and password are required";
         }
+        await authStore.clearAuthData();
         const data = await authService.login(username.value, password.value);
-        authStore.setUser(data.user);
-        router.push({name: 'home'})
+        await authStore.setUser(data.user);
+        await router.push({name: 'home'})
       } catch (error: any) {
         errorMessage.value = error;
       }
