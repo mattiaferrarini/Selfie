@@ -153,33 +153,56 @@ class GanttComponent extends HTMLElement {
         if (phase.activities.length <= 0) {
             return phaseHtml;
         }
-        let activity = this.getFirstActivity(phase);
-        let startDate = new Date(activity.activity.start);
-        let endDate = new Date(activity.activity.deadline);
-        let localId = activity.localId;
-
-        while (activity) {
-            endDate = new Date(activity.activity.deadline);
-            localId = activity.localId;
-
-            phaseHtml += this.renderActivity(activity, startDate, endDate);
-
-            startDate = endDate;
-            activity = this.getNextActivity(localId, phase.activities);
+        for (const unlikedActivity of this.getAllUnlinkedActivities(phase.activities)) {
+            phaseHtml += this.convolutedRender(unlikedActivity, phase.activities);
         }
         return phaseHtml;
     }
 
-    getNextActivity(linkedActivityId, activities) {
-        for (const activity of activities) {
-            if (activity.linkedActivityId === linkedActivityId) {
-                return activity;
+    convolutedRender(activity, activities) {
+        if (!activity) { // base case END
+            return '';
+        }
+
+        // if activity exists render it
+        const [startDate, endDate] = this.getStartEndDates(activity, activities);
+        let html = this.renderActivity(activity, startDate, endDate);
+
+        // recursively walk through linked activities
+        for (const linkedActivity of this.getAllLinkedActivitiesToAnActivity(activity, activities)) {
+            html += this.convolutedRender(linkedActivity, activities);
+        }
+        return html;
+    }
+
+    getStartEndDates(activity, activities) {
+        let startDate = null;
+        if (activity.linkedActivityId) {
+            startDate = this.getPrevActivity(activity, activities).activity.deadline;
+        }
+        else if (activity.activity.start.getTime() !== Date.parse("Thu Jan 01 1970 01:00:00 GMT+0100")) {
+            startDate = activity.activity.start;
+        }
+        else {
+            startDate = this._timeslice.start;
+        }
+
+        let endDate = activity.activity.deadline;
+
+        return [startDate, endDate];
+    }
+
+    getPrevActivity(activity, activities) {
+        for (const a of activities) {
+            if (a.localId === activity.linkedActivityId) {
+                return a;
             }
         }
         return null;
     }
 
     renderActivity(activity, startDate, endDate) {
+
         const startCol = this.dayDiff(this._timeslice.start, startDate) + 1 + this.INFO_COLS;
         const spanNum = this.dayDiff(startDate, endDate);
         this._row++;
@@ -194,16 +217,25 @@ class GanttComponent extends HTMLElement {
         return info + `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
     }
 
-    getFirstActivity(phase) {
-        for (const activity of phase.activities) {
-            if (this.isFirstActivity(activity)) {
-                return activity;
+    getAllUnlinkedActivities(activities) {
+        let unlinkedActivities = [];
+        for (const activity of activities) {
+            if (activity.linkedActivityId === null) {
+                unlinkedActivities.push(activity);
             }
         }
-        return null;
+        return unlinkedActivities;
     }
 
-
+    getAllLinkedActivitiesToAnActivity(activity, activities) {
+        let linkedActivities = [];
+        for (const a of activities) {
+            if (a.linkedActivityId === activity.localId) {
+                linkedActivities.push(a);
+            }
+        }
+        return linkedActivities;
+    }
 
     // extract data for creating gantt
     getTimeSlice(project) {
