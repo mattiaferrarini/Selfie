@@ -1,5 +1,5 @@
 import Resource, { IResource } from "../models/Resource";
-import { findByUsername } from "./userController";
+import { getUserByUsername } from "./userController";
 import timeService from "../services/timeService";
 import { getEventsByUserAndDate } from "./eventController";
 import notificationController from "./notificationController";
@@ -40,7 +40,7 @@ export const addResource = async (req: any, res: any) => {
     const name = req.body.name, username = req.body.username;
 
     const resMatch = await Resource.findOne({ username });
-    const userMatch = await findByUsername(username);
+    const userMatch = await getUserByUsername(username);
 
     if (resMatch || userMatch)
         res.status(409).send({ error: 'The username is already taken.' });
@@ -92,7 +92,7 @@ const notifyOfDeletion = async (Resource: IResource) => {
 
         event.participants.forEach(async (participant: any) => {
             if (participant.status === "accepted") {
-                const user = await findByUsername(participant.username);
+                const user = await getUserByUsername(participant.username);
                 if (user)
                     notificationController.sendNotification(user, { title, body });
             }
@@ -106,4 +106,14 @@ export const isResource = async (username: string) => {
         return true;
     else
         return false;
+}
+
+export const getResourcesByUsername = async (username: string) => {
+    try{
+        const user = await Resource.findOne({ username });
+    return user;
+    }
+    catch{
+        return null;
+    }
 }
