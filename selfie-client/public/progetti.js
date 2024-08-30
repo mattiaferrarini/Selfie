@@ -1,4 +1,4 @@
-import {API_URL, fetchWithMiddleware} from "./utilities.js";
+import {API_URL, fetchWithMiddleware, logout} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
         phaseDiv.innerHTML = `
             <div class="flex w-full gap-2">
-                <button type="button" class="toggleActivitiesVisButton" text-white"><i class="bi bi-chevron-down"></i></button>
+                <button type="button" class="toggleActivitiesVisButton text-white"><i class="bi bi-chevron-down"></i></button>
                 <input type="text" placeholder="Phase Title" class="flex-1 p-2 border border-gray-300 rounded-md" required>
                 <button type="button" class="removePhaseButton bg-red-500 px-2 py-1 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const removePhase = (phaseDiv) => {
         phaseDiv.remove();
     };
-    
+
     const toggleActivitiesVisualizations = (phaseDiv) => {
         const activitiesContainer = phaseDiv.querySelector('.activitiesContainer');
         activitiesContainer.classList.toggle('hidden');
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         phaseDiv.activityIds.push(uniqueId);
 
-        
+
         activityDiv.classList.add('activity', 'border-l-4', 'border-emerald-400', 'p-2', 'mt-4', 'flex', 'flex-col', 'gap-2', 'bg-emerald-50');
         activityDiv.innerHTML = `
         <div class="flex justify-between items-center w-full font-bold">
@@ -316,11 +316,11 @@ document.addEventListener('DOMContentLoaded', () => {
         activitiesContainer.appendChild(activityDiv);
         activityDiv.querySelector('.editActivityButton').addEventListener('click', () => editActivity(activityDiv, phaseDiv));
         activityDiv.querySelector('.removeActivityButton').addEventListener('click', () => removeActivity(activityDiv, phaseDiv));
-        
+
         openActivityModalForAdd(activityDiv, phaseDiv);
 
         addLinkedActivityEventListener(activityDiv);
-        updateLinkedActivities(activitiesContainer, phaseDiv);  
+        updateLinkedActivities(activitiesContainer, phaseDiv);
     };
 
     const removeActivity = (activityDiv, phaseDiv) => {
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
             phaseDiv.innerHTML = `
             <div class="flex w-full gap-2">
-                <button type="button" class="toggleActivitiesVisButton" text-white"><i class="bi bi-chevron-down"></i></button>
+                <button type="button" class="toggleActivitiesVisButton text-white"><i class="bi bi-chevron-down"></i></button>
                 <input type="text" value="${phase.title}" class="flex-1 p-2 border border-gray-300 rounded-md" required>
                 <button type="button" class="removePhaseButton bg-red-500 text-white px-2 py-1 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="flex justify-between items-center w-full font-bold">
                     <div class="flex gap-2"> 
                         #${activity.localId} 
-                        <p class="${activity.activity.title}">Activity</p>
+                        <p class="activityTitle">${activity.activity.title}</p>
                     </div>
                     <div class="flex gap-1">
                         <button type="button" class="editActivityButton bg-yellow-500 text-white px-2 py-1 rounded-md"><i class="bi bi-pencil-fill"></i></button>
@@ -368,8 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex gap-2 items-center justify-between">
                     <label><input type="checkbox" class="isMilestone" ${activity.isMilestone ? 'checked' : ''}> Milestone</label>
                     <label>Status:
-                        <select class="status p-2 border border-gray-300 rounded-md" value="${activity.status}" required>
-                            <option value="NotStarted" selected>Not Started</option>
+                        <select class="status p-2 border border-gray-300 rounded-md" required>
+                            <option value="NotStarted">Not Started</option>
                             <option value="Started">Started</option>
                             <option value="Concluded">Concluded</option>
                             <option value="Rejected">Rejected</option>
@@ -438,12 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     input: activityDiv.querySelector('.input').value,
                     output: activityDiv.querySelector('.output').value,
                     linkedActivityId: activityDiv.querySelector('.linkedActivityId').value,
-                    activity: activityDiv.activity 
+                    activity: activityDiv.activity
                 }))
             }))
         };
-
-        console.log(projectData);
 
         if (isEditing) {
             fetchWithMiddleware(`${API_URL}/project/${currentProjectId}`, {
@@ -510,18 +508,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const listView = document.getElementById('listView');
 
-    const getStatusFromActivity = (activity) => {
+    const getStatusFromActivity = (activity, activities) => {
         let status;
-        if (activity.input === "") {
+        let linkedOutputUnavailable = false;
+        if (activity.linkedActivityId !== null) {
+            const linkedActivity = activities.find(act => act.localId === activity.linkedActivityId);
+            if (!(linkedActivity.output !== "" && linkedActivity.status === "Concluded"))
+                linkedOutputUnavailable = true;
+        }
+        if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity?.deadline) {
+            status = "Abbandonata";
+        } else if (activity.activity?.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
+            status = "In ritardo";
+        } else if (activity.input === "" || linkedOutputUnavailable) {
             status = "Non attivabile";
         } else if (activity.status === "NotStarted") {
             status = "Attivabile";
         } else if (activity.status === "Rejected") {
             status = "Riattivata";
-        } else if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity?.deadline) {
-            status = "Abbandonata";
-        } else if (activity.activity?.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
-            status = "In ritardo";
         } else if (activity.status === "Concluded" && activity.output !== "") {
             status = "Conclusa";
         } else {
@@ -555,15 +559,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const activityList = activities.map(activity => {
-            const status = getStatusFromActivity(activity);
+            const status = getStatusFromActivity(activity, activities);
             const participants = activity.activity?.participants.map(participant => participant.username);
+            const startingDate = activity.linkedActivityId !== null ?
+                "End of #" +activities.find(act => act.localId === activity.linkedActivityId).localId
+                :
+                new Date(activity.activity?.start).toLocaleDateString();
             return `
         <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
             <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
             <div><strong>Title:</strong>${activity.activity?.title}</div> 
+            <div><strong>Id: #</strong>${activity.localId}</div> 
             <div><strong>Actor:</strong> ${participants.join('')}</div>
-            <div><strong>Starting Date:</strong> ${new Date(activity.activity?.start).toLocaleDateString()}</div>
-            <div><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
+            <div><strong>Starting Date:</strong> ${startingDate}</div>
+            <div class="${status === "Abbandonata" || status === "In Ritardo" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
             <div><strong>Status:</strong> ${status}</div>
             <div><strong>Input:</strong> ${activity.input}</div>
             <div><strong>Output:</strong> ${activity.output}</div>
@@ -609,9 +618,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const editActivityModal = document.getElementById('editActivityModal');
     const editActivityForm = document.getElementById('editActivityForm');
+    const editProjectActivityModal = document.getElementById('editProjectActivityModal');
+    const editProjectActivityForm = document.getElementById('editProjectActivityForm');
     const editErrorMessage = document.getElementById('editErrorMessage');
-    const editActivityId = document.getElementById('editActivityId');
-    const editMilestone = document.getElementById('editMilestone');
+    const editProjectActivityId = document.getElementById('editProjectActivityId');
     const editStatus = document.getElementById('editStatus');
     const editInput = document.getElementById('editInput');
     const editOutput = document.getElementById('editOutput');
@@ -623,18 +633,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const editRepeatNotify = document.getElementById('editRepeatNotify');
     const addActivityParticipantButton = document.getElementById('addActivityParticipantButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
+    const cancelProjectEditButton = document.getElementById('cancelProjectEditButton');
     const participantsContainer = editActivityModal.querySelector('#actParticipantsContainer');
     const usernameInput = editActivityModal.querySelector('#actNewParticipantUsername');
 
-    /*
     const openEditActivityModal = (activity) => {
-        editActivityId.value = activity.activityId;
+        editProjectActivityId.value = activity.activityId;
         editInput.value = activity.input;
         editOutput.value = activity.output;
         editStatus.value = activity.status;
-        editActivityModal.show();
+        editProjectActivityModal.show();
     };
-    */
 
     let modifyingActivity = false; // whether the activity is being modified or created
     let selectedActivityDiv = null;
@@ -648,17 +657,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // populate the edit form with the activity data
         editActivityTitle.value = activityDiv.activity.title;
-        editStartDate.value = activityDiv.activity.start.toISOString().split('T')[0];
+        if (activityDiv.querySelector('.linkedActivityId').value === "") {
+            editStartDate.value = new Date(activityDiv.activity.start | new Date()).toISOString().split('T')[0];
+            editStartDate.disabled = false;
+        } else {
+            editStartDate.value = null;
+            editStartDate.disabled = true;
+        }
         editEndDate.value = activityDiv.activity.deadline.toISOString().split('T')[0];
-        editNotifyOS.checked = activityDiv.activity.notification.method.includes('os');
-        editNotifyEmail.checked = activityDiv.activity.notification.method.includes('email');
+        editNotifyOS.checked = activityDiv.activity.notification.method?.includes('os');
+        editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
 
         // populate the participants list
         participantsContainer.innerHTML = '';
         activityDiv.activity.participants.forEach(participant => {
             usernameInput.value = participant.username;
-            addActivityParticipantButton.click(); 
+            addActivityParticipantButton.click();
         });
         editActivityModal.show();
     };
@@ -670,8 +685,12 @@ document.addEventListener('DOMContentLoaded', () => {
         editActivityModal.show();
     };
 
+    const closeProjectEditActivityModal = () => {
+        editProjectActivityModal.hide();
+    };
+
     const cancelEditActivity = () => {
-        if(!modifyingActivity) {
+        if (!modifyingActivity) {
             // an adding operation was interrupted
             selectedActivityDiv.remove();
             selectedPhaseDiv.activityIds.pop();
@@ -697,14 +716,17 @@ document.addEventListener('DOMContentLoaded', () => {
             method: [],
             repeat: editRepeatNotify.value
         };
-        if(editNotifyOS.checked) {
+        if (editNotifyOS.checked) {
             newActivity.notification.method.push('os');
         }
-        if(editNotifyEmail.checked) {
+        if (editNotifyEmail.checked) {
             newActivity.notification.method.push('email');
         }
         // TODO: fix to add status
-        newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({ username: participantDiv.querySelector('.username').innerText, 'status': 'pending' }));
+        newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({
+            username: participantDiv.querySelector('.username').innerText,
+            'status': 'pending'
+        }));
 
         selectedActivityDiv.querySelector('.activityTitle').innerText = editActivityTitle.value;
         selectedActivityDiv.activity = newActivity;
@@ -736,13 +758,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-
-    /*
-    editActivityForm.addEventListener('submit', (event) => {
+    editProjectActivityForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const updatedActivity = {
-            activityId: editActivityId.value,
+            activityId: editProjectActivityId.value,
             input: editInput.value,
             output: editOutput.value,
             status: editStatus.value
@@ -762,30 +781,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 showList(project);
             }
         });
-        closeEditActivityModal();
+        closeProjectEditActivityModal();
     });
-    */
 
     cancelEditButton.addEventListener('click', cancelEditActivity);
+    cancelProjectEditButton.addEventListener('click', closeProjectEditActivityModal);
 
     fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
         projects = data.map(project => ({
             ...project,
             phases: project.phases.map(phase => ({
-            ...phase,
-            activities: phase.activities.map(activity => ({
-                ...activity,
-                activity: activity.activity ? {
-                ...activity.activity,
-                start: new Date(activity.activity.start),
-                deadline: new Date(activity.activity.deadline)
-                } : null
-            }))
+                ...phase,
+                activities: phase.activities.map(activity => ({
+                    ...activity,
+                    activity: activity.activity ? {
+                        ...activity.activity,
+                        start: new Date(activity.activity.start),
+                        deadline: new Date(activity.activity.deadline)
+                    } : null
+                }))
             }))
         }));
         showProjects();
         projectSelector.selectedIndex = 0;
         displayProject(projects[0]);
     });
+
+    document.querySelector("#logout").addEventListener("click", logout);
 });
 

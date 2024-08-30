@@ -53,17 +53,20 @@ export const deleteProject = async (req: any, res: any) => {
     }
 }
 
-const deleteAllProjectActivities = async (project: any) => {
-    project.phases.map((phase: any) => {
-        phase.activities.map(async (activity: any) => {
-            await deleteActivityById(activity.activityId);
-        });
-    });
+const getAllProjectActivitiesIds = (project: any) => {
+    return project.phases.flatMap((phase: any) => phase.activities).map((activity: any) => activity.activityId);
+}
+
+const deleteAllProjectActivities = async (activitiesId: string[]) => {
+    for (const activityId of activitiesId) {
+        await deleteActivityById(activityId);
+    }
 }
 
 const createActivities = async (phases: any, req: any, res: any): Promise<boolean> => {
     const createdActivitiesIds: string[] = [];
 
+    let linkedActivities;
     for (const phase of phases) {
         for (const activity of phase.activities) {
             try {
@@ -74,12 +77,22 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
                 activity.activityId = createdActivity._id;
 
                 if (activity.linkedActivityId) {
-                    const linkedActivity = phase.activities.find((act: any) => act.localId === activity.linkedActivityId);
+                    let linkedActivity = phase.activities.find((act: any) => act.localId === activity.linkedActivityId);
 
                     if (!linkedActivity) {
                         throw new Error('Linked activity does not exist');
                     } else if (linkedActivity === activity) {
                         throw new Error('An activity cannot be linked to itself');
+                    }
+
+                    linkedActivities = [activity.localId];
+                    // check that following linked activities are valid and do not point recursively to themselves
+                    while (linkedActivity) {
+                        linkedActivities.push(linkedActivity.localId);
+                        if ((new Set(linkedActivities)).size !== linkedActivities.length) {
+                            throw new Error('Linked activities cannot be indirectly linked to themselves');
+                        }
+                        linkedActivity = phase.activities.find((act: any) => act.localId === linkedActivity.linkedActivityId);
                     }
                 }
             } catch (error) {
@@ -109,7 +122,7 @@ export const modifyStatus = async (req: any, res: any) => {
             return res.status(403).send({error: 'You are not the owner of the project'});
         }
 
-        const phaseActivity = project.phases.flatMap((phase: any) => phase.activities).find((act: any) => act.activityId === activityId);
+        const phaseActivity = project.phases.flatMap((phase: any) => phase.activities).find((act: any) => act.activityId == activityId);
         // check if the user is a participant in the activity
         const activity = await Activity.findById(activityId);
         if (activity && phaseActivity) {
@@ -168,7 +181,7 @@ export const modifyProject = async (req: any, res: any) => {
         project.actors = actors;
         project.title = title;
 
-        await deleteAllProjectActivities(project);
+        const oldIds = getAllProjectActivitiesIds(project);
 
         const activitiesCreated = await createActivities(phases, req, res);
         if (!activitiesCreated) {
@@ -178,6 +191,7 @@ export const modifyProject = async (req: any, res: any) => {
         try {
             project.phases = phases;
             await project.save();
+            await deleteAllProjectActivities(oldIds);
             res.status(200).send(await formatProject(project));
         } catch (error) {
             res.status(400).send({error: error});
