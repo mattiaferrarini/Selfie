@@ -82,7 +82,7 @@ const ActivitySchema = new Schema({
     },
     subActivitiesIDs: {
         type: [String],
-        required: true
+        required: false
     },
     pomodoro: {
         type: {
