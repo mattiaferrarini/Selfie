@@ -110,7 +110,6 @@ export const createActivity = async (newActivity: any, req: any) => {
         newActivity.pomodoro.completedCycles = completedCycles;
     }
     await newActivity.save();
-    await inviteController.createInvitesForActivity(newActivity);
 }
 
 export const addActivity = async (req: any, res: any) => {
@@ -126,6 +125,7 @@ export const addActivity = async (req: any, res: any) => {
 
     try {
         await createActivity(newActivity, req);
+        await inviteController.createInvitesForActivity(newActivity);
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
