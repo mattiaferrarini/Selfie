@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editStartDate.disabled = true;
         }
         editEndDate.value = activityDiv.activity.deadline.toISOString().split('T')[0];
-        editNotifyOS.checked = activityDiv.activity.notification.method?.includes('os');
+        editNotifyOS.checked = activityDiv.activity.notification.method?.includes('push');
         editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
 
@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
             repeat: editRepeatNotify.value
         };
         if (editNotifyOS.checked) {
-            newActivity.notification.method.push('os');
+            newActivity.notification.method.push('push');
         }
         if (editNotifyEmail.checked) {
             newActivity.notification.method.push('email');
