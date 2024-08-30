@@ -223,3 +223,18 @@ export const addProject = async (req: any, res: any) => {
         res.status(400).send({error: 'Error adding project' + error});
     }
 }
+
+export const leaveProject = async (req: any, res: any) => {
+    const {id} = req.params;
+
+    const project = await Project.findById(id)
+    if (!project) {
+        return res.status(404).send({error: "Project doesn't exist!"});
+    }
+    project.actors = project.actors.filter((actor: string) => actor !== req.user.username);
+    project.save().then(() => {
+        res.status(204).send();
+    }).catch(() => {
+        res.status(400).send({error: 'Error leaving project'});
+    });
+}
