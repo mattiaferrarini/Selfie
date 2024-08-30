@@ -7,6 +7,7 @@ const formatActivity = (activity: any) => {
     return {
         id: activity._id,
         title: activity.title,
+        owner: activity.owner,
         done: activity.done,
         deadline: activity.deadline,
         notification: activity.notification,
@@ -109,6 +110,7 @@ const recursiveDeleteActivity = async (id: string) => {
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
         title: req.body.title,
+        owner: req.body.owner,
         done: req.body.done,
         deadline: req.body.deadline,
         notification: req.body.notification,
@@ -200,5 +202,17 @@ export const changeParticipantStatus = async (id: string, username: string, newS
         }
     } catch (error) {
         throw new Error("Error changing participant status");
+    }
+}
+
+export const removeParticipant = async (req: any, res: any) => {
+    const { id } = req.params;
+    const username = req.body.username;
+
+    try {
+        await changeParticipantStatus(id, username, 'declined');
+        res.status(200).send('Participant removed');
+    } catch (error) {
+        res.status(500).send({ error: 'Error removing participant' });
     }
 }

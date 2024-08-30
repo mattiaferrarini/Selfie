@@ -69,14 +69,14 @@
       </div>
       <hr>
       <div class="flex w-full space-x-1 mt-8">
-        <button v-if="modifying" type="button" @click="deleteUnavailability"
+        <button v-if="modifying" type="button" @click="handleDeleteRequest"
           class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
         <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
       </div>
     </form>
 
     <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
-      @confirm="confirmAction" />
+      @confirm="deleteUnavailability" />
 
   </div>
 </template>
@@ -88,6 +88,7 @@ import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import ConfirmationPanel from './ConfirmationPanel.vue';
 import moment from 'moment-timezone';
+import unavailabilityService from '@/services/unavailabilityService';
 
 export default defineComponent({
   components: {
@@ -155,16 +156,28 @@ export default defineComponent({
       this.newUnavailability.start = timeService.convertToTimezone(this.newUnavailability.start, this.newUnavailability.timezone);
       this.newUnavailability.end = timeService.convertToTimezone(this.newUnavailability.end, this.newUnavailability.timezone);
 
-      this.$emit('saveUnavailability', this.newUnavailability);
+      this.saveUnavailability(this.newUnavailability);
     },
-    deleteUnavailability() {
+    async saveUnavailability(unav: Unavailability) {
+
+      let res: Unavailability;
+      
+      if(this.modifying)
+        res = await unavailabilityService.modifyUnavailability(unav);
+      else
+        res = await unavailabilityService.addUnavailability(unav);
+
+      this.$emit('saveUnavailability', res);
+    },
+    handleDeleteRequest() {
       this.confirmationMessage = "Are you sure you want to delete this unavailability?";
     },
     cancelAction() {
       this.confirmationMessage = "";
     },
-    confirmAction() {
+    async deleteUnavailability() {
       this.confirmationMessage = "";
+      await unavailabilityService.deleteUnavailability(this.newUnavailability);
       this.$emit('deleteUnavailability', this.newUnavailability);
     },
     enforceTemporalCoherence() {

@@ -2,6 +2,7 @@ import { model, Schema, Document } from 'mongoose';
 
 export interface IActivity extends Document{
     title: string;
+    owner: string;
     done: boolean;
     start: Date;
     deadline: Date;
@@ -30,6 +31,10 @@ const ActivitySchema = new Schema({
     title: {
         type: String,
         required: true
+    },
+    owner: {
+        type: String,
+        required: false
     },
     done: {
         type: Boolean,

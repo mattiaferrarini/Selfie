@@ -1,4 +1,4 @@
-<template>
+    <template>
     <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
         <div class="flex justify-end">
             <button @click="closeForm">
@@ -8,17 +8,17 @@
         <form class="flex flex-col" @submit="handleSubmit">
             <div>
                 <label><input type="text" placeholder="Untitled Activity" required class="w-full"
-                        v-model="newActivity.title"></label><br>
+                        v-model="newActivity.title" :disabled="!modificationAllowed"></label>
             </div>
             <hr>
             <div class="mb-2">
-                <label><input type="checkbox" v-model="newActivity.done"> Completed </label><br>
+                <label><input type="checkbox" v-model="newActivity.done" :disabled="!modificationAllowed"> Completed </label><br>
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
                     <label> Deadline </label>
                     <div class="flex gap-1">
-                        <input type="date" v-model="formattedEndDate">
+                        <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed">
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
-                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null"
+                    <label> <input type="checkbox" :checked="newActivity.pomodoro != null" :disabled="!modificationAllowed"
                             @click="newActivity.pomodoro = newActivity.pomodoro == null ? { options: authStore.user.preferences.pomodoro, completedCycles: { [authStore.user.username]: 0 } } : null" />
                         Pomodoro</label>
                 </div>
@@ -53,23 +53,23 @@
                     <label class="flex items-center justify-between w-full gap-4">
                         <span class="flex-1">Work Duration (minutes)</span>
                         <input type="number" v-model="newActivity.pomodoro.options.workDuration" min="1" class="flex-1"
-                            required style="max-width: 4em; text-align: center" />
+                            required style="max-width: 4em; text-align: center" :disabled="!modificationAllowed"/>
                     </label>
                     <label class="flex items-center justify-between w-full gap-4">
                         <span class="flex-1">Pause Duration (minutes)</span>
                         <input type="number" v-model="newActivity.pomodoro.options.pauseDuration" min="1" class="flex-1"
-                            required style="max-width: 4em; text-align: center" />
+                            required style="max-width: 4em; text-align: center" :disabled="!modificationAllowed"/>
                     </label>
                     <label class="flex items-center justify-between w-full gap-4">
                         <span class="flex-1">Cycles</span>
                         <input type="number" v-model="newActivity.pomodoro.options.numberOfCycles" min="1"
-                            class="flex-1" required style="max-width: 4em; text-align: center" />
+                            class="flex-1" required style="max-width: 4em; text-align: center" :disabled="!modificationAllowed"/>
                     </label>
                     <label class="flex items-center justify-between w-full gap-4">
                         <span class="flex-1">Completed Cycles</span>
                         <input type="number" v-model="newActivity.pomodoro.completedCycles[authStore.user.username]"
                             class="flex-1" min="0" :max="newActivity.pomodoro.options.numberOfCycles" required
-                            style="max-width: 4em; text-align: center" />
+                            style="max-width: 4em; text-align: center" :disabled="!modificationAllowed"/>
                     </label>
                 </div>
             </div>
@@ -78,13 +78,13 @@
                 <div class="flex items-center justify-between w-full gap-4">
                     <p>Notification after deadline</p>
                     <div class="flex flex-wrap justify-end space-x-4">
-                        <label> <input type="checkbox" v-model="newNotificationOptions.push" /> Push</label>
-                        <label> <input type="checkbox" v-model="newNotificationOptions.email" /> Email </label>
+                        <label> <input type="checkbox" v-model="newNotificationOptions.push" :disabled="!modificationAllowed"/> Push</label>
+                        <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed"/> Email </label>
                     </div>
                 </div>
                 <label v-if="false" class="flex items-center justify-between w-full gap-4 mt-1">
                     How long
-                    <select name="whenNotify" v-model="newActivity.notification.when">
+                    <select name="whenNotify" v-model="newActivity.notification.when" :disabled="!modificationAllowed">
                         <option value="atEvent">Day of deadline</option>
                         <option value="1day">1 day after</option>
                         <option value="3days">3 days after</option>
@@ -95,7 +95,7 @@
                 </label>
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4 mt-1">
                     Frequency
-                    <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36">
+                    <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36" :disabled="!modificationAllowed">
                         <!-- <option value="never">Never</option> -->
                         <option value="daily">Daily</option>
                         <option value="linear">Increase by 1 every day</option>
@@ -116,9 +116,12 @@
                 <div class="flex w-full space-x-1">
                     <button v-if="modifying" type="button" @click="handleDeleteRequest"
                         class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
-                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+                    <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
                 </div>
             </div>
+            <div v-if="!modificationAllowed" class="mt-4">
+        <p class="text-center text-gray-700">You cannot modify this activity.</p>
+      </div>
         </form>
 
         <div v-if="showSubActivities" class="absolute inset-0 bg-white rounded-lg w-full h-full p-4 overflow-scroll flex flex-col justify-between" @click.stop>
@@ -132,13 +135,13 @@
                         <p>{{ sub.title }} </p>
                     </div>
                     <div class="flex items-center gap-1">
-                        <button @click="modifySubActivity(sub)"><v-icon name="md-modeeditoutline"></v-icon></button>
+                        <button v-if="modificationAllowed" @click="modifySubActivity(sub)"><v-icon name="md-modeeditoutline"></v-icon></button>
                     </div>
                     </div>
                     <hr>
                 </li>
             </ul>
-            <button @click="addSubActivity" class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add new</button>
+            <button v-if="modificationAllowed" @click="addSubActivity" class="py-1 px-2 mt-2 bg-blue-500 text-white rounded-md">Add new</button>
             </div>
             <div class="flex w-full space-x-1 mt-8">
                 <!--<button type="button" @click="discardSubActivityChanges"
@@ -149,7 +152,7 @@
         </div>
 
         <ParticipantsForm v-if="showParticipantsForm" :participants="newActivity.participants"
-            @closeParticipantsForm="handleCloseParticipantsForm" />
+            @closeParticipantsForm="handleCloseParticipantsForm" :modification-allowed="modificationAllowed"/>
 
         <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel" />
 
@@ -224,6 +227,7 @@ export default defineComponent({
         async onFormVisible() {
             if (!this.modifying) {
                 // default initialization for new activity
+                this.newActivity.owner = this.authStore.user.username;
                 this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
                 this.newActivity.participants = [
                     { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
@@ -282,7 +286,11 @@ export default defineComponent({
         },
         async deleteActivity() {
             this.confirmationMessage = '';
-            await activityService.deleteActivity(this.activity);
+            if(this.modificationAllowed)
+                await activityService.deleteActivity(this.activity);
+            else
+                await activityService.removeParticipantFromActivity(this.activity, this.authStore.user.username);
+
             this.$emit('deleteActivity', this.activity);
         },
         openParticipantsForm() {
@@ -349,7 +357,8 @@ export default defineComponent({
             this.modifyingSub = false;
         },
         saveSubActivities() {
-            this.subActivities = [...this.newSubActivities];
+            if(this.modificationAllowed)
+                this.subActivities = [...this.newSubActivities];
             this.showSubActivities = false;
         },
         async discardSubActivityChanges() {
@@ -383,6 +392,9 @@ export default defineComponent({
             event.allDay = true;
             event.participants = this.newActivity.participants;
             return event;
+        },
+        modificationAllowed(): boolean {
+            return this.authStore.user.username === this.newActivity.owner;
         }
     }
 });

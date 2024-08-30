@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="animate-fade-in sm:w-11/12 p-4 mt-5 sm:mt-3 mb-4 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
-      <h1 class="text-2xl sm:text-4xl font-bold text-emerald-700">Welcome, {{ realName }}!</h1>
+      <h1 class="text-2xl sm:text-4xl font-bold text-emerald-600">Welcome, {{ realName }}!</h1>
       <h3 class="mt-2 sm:text-xl text-gray-700"> Manage your private, social and academic life with Selfie.</h3>
     </div>
     <div class="animate-fade-in sm:w-11/12 p-4 sm:mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">

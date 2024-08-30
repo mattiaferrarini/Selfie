@@ -1,5 +1,6 @@
 export class Activity {
     title: string;
+    owner: string | undefined;
     id: string | undefined;
     done: boolean;
     deadline: Date;

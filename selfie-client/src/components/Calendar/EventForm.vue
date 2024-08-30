@@ -79,7 +79,7 @@
       <div>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
-          <button type="button" @click="openParticipantsForm" @click.stop :disabled="!modificationAllowed">
+          <button type="button" @click="openParticipantsForm" @click.stop>
             {{ newEvent.participants.length }}
             <v-icon name="md-navigatenext" />
           </button>
@@ -127,7 +127,7 @@
         </label>
       </div>
       <hr>
-      <div v-if="modificationAllowed" class="flex-col space-y-1 w-full mt-8">
+      <div class="flex-col space-y-1 w-full mt-8">
         <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Export
           event</button>
         <div v-else class="text-center cursor-pointer">
@@ -135,13 +135,13 @@
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
         <div class="flex w-full space-x-1">
-          <button v-if="modifying" type="button" @click="deleteEvent"
+          <button v-if="modifying" type="button" @click="handleDeleteRequest"
             class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
-          <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+          <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
         </div>
       </div>
-      <div v-else class="mt-4">
-        <p class="text-center text-red-600">You cannot modify this event.</p>
+      <div v-if="!modificationAllowed" class="mt-4">
+        <p class="text-center text-gray-700">You cannot modify this event.</p>
       </div>
     </form>
 
@@ -151,7 +151,7 @@
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
     <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
-      @confirm="confirmAction" />
+      @confirm="deleteEvent" />
 
   </div>
 </template>
@@ -186,7 +186,7 @@ export default defineComponent({
       type: Date,
       required: true
     },
-    modificationAllowed: {
+    adminOnlyModification: {
       type: Boolean,
       default: true
     }
@@ -215,6 +215,7 @@ export default defineComponent({
     onFormVisible() {
       if (!this.modifying) {
         // intialize default values for new event
+        this.newEvent.owner = this.authStore.user.username;
         this.newEvent.timezone = moment.tz.guess();
         this.newEvent.start = timeService.roundTime(new Date());
         this.newEvent.end = timeService.moveAheadByHours(this.newEvent.start, 1);
@@ -257,7 +258,17 @@ export default defineComponent({
       this.newEvent.start = timeService.convertToTimezone(this.newEvent.start, this.newEvent.timezone);
       this.newEvent.end = timeService.convertToTimezone(this.newEvent.end, this.newEvent.timezone);
 
-      this.$emit('saveEvent', this.newEvent);
+      this.saveEvent(this.newEvent);
+    },
+    async saveEvent(event: CalendarEvent) {
+      let res: CalendarEvent;
+      
+      if(this.modifying)
+        res = await eventService.modifyEvent(event);
+      else
+        res = await eventService.addEvent(event);
+
+      this.$emit('saveEvent', res);
     },
     openParticipantsForm() {
       this.showParticipantsForm = true;
@@ -269,15 +280,23 @@ export default defineComponent({
       this.newEvent.participants = participants;
       this.closeParticipantsForm();
     },
-    deleteEvent() {
+    handleDeleteRequest() {
       this.confirmationMessage = 'Are you sure you want to delete this event?';
     },
     cancelAction() {
       this.confirmationMessage = '';
     },
-    confirmAction() {
+    async deleteEvent() {
       this.confirmationMessage = '';
-      this.$emit('deleteEvent', this.event);
+
+      if(this.modificationAllowed){
+        await eventService.deleteEvent(this.event);
+      }
+      else{
+        await eventService.removeParticipantFromEvent(this.event, this.authStore.user.username);
+      }
+
+      this.$emit('deleteEvent', this.newEvent);
     },
     openExportPanel() {
       this.showExportPanel = true;
@@ -427,6 +446,10 @@ export default defineComponent({
     },
     yearlyRepetitionAllowed(): boolean {
       return timeService.sameYear(this.newEvent.start, this.newEvent.end);
+    },
+    modificationAllowed(): boolean {
+      return (this.adminOnlyModification && useAuthStore().isAdmin) || 
+        (!this.adminOnlyModification && this.newEvent.owner === useAuthStore().user.username);
     }
   }
 });

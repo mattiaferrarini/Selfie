@@ -94,7 +94,7 @@ export default defineComponent({
       // Note: resources are not fetched, but only the events for the selected resource
     };
 
-    /* Dynamic loading of content based of the period currentDate falls into */
+    /* Dynamic loading of content based on the period currentDate falls into */
     const getRangeDates = () => {
       const firstDayOfMonth = timeMethods.getFirstDayOfMonth(focusDate.value);
       const lastDayOfMonth = timeMethods.getLastDayOfMonth(focusDate.value);
@@ -204,32 +204,20 @@ export default defineComponent({
     /* Save new/modified events and delete them */
     const saveEvent = async (newEvent: CalendarEvent) => {
       if (modifying.value) {
-        const res = await eventService.modifyEvent(newEvent);
-        const index = rangeEvents.value.findIndex(event => event.id === res.id);
-        rangeEvents.value[index] = res;
+        const index = rangeEvents.value.findIndex(event => event.id === newEvent.id);
+        rangeEvents.value[index] = newEvent;
       } else {
-        const res = await eventService.addEvent(newEvent);
-        rangeEvents.value.push(res);
+        rangeEvents.value.push(newEvent);
       }
-
       hideAllForms();
     };
     const deleteEvent = (event: CalendarEvent) => {
-      eventService.deleteEvent(event);
       rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
       hideAllForms();
     };
 
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: any) => {
-      /*
-      if (modifying.value) {
-        const index = rangeActivities.value.findIndex(activity => activity.id === newActivity.id);
-        rangeActivities.value[index] = newActivity;
-      } else {
-        rangeActivities.value.push(newActivity);
-      }
-        */
       fetchActivities();
       hideAllForms();
     };
@@ -242,7 +230,6 @@ export default defineComponent({
       const res = await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
-      //rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
       fetchActivities();
       hideAllForms();
     };
@@ -250,19 +237,15 @@ export default defineComponent({
     /* Save new/modified unavailabilities and delete them */
     const saveUnavailability = async (newUnav: any) => {
       if (modifying.value) {
-        const res = await unavailabilityService.modifyUnavailability(newUnav);
         const index = rangeUnavailabilities.value.findIndex(unav => unav.id === newUnav.id);
-        rangeUnavailabilities.value[index] = res;
+        rangeUnavailabilities.value[index] = newUnav;
       }
       else {
-        const res = await unavailabilityService.addUnavailability(newUnav);
-        rangeUnavailabilities.value.push(res);
+        rangeUnavailabilities.value.push(newUnav);
       }
-
       hideAllForms();
     };
     const deleteUnavailability = async (unavailability: Unavailability) => {
-      unavailabilityService.deleteUnavailability(unavailability);
       rangeUnavailabilities.value = rangeUnavailabilities.value.filter(u => u.id !== unavailability.id);
       hideAllForms();
     };
@@ -308,8 +291,8 @@ export default defineComponent({
     const showAddButton = computed(() => {
       return content.value !== 'resources' || authStore.isAdmin;
     });
-    const eventModificationAllowd = computed(() => {
-      return content.value !== 'resources' || authStore.isAdmin;
+    const eventAdminOnlyModification = computed(() => {
+      return content.value === 'resources';
     });
 
     /* Lifecycle hooks */
@@ -353,7 +336,8 @@ export default defineComponent({
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
       modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
-      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton, eventModificationAllowd, acceptInvite
+      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton,
+      eventAdminOnlyModification, acceptInvite
     };
   },
 });
@@ -443,7 +427,7 @@ export default defineComponent({
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
-        :modification-allowed="eventModificationAllowd"/>
+        :admin-only-modification="eventAdminOnlyModification" />
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
         :current-date="currentDate" class="m-4" />

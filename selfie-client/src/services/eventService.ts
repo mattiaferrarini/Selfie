@@ -222,6 +222,15 @@ const sendExportViaEmail = async (formData: FormData) => {
     }
 }
 
+const removeParticipantFromEvent = async (event: CalendarEvent, username: string) => {
+    try {
+        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {username: username}, { withCredentials: true });
+    }
+    catch (error: any) {
+        console.log(error);
+    }
+}
+
 export default {
     getEventsByUser,
     getEventById,
@@ -236,5 +245,6 @@ export default {
     convertOptionsToOutlook,
     convertICalendarToEvent,
     getEventFromIcal,
-    sendExportViaEmail
+    sendExportViaEmail,
+    removeParticipantFromEvent
 };

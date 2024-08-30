@@ -24,17 +24,21 @@
                             <v-icon name="bi-circle-fill" class="mr-1" :class="participant.status"></v-icon>
                             <p>{{ participant.username }} </p>
                         </div>
-                        <button @click="removeParticipant(participant)" v-if="modificationAllowed"><v-icon
+                        <button v-if="participant.username !== yourself && modificationAllowed" @click="removeParticipant(participant)"><v-icon
                             name="md-removecircleoutline"></v-icon></button>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="justify-self-end flex w-full space-x-1 mt-8">
+        <div class="justify-self-end flex w-full space-x-1 mt-8" v-if="modificationAllowed">
             <button type="button" @click="cancelChanges"
                 class="flex-1 bg-gray-400 text-white rounded-lg p-2">Cancel</button>
-            <button type="submit" @click="saveChanges" v-if="modificationAllowed"
+            <button type="submit" @click="saveChanges"
                 class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+        </div>
+        <div v-else>
+            <button type="button" @click="closeForm"
+                class="bg-gray-400 text-white rounded-lg p-2 w-full">Back</button>
         </div>
     </div>
 </template>
