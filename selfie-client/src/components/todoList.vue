@@ -4,6 +4,7 @@ import ActivityForm from "@/components/Calendar/ActivityForm.vue";
 import activityService from "@/services/activityService";
 import {useDateStore} from "@/stores/dateStore";
 import { Activity } from '@/models/Activity';
+import { useAuthStore } from "@/stores/authStore";
 
 const todoData: any = defineModel()
 defineProps<{
@@ -23,6 +24,7 @@ const addTodo = () => {
 const selectedActivity = ref<Activity>(new Activity());
 
 const dateStore = useDateStore();
+const authStore = useAuthStore(); 
 const currentDate = ref(new Date(dateStore.getCurrentDate()));
 
 let index: number;
@@ -44,7 +46,6 @@ const saveActivity = async (newActivity: any) => {
   deadlines.value[index] = newActivity.deadline.toLocaleDateString()
   titles.value[index] = newActivity.title
 
-
   closeAddForms()
 };
 
@@ -64,7 +65,12 @@ const makeActivity = (todo: any, i: number) => {
 
 const editActivity = async (todo: any, i: number) => {
   modifying.value = true;
-  selectedActivity.value = await activityService.getActivityById(todo.activityID);
+  const activity = await activityService.getActivityById(todo.activityID);
+
+  if(!activity.owners.includes(authStore.user.username))
+    activity.owners.push(authStore.user.username);
+
+  selectedActivity.value = activity;
 
   index = i;
   showActivityForm.value = true;
@@ -73,10 +79,15 @@ const editActivity = async (todo: any, i: number) => {
 onBeforeMount(async () => {
   for (let i = 0; i < todoData.value.length; i++) {
     if (todoData.value[i].activityID) {
-      const activity = await activityService.getActivityById(todoData.value[i].activityID);
-      dones.value[i] = activity.done
-      deadlines.value[i] = activity.deadline.toLocaleDateString()
-      titles.value[i] = activity.title
+      try{
+        const activity = await activityService.getActivityById(todoData.value[i].activityID);
+        dones.value[i] = activity.done
+        deadlines.value[i] = activity.deadline.toLocaleDateString()
+        titles.value[i] = activity.title
+      }
+      catch{
+        todoData.value[i].activityID = null;
+      }
     }
   }
 })
@@ -86,7 +97,7 @@ onBeforeMount(async () => {
 <template>
   <div class="flex flex-col flex-wrap border-black border-2 rounded p-3">
     <h1 class="font-bold text-2xl">Todo List</h1>
-    <div v-if="showActivityForm" class="fixed inset-0 flex justify-center items-center bg-emerald-600 z-50">
+    <div v-if="showActivityForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <ActivityForm
           v-if="showActivityForm"
           @close-form="closeAddForms"
@@ -94,6 +105,7 @@ onBeforeMount(async () => {
           @delete-activity="deleteActivity"
           :activity="selectedActivity"
           :modifying="modifying"
+          :sub-activities-allowed="false"
           :current-date="currentDate" class="m-4"/>
     </div>
     <ul>

@@ -33,7 +33,7 @@
                 </div>
             </div>
             <hr>
-            <div v-if="!newActivity.pomodoro">
+            <div v-if="!newActivity.pomodoro && subActivitiesAllowed">
                 <div class="flex items-center justify-between w-full gap-4">
                     Sub-activities
                     <button type="button" @click="openSubActivitiesForm" @click.stop>
@@ -198,6 +198,10 @@ export default defineComponent({
         currentDate: {
             type: Date,
             required: true
+        },
+        subActivitiesAllowed: {
+            type: Boolean,
+            default: true
         }
     },
     emits: ['closeForm', 'saveActivity', 'deleteActivity'],
@@ -227,7 +231,7 @@ export default defineComponent({
         async onFormVisible() {
             if (!this.modifying) {
                 // default initialization for new activity
-                this.newActivity.owner = this.authStore.user.username;
+                this.newActivity.owners = [this.authStore.user.username];
                 this.newActivity.deadline = timeService.moveAheadByDays(this.currentDate, 7);
                 this.newActivity.participants = [
                     { username: this.authStore.user.username, email: this.authStore.user.email, status: 'accepted' },
@@ -394,7 +398,7 @@ export default defineComponent({
             return event;
         },
         modificationAllowed(): boolean {
-            return this.authStore.user.username === this.newActivity.owner;
+            return this.newActivity.owners.includes(this.authStore.user.username);
         }
     }
 });

@@ -7,7 +7,7 @@ const formatActivity = (activity: any) => {
     return {
         id: activity._id,
         title: activity.title,
-        owner: activity.owner,
+        owners: activity.owners,
         done: activity.done,
         deadline: activity.deadline,
         notification: activity.notification,
@@ -135,7 +135,7 @@ export const createActivity = async (newActivity: any, req: any) => {
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
         title: req.body.title,
-        owner: req.body.owner,
+        owners: req.body.owners,
         done: req.body.done,
         deadline: req.body.deadline,
         notification: req.body.notification,

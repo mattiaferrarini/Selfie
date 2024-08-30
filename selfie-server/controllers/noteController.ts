@@ -1,3 +1,4 @@
+import Activity from '../models/Activity';
 import Note from '../models/Note';
 
 const max_preview_length = 600;
@@ -60,6 +61,8 @@ export const modify = async (req: any, res: any) => {
             note.category = req.body.category
             note.owners = req.body.owners
             note.todoList = req.body.todoList
+
+            await updateToDoOwners(note.todoList, req.body.owners);
         } else {
             throw new Error("is null")
         }
@@ -68,6 +71,18 @@ export const modify = async (req: any, res: any) => {
     } catch {
         res.status(404).send({ error: "Note doesn't exist!"})
     }
+}
+
+const updateToDoOwners = async (todo: any, owners: string[]) => {
+    await Promise.all(todo.map(async (todoItem: any) => {
+        if(todoItem.activityID) {
+            const activity = await Activity.findById(todoItem.activityID);
+            if(activity) {
+                activity.owners = owners;
+                await activity.save();
+            }
+        }
+    }));
 }
 
 export const remove = async (req: any, res: any) => {
