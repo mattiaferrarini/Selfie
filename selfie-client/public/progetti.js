@@ -712,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         const newActivity = {};
+        newActivity.owners = [auth.user.username];
         newActivity.title = editActivityTitle.value;
         newActivity.start = new Date(editStartDate.value);
         newActivity.deadline = new Date(editEndDate.value);
