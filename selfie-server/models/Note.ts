@@ -81,5 +81,5 @@ const NoteSchema: Schema = new Schema<INote>({
     }
 });
 
-
-export default model('Note', NoteSchema);
+const Note = model<INote>('Note', NoteSchema);
+export default Note;

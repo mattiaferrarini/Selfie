@@ -6,13 +6,13 @@
       <h4 class="text-md font-medium text-gray-700">Events</h4>
       <div v-if="weekly">
         <ul class="list-disc pl-5">
-          <li v-for="event in eventsThisWeek" :key="event.id" class="text-gray-600">{{ event.title }}</li>
+          <li v-for="event in eventsThisWeek" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarEvent(event)">{{ event.title }}</li>
         </ul>
         <p v-if="eventsThisWeek.length === 0" class="text-gray-600">No events this week.</p>
       </div>
       <div v-else>
         <ul class="list-disc pl-5">
-          <li v-for="event in eventsToday" :key="event.id" class="text-gray-600">{{ event.title }}</li>
+          <li v-for="event in eventsToday" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarEvent(event)">{{ event.title }}</li>
         </ul>
         <p v-if="eventsToday.length === 0" class="text-gray-600">No events today.</p>
       </div>
@@ -21,16 +21,16 @@
       <h4 class="text-md font-medium text-gray-700">Activities</h4>
       <div v-if="weekly">
         <ul class="list-disc pl-5">
-          <li v-for="event in activitiesThisWeek" :key="event.id" class="text-gray-600">{{ event.title }}</li>
-          <li v-for="event in uncompletedActivitiesThisWeek" :key="event.id" class="text-red-500">{{ event.title }}</li>
+          <li v-for="event in activitiesThisWeek" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
+          <li v-for="event in uncompletedActivitiesThisWeek" :key="event.id" class="text-red-500 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
         </ul>
         <p v-if="activitiesThisWeek.length === 0 && uncompletedActivitiesThisWeek.length === 0" class="text-gray-600">No
           activities this week.</p>
       </div>
       <div v-else>
         <ul class="list-disc pl-5">
-          <li v-for="event in activitiesToday" :key="event.id" class="text-gray-600">{{ event.title }}</li>
-          <li v-for="event in uncompletedActivitiesToday" :key="event.id" class="text-red-500">{{ event.title }}</li>
+          <li v-for="event in activitiesToday" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
+          <li v-for="event in uncompletedActivitiesToday" :key="event.id" class="text-red-500 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
         </ul>
         <p v-if="activitiesToday.length === 0 && uncompletedActivitiesToday.length === 0" class="text-gray-600">No
           activities today.</p>
@@ -48,6 +48,7 @@ import eventRecurrenceService from "@/services/eventRecurrenceService";
 import {CalendarEvent} from "@/models/Event";
 import {Activity} from "@/models/Activity";
 import {useAuthStore} from "@/stores/authStore";
+import router from "@/router";
 
 export default defineComponent({
   props: {
@@ -147,6 +148,12 @@ export default defineComponent({
     computeSortedActivities() {
       this.sortedActivities = this.activities.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
     },
+    goToCalendarEvent(event: CalendarEvent) {
+      router.push({ name: "calendar", query: { eventId: event.id, view: this.weekly ? 'week' : 'day' } });
+    },
+    goToCalendarActivity(activity: Activity) {
+      router.push({ name: "calendar", query: { activityId: activity.id, view: this.weekly ? 'week' : 'day' } });
+    },
   },
   async mounted() {
     await this.fetchData();
@@ -159,3 +166,13 @@ export default defineComponent({
   }
 });
 </script>
+
+<style scoped>
+.clickable-item {
+    cursor: pointer;
+}
+
+.clickable-item:hover {
+    background-color: #f3f4f6;
+}
+</style>

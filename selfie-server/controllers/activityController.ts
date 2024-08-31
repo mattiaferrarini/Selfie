@@ -7,6 +7,7 @@ const formatActivity = (activity: any) => {
     return {
         id: activity._id,
         title: activity.title,
+        owners: activity.owners,
         done: activity.done,
         deadline: activity.deadline,
         notification: activity.notification,
@@ -21,7 +22,14 @@ export const getActivitiesByUser = async (req: any, res: any) => {
     const {start, end} = req.query;
 
     try {
-        let activities = await Activity.find({"participants.username": username});
+        let activities = await Activity.find({
+            participants: {
+                $elemMatch: {
+                    username: username,
+                    status: 'accepted'
+                }
+            }
+        });
 
         if (start && end) {
             // filter activities whose deadline is in the selected period of time
@@ -88,13 +96,25 @@ export const deleteActivityById = async (id: any) => {
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
     try {
-
-        await deleteActivityById(id);
-
+        await recursiveDeleteActivity(id);
         res.status(204).send();
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
+}
+
+export const recursiveDeleteActivity = async (id: string) => {
+    const activity = await Activity.findById(id);
+
+        if(activity){
+            await Promise.all(activity.subActivitiesIDs.map(async (subActivityID: string) => {
+                recursiveDeleteActivity(subActivityID);
+            }));
+
+            await jobSchedulerService.clearActivityNotifications(activity);
+            await Activity.findByIdAndDelete(id);
+            await inviteController.deleteActivityInvites(id);
+        }
 }
 
 export const createActivity = async (newActivity: any, req: any) => {
@@ -115,6 +135,7 @@ export const createActivity = async (newActivity: any, req: any) => {
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
         title: req.body.title,
+        owners: req.body.owners,
         done: req.body.done,
         deadline: req.body.deadline,
         notification: req.body.notification,
@@ -126,6 +147,7 @@ export const addActivity = async (req: any, res: any) => {
     try {
         await createActivity(newActivity, req);
         await inviteController.createInvitesForActivity(newActivity);
+        await jobSchedulerService.scheduleActivityNotification(newActivity);
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
@@ -169,6 +191,9 @@ export const modifyActivity = async (req: any, res: any) => {
 
             await inviteController.createInvitesForActivity(activity);
             await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
+            await jobSchedulerService.updateLateActivityNotification(activity);
+
+            // TODO: remove deleted subactivities from participants
 
             res.status(200).send(formatActivity(activity));
         } else {
@@ -194,5 +219,17 @@ export const changeParticipantStatus = async (id: string, username: string, newS
         }
     } catch (error) {
         throw new Error("Error changing participant status");
+    }
+}
+
+export const removeParticipant = async (req: any, res: any) => {
+    const { id } = req.params;
+    const username = req.body.username;
+
+    try {
+        await changeParticipantStatus(id, username, 'declined');
+        res.status(200).send('Participant removed');
+    } catch (error) {
+        res.status(500).send({ error: 'Error removing participant' });
     }
 }

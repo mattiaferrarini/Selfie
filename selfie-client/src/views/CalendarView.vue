@@ -18,6 +18,7 @@ import resourceService from '@/services/resourceService';
 import { useDateStore } from '@/stores/dateStore';
 import { Resource } from '@/models/Resource';
 import inviteService from '@/services/inviteService';
+import router from '@/router';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -72,6 +73,7 @@ export default defineComponent({
     };
     const fetchActivities = async () => {
       rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      console.log(rangeActivities.value);
     };
     const fetchUnavailabilities = async () => {
       rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
@@ -92,7 +94,7 @@ export default defineComponent({
       // Note: resources are not fetched, but only the events for the selected resource
     };
 
-    /* Dynamic loading of content based of the period currentDate falls into */
+    /* Dynamic loading of content based on the period currentDate falls into */
     const getRangeDates = () => {
       const firstDayOfMonth = timeMethods.getFirstDayOfMonth(focusDate.value);
       const lastDayOfMonth = timeMethods.getLastDayOfMonth(focusDate.value);
@@ -118,6 +120,7 @@ export default defineComponent({
     watch(currentDate, async () => {
       console.log('Current date changed');
       focusDate.value = new Date(currentDate.value);
+      checkInvites();
     });
 
     /* Navigation and date handling */
@@ -201,30 +204,21 @@ export default defineComponent({
     /* Save new/modified events and delete them */
     const saveEvent = async (newEvent: CalendarEvent) => {
       if (modifying.value) {
-        const res = await eventService.modifyEvent(newEvent);
-        const index = rangeEvents.value.findIndex(event => event.id === res.id);
-        rangeEvents.value[index] = res;
+        const index = rangeEvents.value.findIndex(event => event.id === newEvent.id);
+        rangeEvents.value[index] = newEvent;
       } else {
-        const res = await eventService.addEvent(newEvent);
-        rangeEvents.value.push(res);
+        rangeEvents.value.push(newEvent);
       }
-
       hideAllForms();
     };
     const deleteEvent = (event: CalendarEvent) => {
-      eventService.deleteEvent(event);
       rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
       hideAllForms();
     };
 
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: any) => {
-      if (modifying.value) {
-        const index = rangeActivities.value.findIndex(activity => activity.id === newActivity.id);
-        rangeActivities.value[index] = newActivity;
-      } else {
-        rangeActivities.value.push(newActivity);
-      }
+      fetchActivities();
       hideAllForms();
     };
     const markAsDone = async (activity: Activity) => {
@@ -236,27 +230,22 @@ export default defineComponent({
       await activityService.modifyActivity(activity);
     };
     const deleteActivity = (activity: Activity) => {
-      activityService.deleteActivity(activity);
-      rangeActivities.value = rangeActivities.value.filter(a => a.id !== activity.id);
+      fetchActivities();
       hideAllForms();
     };
 
     /* Save new/modified unavailabilities and delete them */
     const saveUnavailability = async (newUnav: any) => {
       if (modifying.value) {
-        const res = await unavailabilityService.modifyUnavailability(newUnav);
         const index = rangeUnavailabilities.value.findIndex(unav => unav.id === newUnav.id);
-        rangeUnavailabilities.value[index] = res;
+        rangeUnavailabilities.value[index] = newUnav;
       }
       else {
-        const res = await unavailabilityService.addUnavailability(newUnav);
-        rangeUnavailabilities.value.push(res);
+        rangeUnavailabilities.value.push(newUnav);
       }
-
       hideAllForms();
     };
     const deleteUnavailability = async (unavailability: Unavailability) => {
-      unavailabilityService.deleteUnavailability(unavailability);
       rangeUnavailabilities.value = rangeUnavailabilities.value.filter(u => u.id !== unavailability.id);
       hideAllForms();
     };
@@ -284,6 +273,10 @@ export default defineComponent({
           rangeActivities.value.push(activity);
       }
     }
+    const checkInvites = async () => {
+      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
+      hasPendingInvites.value = invites.length > 0;
+    };
 
     /* Computed properties */
     const showForm = computed(() => {
@@ -298,8 +291,8 @@ export default defineComponent({
     const showAddButton = computed(() => {
       return content.value !== 'resources' || authStore.isAdmin;
     });
-    const eventModificationAllowd = computed(() => {
-      return content.value !== 'resources' || authStore.isAdmin;
+    const eventAdminOnlyModification = computed(() => {
+      return content.value === 'resources';
     });
 
     /* Lifecycle hooks */
@@ -309,19 +302,31 @@ export default defineComponent({
       rangeStartDate.value = start;
       rangeEndDate.value = end;
 
-      console.log(new Date());
-
       // Fetch the content of the view
-      fetchUserEvents();
-      fetchActivities();
+      await Promise.all([fetchUserEvents(), fetchActivities()]);
+
+      if(router.currentRoute.value.query.view) {
+        view.value = router.currentRoute.value.query.view.toString();
+      }
+
+      if(router.currentRoute.value.query.eventId) {
+        const event = rangeUserEvents.value.find(e => e.id === router.currentRoute.value.query.eventId);
+        if(event) {
+          modifyEvent(event);
+        }
+      }
+      else if(router.currentRoute.value.query.activityId) {
+        const activity = rangeActivities.value.find(a => a.id === router.currentRoute.value.query.activityId);
+        if(activity) {
+          modifyActivity(activity);
+        }
+      }
+
       fetchUnavailabilities();
       fetchResources();
-      // Note: events for resource are fetched when the resource is changed
 
-      // TODO: change
-      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
-      hasPendingInvites.value = invites.length > 0;
-      console.log('Pending invites:', invites);
+      // Check for pending invites
+      checkInvites();
     });
 
     return {
@@ -331,7 +336,8 @@ export default defineComponent({
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
       modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
-      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton, eventModificationAllowd, acceptInvite
+      showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton,
+      eventAdminOnlyModification, acceptInvite
     };
   },
 });
@@ -369,22 +375,23 @@ export default defineComponent({
           </div>
         </div>
       </div>
-      <div v-if="content === 'resources'">
+      <div v-if="content === 'resources'" class="mt-1">
         <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource"
-          class="mr-2 p-2 h-full rounded" @change="onResourceChange">
+          class="mr-2 p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
         <p v-else>No resources available.</p>
       </div>
     </nav>
 
-    <div class="w-full flex justify-center items-center animate-fade-in">
+    <main class="animate-fade-in">
+      <div class="w-full flex justify-center items-center">
       <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false"
         class="cursor-pointer z-10 max-w-[250px]">
         <template #trigger>
           <div class="clickable-text flex items-center justify-center">
             <h2 class="text-2xl font-bold text-gray-700">{{ currentDisplayedPeriodString }}</h2>
-            <v-icon name="bi-chevron-expand"></v-icon>
+            <v-icon name="bi-chevron-expand" class="h-full"></v-icon>
           </div>
         </template>
       </VueDatePicker>
@@ -395,13 +402,14 @@ export default defineComponent({
       :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
       :include-events="content === 'appointments' || content === 'events' || content === 'resources'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
-      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'" class="animate-fade-in"/>
+      :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'"/>
 
     <ActivitiesList v-if="content === 'activities'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
-      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view" />
+      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view"/>
+    </main>
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">
-      <ul class="mr-4 mb-4 self-start" v-if="showAddOptions">
+      <ul class="mr-4 mb-4 self-start animate-appear-in-order" v-if="showAddOptions">
         <li><button class="add-button" @click.stop="openAddEventForm"><v-icon name="md-event"
               class="min-w-[25px] min-h-[25px] text-emerald-600"></v-icon>Event</button></li>
         <li><button class="add-button mt-1" @click.stop="openAddActivityForm"><v-icon name="md-eventavailable"
@@ -415,24 +423,17 @@ export default defineComponent({
       </button>
     </div>
 
-    <div v-if="hasPendingInvites" class="fixed bottom-4 left-4">
-      <button @click.stop="openInviteList"
-        class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
-        <v-icon name="md-markemailunread-outlined" class="w-full h-full"></v-icon>
-      </button>
-    </div>
-
     <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       @click="closeAddForms">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
-        :modification-allowed="eventModificationAllowd" class="m-4" />
+        :admin-only-modification="eventAdminOnlyModification" />
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
         :current-date="currentDate" class="m-4" />
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
         @delete-unavailability="deleteUnavailability" @save-unavailability="saveUnavailability"
-        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate" class="m-4" />
+        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate"/>
     </div>
 
     <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -441,6 +442,13 @@ export default defineComponent({
         <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"
           @accept-invite="acceptInvite" />
       </div>
+    </div>
+
+    <div v-if="hasPendingInvites" class="fixed bottom-4 left-4">
+      <button @click.stop="openInviteList"
+        class="animate-bounce bg-emerald-600 text-white p-3 rounded-full h-14 w-14 flex items-center justify-center self-end">
+        <v-icon name="md-markemailunread-outlined" class="w-full h-full"></v-icon>
+      </button>
     </div>
 
   </div>
