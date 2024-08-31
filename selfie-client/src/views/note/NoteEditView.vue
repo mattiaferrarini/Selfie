@@ -170,6 +170,3 @@ onBeforeRouteUpdate(async () => {
 </template>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
-
-
-

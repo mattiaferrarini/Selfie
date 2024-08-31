@@ -1,5 +1,6 @@
 <template>
-    <div class="m-4">
+    <div class="w-full flex justify-center">
+        <div class="m-4 max-w-[1200px] w-full">
         <h1 class="text-xl font-semibold text-center text-gray-800 my-2">Admin Panel</h1>
         <div class="animate-fade-in mt-4 flex flex-col gap-y-4 sm:flex-row sm:gap-x-4">
             <div class="flex-1 flex flex-col gap-y-4">
@@ -53,10 +54,9 @@
                 </div>
             </div>
         </div>
-
-        <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage"
-            @cancel="cancelAction" @confirm="confirmAction" />
-
+    </div>
+    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage"
+        @cancel="cancelAction" @confirm="confirmAction" />
     </div>
 </template>
 

@@ -71,10 +71,10 @@
                 </div>
                 <div class="flex flex-col ml-2 gap-y-2">
                   <button @click="setCurrentDate"
-                          class=" bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
+                          class=" bg-emerald-500 border text-white p-2 rounded-md">Set
                   </button>
                   <button @click="resetDate"
-                          class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+                          class=" bg-gray-500 border text-white p-2 rounded-md">Reset
                   </button>
                 </div>
               </div>
@@ -176,6 +176,7 @@ export default defineComponent({
       dateStore.setRealTimeDiff(0);
 
       displayTimeMachineMessage('Time machine reset.');
+      initializeDate();
     };
 
     const initializeDate = () => {

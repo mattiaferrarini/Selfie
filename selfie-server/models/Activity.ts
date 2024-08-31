@@ -2,6 +2,7 @@ import { model, Schema, Document } from 'mongoose';
 
 export interface IActivity extends Document{
     title: string;
+    owners: string[];
     done: boolean;
     start?: Date;
     deadline: Date;
@@ -31,6 +32,10 @@ const ActivitySchema = new Schema({
         type: String,
         required: true
     },
+    owners: {
+        type: [String],
+        required: false
+    },
     done: {
         type: Boolean,
         required: false
@@ -45,7 +50,9 @@ const ActivitySchema = new Schema({
     notification: {
         method: {
             type: [String],
-            required: true
+            required: true,
+            default: [],
+            enum: ['push', 'email']
         },
         when: {
             type: String,
@@ -75,7 +82,7 @@ const ActivitySchema = new Schema({
     },
     subActivitiesIDs: {
         type: [String],
-        required: true
+        required: false
     },
     pomodoro: {
         type: {
