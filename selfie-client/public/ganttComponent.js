@@ -2,6 +2,7 @@ class GanttComponent extends HTMLElement {
     constructor() {
         super();
         this._project = {};
+        this._now = {};
         this.myStyle = document.createElement('style');
         this.content = document.createElement('div');
         this._row = 1;
@@ -59,17 +60,57 @@ class GanttComponent extends HTMLElement {
         `
     }
 
-    set project(project) {
+    set project([project, now]) {
         this._project = project;
+        this._now = now;
         this._timeslice = this.getTimeSlice(this._project);
         console.log(this._project);
         console.log(this._timeslice);
+
+        this.adjustActivityDeadline();
         this.render();
     }
 
-    get project() {
-        return this._project;
+    adjustActivityDeadline() {
+        let now = this._now;
+
+        for (const phase of this._project.phases) {
+            for (const activity of phase.activities) {
+                if (!activity.isMilestone)
+                    if (['NotStarted', 'Started', 'Rejected'].includes(activity.status)) { // is affected by time translation
+                        if (activity.activity.deadline.getTime() < now.getTime()) {
+                            if (now.getTime() > this._timeslice.end.getTime()) {
+                                this._timeslice.end = now;
+                            }
+                            const increment = now.getTime() - activity.activity.deadline.getTime();
+                            activity.activity.deadline = now;
+
+                            this.adjustActivityDeadLineRecursive(activity, phase.activities, increment);
+                        }
+                }
+            }
+        }
     }
+
+    adjustActivityDeadLineRecursive(activity, activities, increment) {
+        if (!activity) {
+            return;
+        }
+
+        for (const linkedActivity of this.getAllLinkedActivitiesToAnActivity(activity, activities)) {
+            if (!linkedActivity.isMilestone) {
+                const newEnd = new Date(linkedActivity.activity.deadline.getTime() + increment);
+
+                if (newEnd.getTime() > this._timeslice.end.getTime()) {
+                    this._timeslice.end = newEnd;
+                }
+
+                linkedActivity.activity.deadline = newEnd;
+            }
+            this.adjustActivityDeadLineRecursive(linkedActivity, activities, increment);
+        }
+    }
+
 
     SECOND = 1000;
     MINUTE = 60 * this.SECOND;
@@ -96,7 +137,7 @@ class GanttComponent extends HTMLElement {
         /* (A) GANTT CHART CONTAINER */
         .gantt {
             display: grid;
-            grid-template-columns: repeat(${this.INFO_COLS}, auto) repeat(${numOfCol}, minmax(20px, 1fr));
+            grid-template-columns: repeat(${this.INFO_COLS}, auto) repeat(${numOfCol}, minmax(2em, 1fr));
  
             /* (A2) "TIMELINE" */
             /*background: repeating-linear-gradient(
@@ -105,17 +146,17 @@ class GanttComponent extends HTMLElement {
             
             overflow-x: scroll;
         }
-        
-        /* (B) CELLS */
-        /* (B1) SHARED CELLS */
-        .gantt div { padding: 2px; }
- 
-         /* (B2) HEADER CELLS */
+
+        .gantt div { 
+            padding: 2px; 
+        }
+
         .gantt .head {
             text-align: center;
             font-weight: 700;
             color: #fff;
             background: #103a99;
+            white-space: nowrap;
         }
         
         .gantt .head + .head {
@@ -150,14 +191,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
             if (dateCol.getFullYear() !== year) {
-                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}">${year}</div>`;
+                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'border: 3px dotted yellow;' : ''}">${year}</div>`;
                 year = dateCol.getFullYear();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol + this.INFO_COLS) {
-            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}">${timeSlice.end.getFullYear()}</div>`;
+            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(year === this._now.getFullYear())? 'border: 3px dotted yellow;' : ''}">${timeSlice.end.getFullYear()}</div>`;
         }
         return years;
     }
@@ -173,14 +214,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
             if (dateCol.getMonth() !== month) {
-                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}">${this.numToMonth(month)}</div>`;
+                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'border: 3px dotted yellow;' : ''}">${this.numToMonth(month)}</div>`;
                 month = dateCol.getMonth();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol + this.INFO_COLS) {
-            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
+            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'border: 3px dotted yellow;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
         }
         return months;
     }
@@ -191,7 +232,7 @@ class GanttComponent extends HTMLElement {
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 2">Actors</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 3">Start</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 4">End</div>`;
-        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 5">Duration</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 5">gg</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 6">Status</div>`;
         return info;
     }
@@ -202,7 +243,7 @@ class GanttComponent extends HTMLElement {
         let dateCol = timeSlice.start;
         let days = '';
         for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
-            days += `<div class="head" style="grid-row: ${this._row}; grid-column: ${i}"><span class="day">${dateCol.getDate()}</span></div>`;
+            days += `<div class="head" style="grid-row: ${this._row}; grid-column: ${i}; ${(dateCol.toLocaleDateString() === this._now.toLocaleDateString())? 'background-color: yellow; color: black' : ''}"><span class="day">${dateCol.getDate()}</span></div>`;
             dateCol = this.nextDay(dateCol);
         }
         return days;
@@ -261,8 +302,6 @@ class GanttComponent extends HTMLElement {
 
         let endDate = activity.activity.deadline;
 
-        // adjust dates based on status
-
 
         return [startDate, endDate];
     }
@@ -282,37 +321,41 @@ class GanttComponent extends HTMLElement {
         const spanNum = this.dayDiff(startDate, endDate);
         this._row++;
 
-        let color = '';
+        let colorStyle = '';
         // ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
         switch (activity.status) {
             case 'NotStarted':
-                color = 'gray';
+                colorStyle = 'background-color: gray;';
                 break;
             case 'Started':
-                color = 'SpringGreen';
+                colorStyle = 'background-color: SpringGreen;';
                 break;
             case 'Concluded':
-                color = 'green';
+                colorStyle = 'background-color: green;';
                 break;
             case 'Rejected':
-                color = 'OrangeRed';
+                colorStyle = 'background-color: OrangeRed;';
                 break;
             case 'Abandoned':
-                color = 'black';
+                colorStyle = 'background-color: black;';
                 break;
             default:
-                color = 'green';
+                colorStyle = 'background-color: green;';
+        }
+
+        if (activity.isMilestone) {
+            colorStyle += 'border-right: 1rem solid red;'
         }
 
         let info = `
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1">${activity.activity.title}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1">${activity.activity.participants.map((obj) => obj.username)}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1">${startDate.toLocaleDateString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1">${endDate.toLocaleDateString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1">${spanNum}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1">${activity.status}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.activity.title}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.activity.participants.map((obj) => obj.username)}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${spanNum}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.status}</div>
         `;
-        return info + `<div class="" style="background-color: ${color}; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+        return info + `<div class="" style="${colorStyle} grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
     }
 
     getAllUnlinkedActivities(activities) {

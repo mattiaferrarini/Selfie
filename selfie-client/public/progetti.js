@@ -537,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showGantt = (project) => {
         console.log('Showing gantt:', project);
         const gantt = document.querySelector("gantt-component");
-        gantt.project = project;
+        gantt.project = [project, getTimeMachineDate()];
     };
 
     const showList = (project) => {
