@@ -10,6 +10,7 @@ import jobSchedulerService from '../services/jobSchedulerService';
 const formatEvent = (event: any) => {
     return {
         id: event._id,
+        owner: event.owner,
         allDay: event.allDay,
         title: event.title,
         start: event.start,
@@ -93,6 +94,7 @@ export const deleteEvent = async (req: any, res: any) => {
 export const addEvent = async (req: any, res: any) => {
     const newEvent = new Event({
         allDay: req.body.allDay,
+        owner: req.body.owner,
         title: req.body.title,
         start: req.body.start,
         end: req.body.end,
@@ -203,6 +205,7 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
             event.participants.forEach((participant: any) => {
                 if (participant.username === username) {
                     participant.status = newStatus;
+                    console.log("Participant status changed");
                 }
             });
             await event.save();
@@ -223,5 +226,17 @@ export const otherEventsOverlap = async (username: string, event: IEvent) => {
     }
     catch{
         return false; // TODO: handle error
+    }
+}
+
+export const removeParticipant = async (req: any, res: any) => {
+    const { id } = req.params;
+    const username = req.body.username;
+
+    try {
+        await changeParticipantStatus(id, username, 'declined');
+        res.status(200).send('Participant removed');
+    } catch (error) {
+        res.status(500).send({ error: 'Error removing participant' });
     }
 }

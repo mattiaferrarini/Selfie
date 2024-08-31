@@ -4,11 +4,11 @@
             <div class="text-center w-full p-2 bg-emerald-600">
                 <h3 class="font-bold text-white">Activities</h3>
             </div>
-            <div class="p-2">
+            <div class="p-2 bg-slate-50">
                 <ul class="my-4" v-if="sortedActivities.length > 0">
-                    <li v-for="activity in sortedActivities" :key="activity.id">
+                    <li v-for="activity in sortedActivities" :key="activity.id" class="clickable-item">
                         <hr>
-                        <div class="flex align-center justify-between p-5 cursor-pointer"
+                        <div class="flex align-center justify-between py-1.5" :class="{ late: isLateActivity(activity) }"
                             @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                             <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                             <div class="flex gap-4">
@@ -37,6 +37,7 @@ import { defineComponent } from 'vue';
 import timeMethods from '../../services/timeService';
 import router from "@/router";
 import { useAuthStore } from "@/stores/authStore";
+import { Activity } from '@/models/Activity';
 export default defineComponent({
     props: {
         activities: {
@@ -66,6 +67,9 @@ export default defineComponent({
         undoActivity(activity: any) {
             this.$emit('undoActivity', activity);
         },
+        isLateActivity(activity: Activity): boolean {
+            return !activity.done && activity.deadline < timeMethods.getStartOfDay(new Date());
+        }
     },
     computed: {
         sortedActivities(): any[] {
@@ -73,8 +77,11 @@ export default defineComponent({
             const startOfPeriod = timeMethods.getStartOfCurrentPeriod(this.currentDate, this.view);
             const endOfPeriod = timeMethods.getEndOfCurrentPeriod(this.currentDate, this.view);
 
+            console.log(timeMethods.getEndOfCurrentPeriod(new Date, this.view));
+
             let inPeriod = this.activities.filter((activity: any) => {
-                return activity.deadline >= startOfPeriod && activity.deadline <= endOfPeriod;
+                return (activity.deadline >= startOfPeriod && activity.deadline <= endOfPeriod) || 
+                    (!activity.done && activity.deadline < startOfPeriod && timeMethods.sameDate(timeMethods.getEndOfCurrentPeriod(new Date, this.view), endOfPeriod));
             });
 
             inPeriod.sort((a: any, b: any) => {
@@ -103,5 +110,17 @@ export default defineComponent({
 <style scoped>
 .done {
     text-decoration: line-through;
+}
+
+.clickable-item {
+    cursor: pointer;
+}
+
+.clickable-item:hover {
+    background-color: #f3f4f6;
+}
+
+.late {
+    color: red;
 }
 </style>

@@ -92,7 +92,7 @@ const sendNotificationsForEvent = async (event: IEvent) => {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
             }
-            if (event.notification.method.includes('os')) {
+            if (event.notification.method.includes('push')) {
                 try {
                     const user = await findByUsername(participant.username);
                     if (user)
@@ -182,7 +182,7 @@ const sendNotificationsForActivity = async (activity: IActivity) => {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
             }
-            if (activity.notification.method.includes('os')) {
+            if (activity.notification.method.includes('push')) {
                 try {
                     const user = await findByUsername(participant.username);
                     if (user)

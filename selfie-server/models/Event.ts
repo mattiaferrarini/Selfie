@@ -2,6 +2,7 @@ import { model, Schema, Document } from 'mongoose';
 
 export interface IEvent extends Document {
     title: string;
+    owner: string;
     allDay: boolean;
     start: Date;
     end: Date;
@@ -29,6 +30,10 @@ const EventSchema = new Schema({
     title: { 
         type: String, 
         required: true 
+    },
+    owner: { 
+        type: String, 
+        required: false 
     },
     allDay: { 
         type: Boolean, 
@@ -79,7 +84,8 @@ const EventSchema = new Schema({
         method: { 
             type: [String], 
             required: true,
-            default: [] 
+            default: [],
+            enum: ['push', 'email']
         },
         when: { 
             type: String, 

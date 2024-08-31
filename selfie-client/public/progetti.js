@@ -640,6 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const openEditActivityModal = (activity) => {
         editProjectActivityId.value = activity.activityId;
         editInput.value = activity.input;
+        if (activity.linkedActivityId) {
+            editInput.disabled = true;
+        }
         editOutput.value = activity.output;
         editStatus.value = activity.status;
         editProjectActivityModal.show();
@@ -665,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editStartDate.disabled = true;
         }
         editEndDate.value = activityDiv.activity.deadline.toISOString().split('T')[0];
-        editNotifyOS.checked = activityDiv.activity.notification.method?.includes('os');
+        editNotifyOS.checked = activityDiv.activity.notification.method?.includes('push');
         editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
 
@@ -709,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         const newActivity = {};
+        newActivity.owners = [auth.user.username];
         newActivity.title = editActivityTitle.value;
         newActivity.start = new Date(editStartDate.value);
         newActivity.deadline = new Date(editEndDate.value);
@@ -717,7 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
             repeat: editRepeatNotify.value
         };
         if (editNotifyOS.checked) {
-            newActivity.notification.method.push('os');
+            newActivity.notification.method.push('push');
         }
         if (editNotifyEmail.checked) {
             newActivity.notification.method.push('email');

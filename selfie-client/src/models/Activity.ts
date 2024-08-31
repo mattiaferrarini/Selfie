@@ -1,5 +1,6 @@
 export class Activity {
     title: string;
+    owners: string[];
     id: string | undefined;
     done: boolean;
     deadline: Date;
@@ -27,6 +28,7 @@ export class Activity {
 
     constructor(
         title = '',
+        owners: string[] = [],
         done = false,
         deadline: Date = new Date(),
         notification: {
@@ -47,6 +49,7 @@ export class Activity {
         pomodoro = null
     ) {
         this.title = title;
+        this.owners = owners;
         this.done = done;
         this.deadline = deadline;
         this.notification = notification;
