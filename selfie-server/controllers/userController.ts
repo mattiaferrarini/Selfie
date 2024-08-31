@@ -26,8 +26,7 @@ export const getUserBasicInfo = async (req: Request, res: Response) => {
 // find user by username
 export const getUserByUsername = async (username: string) => {
     try{
-        const user = await User.findOne({ username });
-    return user;
+        return await User.findOne({ username });
     }
     catch{
         return null;

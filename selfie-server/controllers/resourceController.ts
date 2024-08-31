@@ -39,10 +39,7 @@ export const getResource = async (req: any, res: any) => {
 export const addResource = async (req: any, res: any) => {
     const name = req.body.name, username = req.body.username;
 
-    const resMatch = await Resource.findOne({ username });
-    const userMatch = await getUserByUsername(username);
-
-    if (resMatch || userMatch)
+    if (await Resource.findOne({ username }) || await getUserByUsername(username))
         res.status(409).send({ error: 'The username is already taken.' });
     else {
         const newResource = new Resource({ name: name, username: username });
@@ -102,16 +99,12 @@ const notifyOfDeletion = async (Resource: IResource) => {
 
 export const isResource = async (username: string) => {
     const resource = await Resource.findOne({ username });
-    if (resource)
-        return true;
-    else
-        return false;
+    return !!resource;
 }
 
 export const getResourcesByUsername = async (username: string) => {
     try{
-        const user = await Resource.findOne({ username });
-    return user;
+        return await Resource.findOne({ username });
     }
     catch{
         return null;
