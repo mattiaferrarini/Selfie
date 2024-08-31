@@ -45,7 +45,7 @@ export const logout = (req: any, res: any, next: any) => {
                 return next(err);
             }
             res.clearCookie('connect.sid');
-
+            res.status(200).send('Logged out');
             // TODO: close websocket connections?
         });
     });
