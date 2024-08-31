@@ -7,7 +7,7 @@ class GanttComponent extends HTMLElement {
         this._row = 1;
         this._timeslice = {start: null, end: null};
 
-        this.INFO_COLS = 5;
+        this.INFO_COLS = 6;
     }
 
     connectedCallback() {
@@ -24,9 +24,11 @@ class GanttComponent extends HTMLElement {
         this._row = 1;
         this.content.innerHTML = `
         <div class="gantt-container">
+            <link rel="stylesheet" href="tailwind.css" >
             <h1>Gantt chart</h1>
             ${this.renderHeading()}
             ${this.renderGantt()}
+            
         </div>
         `
     }
@@ -88,7 +90,6 @@ class GanttComponent extends HTMLElement {
     }
 
     renderBar() {
-        // TODO: done only for monthly view
         const timeSlice = this._timeslice;
         const numOfCol = this.dayDiff(timeSlice.start, timeSlice.end) + 1;
         this.myStyle.textContent = `
@@ -191,6 +192,7 @@ class GanttComponent extends HTMLElement {
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 3">Start</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 4">End</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 5">Duration</div>`;
+        info += `<div class="head" style="grid-row: ${this._row}; grid-column: 6">Status</div>`;
         return info;
     }
 
@@ -244,9 +246,11 @@ class GanttComponent extends HTMLElement {
     }
 
     getStartEndDates(activity, activities) {
+        let prevActivity = this.getPrevActivity(activity, activities);
+
         let startDate = null;
         if (activity.linkedActivityId) {
-            startDate = this.getPrevActivity(activity, activities).activity.deadline;
+            startDate = prevActivity.activity.deadline;
         }
         else if (activity.activity.start.getTime() !== Date.parse("Thu Jan 01 1970 01:00:00 GMT+0100")) {
             startDate = activity.activity.start;
@@ -256,6 +260,9 @@ class GanttComponent extends HTMLElement {
         }
 
         let endDate = activity.activity.deadline;
+
+        // adjust dates based on status
+
 
         return [startDate, endDate];
     }
@@ -275,14 +282,37 @@ class GanttComponent extends HTMLElement {
         const spanNum = this.dayDiff(startDate, endDate);
         this._row++;
 
+        let color = '';
+        // ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
+        switch (activity.status) {
+            case 'NotStarted':
+                color = 'gray';
+                break;
+            case 'Started':
+                color = 'SpringGreen';
+                break;
+            case 'Concluded':
+                color = 'green';
+                break;
+            case 'Rejected':
+                color = 'OrangeRed';
+                break;
+            case 'Abandoned':
+                color = 'black';
+                break;
+            default:
+                color = 'green';
+        }
+
         let info = `
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1">${activity.activity.title}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1">${activity.activity.participants.map((obj) => obj.username)}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1">${startDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1">${endDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1">${spanNum}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1">${activity.status}</div>
         `;
-        return info + `<div style="background: green; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+        return info + `<div class="" style="background-color: ${color}; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
     }
 
     getAllUnlinkedActivities(activities) {
