@@ -9,6 +9,8 @@ const formatActivity = (activity: any) => {
         title: activity.title,
         owners: activity.owners,
         done: activity.done,
+        projectId: activity.projectId,
+        start: activity.start,
         deadline: activity.deadline,
         notification: activity.notification,
         participants: activity.participants,
@@ -32,11 +34,12 @@ export const getActivitiesByUser = async (req: any, res: any) => {
         });
 
         if (start && end) {
-            // filter activities whose deadline is in the selected period of time
+            // filter activities whose deadline or start is in the selected period of time
             // or activities that are not done and whose deadline is before the selected period of time
             activities = activities.filter((activity: any) => {
                 return timeService.inRange(activity.deadline, new Date(start), new Date(end)) ||
-                    (!activity.done && activity.deadline < timeService.getStartOfDay(new Date(start)));
+                    (!activity.done && activity.deadline < timeService.getStartOfDay(new Date(start))) || 
+                    (activity.start && timeService.inRange(activity.start, new Date(start), new Date(end)));
             });
         }
 
@@ -137,6 +140,8 @@ export const addActivity = async (req: any, res: any) => {
         title: req.body.title,
         owners: req.body.owners,
         done: req.body.done,
+        start: req.body.start,
+        projectId: req.body.projectId,
         deadline: req.body.deadline,
         notification: req.body.notification,
         participants: req.body.participants,
