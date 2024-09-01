@@ -4,50 +4,60 @@
     <h3 v-else class="text-lg font-semibold text-gray-800">Today</h3>
     <div class="mt-2" v-if="showEvents">
       <h4 class="text-md font-medium text-gray-700">Events</h4>
-      <div v-if="weekly">
-        <ul class="list-disc pl-5">
-          <li v-for="event in eventsThisWeek" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarEvent(event)">{{ event.title }}</li>
+      <div>
+        <ul class="list-disc">
+          <li v-for="event in eventsInPeriod" :key="event.id" class="text-gray-600 clickable-item"
+            @click="goToCalendarEvent(event)">{{ event.title }}</li>
         </ul>
-        <p v-if="eventsThisWeek.length === 0" class="text-gray-600">No events this week.</p>
-      </div>
-      <div v-else>
-        <ul class="list-disc pl-5">
-          <li v-for="event in eventsToday" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarEvent(event)">{{ event.title }}</li>
-        </ul>
-        <p v-if="eventsToday.length === 0" class="text-gray-600">No events today.</p>
+        <p v-if="eventsInPeriod.length === 0 && weekly" class="text-gray-600">No events this week.</p>
+        <p v-if="eventsInPeriod.length === 0 && !weekly" class="text-gray-600">No events today.</p>
       </div>
     </div>
     <div class="mt-2" v-if="showActivities">
       <h4 class="text-md font-medium text-gray-700">Activities</h4>
-      <div v-if="weekly">
-        <ul class="list-disc pl-5">
-          <li v-for="event in activitiesThisWeek" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
-          <li v-for="event in uncompletedActivitiesThisWeek" :key="event.id" class="text-red-500 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
+      <div>
+        <ul class="list-disc">
+          <li v-for="activity in activitiesInPeriod" :key="activity.id" class="clickable-item"
+            @click="goToCalendarActivity(activity)"
+            :class="{ 'text-red-500': isLateActivity(activity), 'text-gray-600': !isLateActivity(activity) }">
+            {{ activity.title }}
+          </li>
         </ul>
-        <p v-if="activitiesThisWeek.length === 0 && uncompletedActivitiesThisWeek.length === 0" class="text-gray-600">No
-          activities this week.</p>
+        <p v-if="activitiesInPeriod.length === 0 && weekly" class="text-gray-600">No activities this week.</p>
+        <p v-if="activitiesInPeriod.length === 0 && !weekly" class="text-gray-600">No activities today.</p>
       </div>
-      <div v-else>
-        <ul class="list-disc pl-5">
-          <li v-for="event in activitiesToday" :key="event.id" class="text-gray-600 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
-          <li v-for="event in uncompletedActivitiesToday" :key="event.id" class="text-red-500 clickable-item" @click="goToCalendarActivity(event)">{{ event.title }}</li>
+    </div>
+    <div class="mt-2" v-if="showProjects">
+      <h4 class="text-md font-medium text-gray-700">Projects</h4>
+      <div>
+        <ul class="list-disc">
+          <li v-for="pair in projectActivitiesInPeriod" :key="pair.activity.id" class="clickable-item"
+            @click="goToCalendarActivity(pair.activity)">
+            <div class="flex gap-2">
+              <div v-if="pair.type === 'start'" class="bg-blue-500 px-1 rounded-md text-white">Start</div>
+              <div v-else class="bg-orange-500 px-1 rounded-md text-white">Deadline</div>
+              <p :class="{ 'text-red-500': isLateActivity(pair.activity), 'text-gray-600': !isLateActivity(pair.activity) }">
+                {{ pair.activity.title }}
+              </p>
+            </div>
+          </li>
         </ul>
-        <p v-if="activitiesToday.length === 0 && uncompletedActivitiesToday.length === 0" class="text-gray-600">No
-          activities today.</p>
+        <p v-if="projectActivitiesInPeriod.length === 0 && weekly" class="text-gray-600">No projects this week.</p>
+        <p v-if="projectActivitiesInPeriod.length === 0 && !weekly" class="text-gray-600">No projects today.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 import timeService from "@/services/timeService";
 import eventService from "@/services/eventService";
 import activityService from "@/services/activityService";
 import eventRecurrenceService from "@/services/eventRecurrenceService";
-import {CalendarEvent} from "@/models/Event";
-import {Activity} from "@/models/Activity";
-import {useAuthStore} from "@/stores/authStore";
+import { CalendarEvent } from "@/models/Event";
+import { Activity } from "@/models/Activity";
+import { useAuthStore } from "@/stores/authStore";
 import router from "@/router";
 
 export default defineComponent({
@@ -71,29 +81,30 @@ export default defineComponent({
       activities: [] as Activity[],
       eventsWithDates: [] as { event: CalendarEvent, dates: { start: Date, end: Date } }[],
       sortedActivities: [] as Activity[],
+      sortedProjectActivities: [] as { activity: Activity, type: string }[],
       startOfDay: timeService.getStartOfDay(this.date),
       endOfDay: timeService.getEndOfDay(this.date),
       endOfEndOfWeek: timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date)),
     };
   },
   computed: {
-    eventsToday(): CalendarEvent[] {
-      return this.getEventsForPeriod(this.startOfDay, this.endOfDay);
+    eventsInPeriod(): CalendarEvent[] {
+      if (this.weekly)
+        return this.getEventsForPeriod(this.startOfDay, this.endOfEndOfWeek);
+      else
+        return this.getEventsForPeriod(this.startOfDay, this.endOfDay);
     },
-    eventsThisWeek(): CalendarEvent[] {
-      return this.getEventsForPeriod(this.startOfDay, this.endOfEndOfWeek);
+    activitiesInPeriod(): Activity[] {
+      if (this.weekly)
+        return this.getActivitiesForPeriod(this.startOfDay, this.endOfEndOfWeek);
+      else
+        return this.getActivitiesForPeriod(this.startOfDay, this.endOfDay);
     },
-    activitiesToday(): Activity[] {
-      return this.getActivitiesForPeriod(this.startOfDay, this.endOfDay);
-    },
-    uncompletedActivitiesToday(): Activity[] {
-      return this.getUncompletedActivitiesForPeriod(this.startOfDay);
-    },
-    activitiesThisWeek(): Activity[] {
-      return this.getActivitiesForPeriod(this.startOfDay, this.endOfEndOfWeek);
-    },
-    uncompletedActivitiesThisWeek(): Activity[] {
-      return this.getUncompletedActivitiesForPeriod(this.startOfDay);
+    projectActivitiesInPeriod(): { activity: Activity, type: string }[] {
+      if (this.weekly)
+        return this.getProjectActivitiesForPeriod(this.startOfDay, this.endOfEndOfWeek);
+      else
+        return this.getProjectActivitiesForPeriod(this.startOfDay, this.endOfDay);
     },
     showEvents(): boolean {
       return this.content === 'all' || this.content === 'events';
@@ -101,9 +112,14 @@ export default defineComponent({
     showActivities(): boolean {
       return this.content === 'all' || this.content === 'activities';
     },
+    showProjects(): boolean {
+      return this.content === 'all' || this.content === 'projects';
+    },
   },
   methods: {
     async fetchData() {
+      console.log(this.date);
+
       this.startOfDay = timeService.getStartOfDay(this.date);
       this.endOfDay = timeService.getEndOfDay(this.date);
       this.endOfEndOfWeek = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
@@ -116,25 +132,15 @@ export default defineComponent({
 
       this.computeEventsWithDates();
       this.computeSortedActivities();
-    },
-    getEventsForPeriod(start: Date, end: Date): CalendarEvent[] {
-      return this.eventsWithDates.filter((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => {
-        return event.dates.start <= end && event.dates.end >= start;
-      }).map((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => event.event);
-    },
-    getActivitiesForPeriod(start: Date, end: Date): Activity[] {
-      return this.sortedActivities.filter((activity: Activity) => {
-        return activity.deadline <= end && activity.deadline >= start;
-      });
-    },
-    getUncompletedActivitiesForPeriod(start: Date): Activity[] {
-      return this.sortedActivities.filter((activity: Activity) => {
-        return activity.deadline <= start && !activity.done;
-      });
-    },
+      this.computeSortedProjectActivities();
+
+      console.log(this.activities);
+      console.log(this.sortedProjectActivities);
+      console.log(this.projectActivitiesInPeriod);
+    }, 
     computeEventsWithDates() {
       let withDates = this.events.map((event: any) => {
-        return {event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay)};
+        return { event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay) };
       });
       let inRange = withDates.filter((event: any) => {
         return event.dates.start <= this.endOfEndOfWeek && event.dates.end >= this.startOfDay;
@@ -146,7 +152,53 @@ export default defineComponent({
       this.eventsWithDates = valid;
     },
     computeSortedActivities() {
-      this.sortedActivities = this.activities.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+      const nonProjectActivities = this.activities.filter((activity: Activity) => !activity.projectId);
+      this.sortedActivities = nonProjectActivities.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+    },
+    computeSortedProjectActivities() {
+      const projectActivities = this.activities.filter((activity: Activity) => activity.projectId);
+      let startEnds = projectActivities.flatMap((activity) => {
+        let start = { activity, type: 'start' };
+        let deadline = { activity, type: 'deadline' };
+        return [start, deadline];
+      });
+
+      let sorted = startEnds.sort((a, b) => {
+        if (a.activity.start && b.activity.start) {
+          return a.activity.start.getTime() - b.activity.start.getTime();
+        } else if (a.activity.deadline && b.activity.deadline) {
+          return a.activity.deadline.getTime() - b.activity.deadline.getTime();
+        } else {
+          return 0;
+        }
+      });
+      this.sortedProjectActivities = sorted;
+    },
+    getEventsForPeriod(start: Date, end: Date): CalendarEvent[] {
+      return this.eventsWithDates.filter((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => {
+        return event.dates.start <= end && event.dates.end >= start;
+      }).map((event: { event: CalendarEvent, dates: { start: Date, end: Date } }) => event.event);
+    },
+    getActivitiesForPeriod(start: Date, end: Date): Activity[] {
+      return this.sortedActivities.filter((activity: Activity) => {
+        return activity.deadline <= end;
+      });
+    },
+    isLateActivity(activity: Activity): boolean {
+      return !activity.done && activity.deadline < this.startOfDay;
+    },
+    getProjectActivitiesForPeriod(start: Date, end: Date): { activity: Activity, type: string }[] {
+      console.log(start, end);
+      return this.sortedProjectActivities.filter((pair: { activity: Activity, type: string }) => {
+        if (pair.type === 'start' && pair.activity.start) {
+          return pair.activity.start <= end && pair.activity.start >= start;
+        }
+        else if (pair.type === 'deadline' && pair.activity.deadline) {
+          return pair.activity.deadline <= end;
+        }
+        else
+          return false;
+      });
     },
     goToCalendarEvent(event: CalendarEvent) {
       router.push({ name: "calendar", query: { eventId: event.id, view: this.weekly ? 'week' : 'day' } });
@@ -169,10 +221,16 @@ export default defineComponent({
 
 <style scoped>
 .clickable-item {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .clickable-item:hover {
-    background-color: #f3f4f6;
+  background-color: #f3f4f6;
+}
+
+li {
+  list-style-type: none;
+  margin-top: 0.25rem;
+  overflow: hidden;
 }
 </style>
