@@ -98,62 +98,69 @@ onBeforeRouteUpdate(async () => {
 
 <template>
   <div class="flex flex-col flex-wrap justify-center w-screen max-w-screen-md m-auto">
-    <div class="flex flex-col">
-      <div class="flex flex-row flex-wrap justify-center mt-5">
+    <div class="flex w-full flex-col p-3 pb-8">
+      <div class="flex flex-row flex-wrapw w-full mt-2 gap-1">
         <button
             type="button"
-            class="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700"
-            @click="saveNote()">save and close
+            class="focus:outline-none flex-1 text-white bg-green-700 hover:bg-green-800 font-medium rounded-md text-sm py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700"
+            @click="saveNote()">Save and close
         </button>
         <button
             type="button"
-            class="focus:outline-none text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-            @click="deleteNote()">delete
+            class="focus:outline-none flex-1 text-white bg-red-700 hover:bg-red-800 font-medium rounded-md text-sm py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+            @click="deleteNote()">Delete
         </button>
         <button
             type="button"
-            class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700"
-            @click="changeViewMode">{{ viewMode ? "edit" : "view" }}
+            class="focus:outline-none flex-1 text-white bg-purple-700 hover:bg-purple-800 font-medium rounded-md text-sm py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700"
+            @click="changeViewMode">{{ viewMode ? "Edit" : "View" }}
         </button>
       </div>
 
+      <div class="bg-gray-300 rounded-md mt-2">
+        <div class="flex flex-row flex-wrap justify-center my-2 gap-x-3">
+        <p>Creation date: {{ new Date(creation).toLocaleString() }}</p>
+        <p>Last modification: {{ new Date(lastmodify).toLocaleString() }}</p>
+      </div>
+    </div>
+
       <textarea
           ref="titleArea"
-          class="w-screen max-w-screen-md font-bold text-4xl text-center resize-none p-2"
+          class="w-full max-w-screen-md mb-2 font-bold text-2xl rounded-md text-center resize-none p-2 shadow-md bg-white mt-6 "
           v-model="title"
           placeholder="edit me"
           :disabled="viewMode">
       </textarea>
-      <div class="flex flex-row flex-wrap justify-center">
-        <p class="m-2">Creation date: {{ new Date(creation).toLocaleString() }}</p>
-        <p class="m-2">Last modification: {{ new Date(lastmodify).toLocaleString() }}</p>
-      </div>
-      <div class="flex justify-center">
-        <input type="text" v-model="category" :disabled="viewMode" class="text-center m-2 bg-blue-700 rounded-lg text-white p-2">
-      </div>
-      <!-- show if only todoData is not empty -->
-      <div>
-        <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode" class="m-2"></todoList>
-        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2 mb-2" :disabled="viewMode">add todo list</button>
-      </div>
+
       <div v-if="viewMode" class="flex justify-center">
         <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>
       </div>
-      <div v-else class="flex justify-center resize-none p-2" >
+      <div v-else class="flex justify-center resize-none" >
         <textarea
           ref="contentArea"
-          class="w-screen max-w-screen-md min-h-[200px] resize-none"
+          class="w-screen max-w-screen-md min-h-[200px] resize-none rounded-md p-2 shadow-md"
           v-model="content"
-          placeholder="edit me"
+          placeholder="Edit me"
           :disabled="viewMode">
         </textarea>
       </div>
 
-      <div class="flex flex-col justify-center flex-wrap w-screen max-w-screen-md m-auto p-2">
-        <p class="text-center">Owners:</p>
-        <div class="flex">
-          <label for="open_to_anyone">open to anyone</label>
+      <!-- show if only todoData is not empty -->
+      <div class="mt-2 w-full flex justify-center">
+        <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode" class="w-full"></todoList>
+        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2 w-full shadow-md" :disabled="viewMode">Add todo list</button>
+      </div>
+
+      <div class="flex items-center justify-between mt-8 w-full bg-white shadow-md rounded-md p-2">
+        <label for="category" class="font-bold text-lg">Category</label>
+        <input type="text" id="category" v-model="category" :disabled="viewMode" class="text-center bg-blue-500 rounded-md text-white p-1">
+      </div>
+
+      <div class="flex flex-col justify-center flex-wrap w-full max-w-screen-md m-auto bg-white shadow-md rounded-md p-2 mt-2">
+        <h3 class="font-bold text-lg">Owners</h3>
+        <div class="flex gap-2 items-center mb-2">
           <input class="ml-1" type="checkbox" id="open_to_anyone" v-model="open_to_anyone" :disabled="viewMode"/>
+          <label for="open_to_anyone">Open to anyone</label>
         </div>
 
         <VueMultiselect v-if="!open_to_anyone"

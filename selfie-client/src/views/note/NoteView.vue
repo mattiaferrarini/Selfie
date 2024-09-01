@@ -41,10 +41,10 @@ const newnote = async () => {
   const date = new Date();
   const note = await noteService.create(
       "",
-      `new note ${date.toLocaleString()}`,
+      `New note ${date.toLocaleString()}`,
       `${date.toISOString()}`,
       `${date.toISOString()}`,
-      "uncategorized"
+      "Uncategorized"
   );
 
   const id = note._id;
@@ -60,13 +60,13 @@ onMounted(async () => {
 
 <template>
   <div class="p-3">
-    <div class="flex justify-center gap-5 pt-5 pb-5">
-      <button class="bg-green-700 text-white rounded-lg p-3" @click="newnote()">new note</button>
-      <button class="bg-yellow-400 rounded-xl p-3" @click="changeOrder()">order by {{ order }}</button>
+    <div class="flex justify-center gap-2 pt-5 pb-5">
+      <button class="bg-green-700 w-5/12 sm:w-auto text-white rounded-md p-2 sm:py-3 sm:px-5" @click="newnote()">New note</button>
+      <button class="bg-yellow-400 w-7/12 sm:w-auto rounded-md p-2 sm:py-3 sm:px-5" @click="changeOrder()">Order by {{ order }}</button>
     </div>
 
-    <div class="flex flex-row flex-wrap justify-center m-auto gap-3">
-      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-auto rounded border-2 border-black">
+    <div class="flex flex-row flex-wrap justify-center m-auto gap-3 animate-fade-in">
+      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-auto rounded-lg border-2 bg-slate-50 border-gray-700 shadow-md">
         <router-link :to="`/note/${note._id}`">
           <div class="p-4">
             <div class="flex flex-col justify-center pb-2 gap-y-2">
