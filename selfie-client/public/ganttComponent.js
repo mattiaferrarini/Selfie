@@ -2,6 +2,7 @@ class GanttComponent extends HTMLElement {
     constructor() {
         super();
         this._project = {};
+        this._untoachedProject = {};
         this._now = {};
         this.myStyle = document.createElement('style');
         this.content = document.createElement('div');
@@ -62,6 +63,7 @@ class GanttComponent extends HTMLElement {
 
     set project([project, now]) {
         this._project = project;
+        this._untoachedProject = structuredClone(project);
         this._now = now;
         this._timeslice = this.getTimeSlice(this._project);
         console.log(this._project);
@@ -315,12 +317,18 @@ class GanttComponent extends HTMLElement {
         return null;
     }
 
-    renderActivity(activity, startDate, endDate) {
-
+    getStartColSpanNum(startDate, endDate) {
         const startCol = this.dayDiff(this._timeslice.start, startDate) + 1 + this.INFO_COLS;
         const spanNum = this.dayDiff(startDate, endDate);
+        return [startCol, spanNum];
+    }
+
+    renderActivity(activity, startDate, endDate) {
+        const oldEndDate = this.getActivitybyId(activity.activity._id, this._untoachedProject).activity.deadline;
+        console.log('OLDENDDATE',oldEndDate);
         this._row++;
 
+        let [rstartcol, rspannum] = this.getStartColSpanNum(startDate, endDate);
         let colorStyle = '';
         // ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
         switch (activity.status) {
@@ -352,10 +360,30 @@ class GanttComponent extends HTMLElement {
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.activity.participants.map((obj) => obj.username)}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${spanNum}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.status}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${rspannum}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${(activity.status === 'NotStarted')? 'Not started' : activity.status}</div>
         `;
-        return info + `<div class="" style="${colorStyle} grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+
+        if (oldEndDate.getTime() < endDate.getTime()) {
+            // old part
+            let [startCol, spanNum] = this.getStartColSpanNum(startDate, oldEndDate);
+            if (spanNum > 0) {
+                info += `<div class="" style="${colorStyle} grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+                [startCol, spanNum] = this.getStartColSpanNum(oldEndDate, endDate);
+                if (spanNum > 0) {
+                    info += `<div class="" style="${colorStyle}; border: white 3px dashed; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+                }
+            } else {
+                [startCol, spanNum] = this.getStartColSpanNum(startDate, endDate);
+                info += `<div class="" style="${colorStyle}; border: white 3px dashed; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+            }
+        }
+        else {
+            let [startCol, spanNum] = this.getStartColSpanNum(startDate, endDate);
+            info += `<div class="" style="${colorStyle} grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
+        }
+
+        return info;
     }
 
     getAllUnlinkedActivities(activities) {
@@ -376,6 +404,17 @@ class GanttComponent extends HTMLElement {
             }
         }
         return linkedActivities;
+    }
+
+    getActivitybyId(id, project) {
+        for (const phase of project.phases) {
+            for (const a of phase.activities) {
+                if (id === a.activity._id) {
+                    return a;
+                }
+            }
+        }
+        return null;
     }
 
     // extract data for creating gantt
