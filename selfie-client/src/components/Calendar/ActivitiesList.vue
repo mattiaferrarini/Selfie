@@ -1,7 +1,7 @@
 <template>
     <div class="flex justify-center w-full py-8 px-4 sm:p-8">
-        <div class="flex flex-col gap-4 w-full">
-            <div class="rounded-lg shadow-md overflow-hidden w-full max-w-[600px]" v-if="includeOrdinaryActivities">
+        <div class="flex flex-col gap-4 w-full max-w-[600px]">
+            <div class="rounded-lg shadow-md overflow-hidden w-full" v-if="includeOrdinaryActivities">
             <div class="text-center w-full p-2 bg-emerald-600">
                 <h3 class="font-bold text-white">Activities</h3>
             </div>
@@ -38,7 +38,7 @@
                 <ul class="my-4" v-if="sortedProjectActivities.length > 0">
                     <li v-for="activity in sortedProjectActivities" :key="activity.activity.id" class="clickable-item">
                         <hr>
-                        <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click="modifyActivity(activity.activity)">
+                        <div class="flex align-center justify-between gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click="modifyActivity(activity.activity)">
                             <div v-if="activity.type=='start'" class="bg-blue-500 px-1 rounded-md text-white">
                                 Start
                             </div>
