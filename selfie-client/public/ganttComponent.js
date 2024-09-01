@@ -27,10 +27,11 @@ class GanttComponent extends HTMLElement {
         this.content.innerHTML = `
         <div class="gantt-container">
             <link rel="stylesheet" href="tailwind.css" >
-            <h1>Gantt chart</h1>
+            <h1 class="font-bold text-3xl text-center">Gantt chart</h1>
             ${this.renderHeading()}
             ${this.renderGantt()}
-            
+            <!-- Color legend -->
+            ${this.renderColorLegend()}
         </div>
         `
     }
@@ -40,8 +41,8 @@ class GanttComponent extends HTMLElement {
             return '';
         }
         return `
-        <div>
-            <h1>${this._project.title}</h1>
+        <div class="text-xl font-bold">
+            <h1>Project: ${this._project.title}</h1>
             <p>Owner: ${this._project.owner}</p>
             <p>Actors: ${this._project.actors}</p>
         </div>
@@ -56,7 +57,6 @@ class GanttComponent extends HTMLElement {
  
             <!-- TASKS -->
             ${this.renderPhases()}
-            
         </div>
         `
     }
@@ -236,6 +236,24 @@ class GanttComponent extends HTMLElement {
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 5">gg</div>`;
         info += `<div class="head" style="grid-row: ${this._row}; grid-column: 6">Status</div>`;
         return info;
+    }
+
+    legendBlock(style, text) {
+        return `<div class="head" style="color: white; width: 150px; padding: 3px;${style}"><p>${text}</p></div>`;
+    }
+
+    renderColorLegend() {
+        return `
+        <div style="display: flex; flex-direction: row; gap: 1em; margin-top: 50px; flex-wrap: wrap" id="color-legend">
+            ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}
+            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed')}
+            ${this.legendBlock('background-color: gray;', 'Not started')}
+            ${this.legendBlock('background-color: SpringGreen;', 'Started')}
+            ${this.legendBlock('background-color: green;', 'Concluded')}
+            ${this.legendBlock('background-color: OrangeRed;', 'Rejected')}
+            ${this.legendBlock('background-color: black;', 'Abandoned')}
+        </div>
+        `
     }
 
     renderDays() {
