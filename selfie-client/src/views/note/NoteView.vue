@@ -61,23 +61,23 @@ onMounted(async () => {
 <template>
   <div class="p-3">
     <div class="flex justify-center gap-5 pt-5 pb-5">
-      <button class="bg-green-700 rounded-lg p-3" @click="newnote()">new note</button>
+      <button class="bg-green-700 text-white rounded-lg p-3" @click="newnote()">new note</button>
       <button class="bg-yellow-400 rounded-xl p-3" @click="changeOrder()">order by {{ order }}</button>
     </div>
 
     <div class="flex flex-row flex-wrap justify-center m-auto gap-3">
-      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-scroll rounded border-2 border-black">
+      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-auto rounded border-2 border-black">
         <router-link :to="`/note/${note._id}`">
           <div class="p-4">
             <div class="flex flex-col justify-center pb-2 gap-y-2">
               <!-- note header information -->
-              <div class="bg-gray-400 rounded w-fit">
+              <div class="underline decoration-emerald-500 rounded w-fit">
                 <h1 class="font-bold text-3xl break-word">{{ note.title }}</h1>
               </div>
 
-              <span class="bg-purple-500 break-words rounded w-fit">Category: {{ note.category }}</span>
+              <span class="border-purple-500 border-2 p-0.5 break-words rounded w-fit">Category: {{ note.category }}</span>
 
-              <div class="flex flex-col bg-blue-500 rounded w-fit">
+              <div class="flex flex-col border-emerald-600 border-2 p-1 rounded w-fit">
                 <span class="break-words ">Created: {{ new Date(note.creation).toLocaleString() }}</span>
                 <span class="break-words">Updated: {{ new Date(note.lastmodify).toLocaleString() }}</span>
               </div>

@@ -134,7 +134,7 @@ onBeforeRouteUpdate(async () => {
       <!-- show if only todoData is not empty -->
       <div>
         <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode" class="m-2"></todoList>
-        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2" :disabled="viewMode">add todo list</button>
+        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2 mb-2" :disabled="viewMode">add todo list</button>
       </div>
       <div v-if="viewMode" class="flex justify-center">
         <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>

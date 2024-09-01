@@ -49,7 +49,7 @@ const saveActivity = async (newActivity: any) => {
   closeAddForms()
 };
 
-const deleteActivity = async (activity: any) => {
+const deleteActivity = async () => {
   todoData.value[index].activityID = null;
   closeAddForms()
 };
@@ -95,7 +95,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col flex-wrap border-black border-2 rounded p-3">
+  <div class="flex flex-col flex-wrap border-black border-2 rounded p-3 bg-white">
     <h1 class="font-bold text-2xl">Todo List</h1>
     <div v-if="showActivityForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <ActivityForm
@@ -110,8 +110,8 @@ onBeforeMount(async () => {
     </div>
     <ul>
       <li v-for="(todo, i) in todoData" :key="todo.title" class="pb-3">
-        <div v-if="!todo.activityID" class="flex flex-row justify-between">
-          <input type="checkbox" v-model="todo.done" :disabled="editable">
+        <div v-if="!todo.activityID" class="flex flex-row items-center justify-between">
+          <input type="checkbox" v-model="todo.done" class="h-4 w-4" :disabled="editable">
           <span>{{ todo.title }}</span>
           <button class="bg-yellow-400 rounded-lg p-1" @click="makeActivity(todo, i)" :disabled="editable">Make Activity</button>
         </div>
@@ -124,8 +124,8 @@ onBeforeMount(async () => {
       </li>
     </ul>
     <div class="flex flex-row pt-3 gap-x-3">
-      <input type="text" v-model="newTodo" class="w-full" :disabled="editable">
-      <button @click="addTodo" class="bg-green-700 rounded-lg p-1" :disabled="editable">Add</button>
+      <input type="text" v-model="newTodo" class="w-full border rounded" :disabled="editable">
+      <button @click="addTodo" class="bg-green-700 text-white rounded-lg p-1" :disabled="editable">Add</button>
     </div>
   </div>
 </template>
