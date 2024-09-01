@@ -78,7 +78,7 @@ class GanttComponent extends HTMLElement {
 
         for (const phase of this._project.phases) {
             for (const activity of phase.activities) {
-                if (!activity.isMilestone)
+                if (!activity.isMilestone) {
                     if (['NotStarted', 'Started', 'Rejected'].includes(activity.status)) { // is affected by time translation
                         if (activity.activity.deadline.getTime() < now.getTime()) {
                             if (now.getTime() > this._timeslice.end.getTime()) {
@@ -89,6 +89,7 @@ class GanttComponent extends HTMLElement {
 
                             this.adjustActivityDeadLineRecursive(activity, phase.activities, increment);
                         }
+                    }
                 }
             }
         }
@@ -151,6 +152,7 @@ class GanttComponent extends HTMLElement {
 
         .gantt div { 
             padding: 2px; 
+            white-space: nowrap;
         }
 
         .gantt .head {
@@ -164,13 +166,6 @@ class GanttComponent extends HTMLElement {
         .gantt .head + .head {
             border-left:2px solid white;
         }
-        
-        .gantt .head .day {
-            word-break: keep-all;
-            overflow: hidden;
-        }
-        
-        
         `;
         let bar = '';
         bar += this.renderYears();
