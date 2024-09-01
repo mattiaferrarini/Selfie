@@ -661,13 +661,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // populate the edit form with the activity data
         editActivityTitle.value = activityDiv.activity.title;
         if (activityDiv.querySelector('.linkedActivityId').value === "") {
-            editStartDate.value = new Date(activityDiv.activity.start | new Date()).toISOString().split('T')[0];
+            const date = isNaN(activityDiv.activity.start.getTime()) ? new Date() : activityDiv.activity.start;
+            editStartDate.value = new Date(date).toISOString().split('T')[0];
             editStartDate.disabled = false;
         } else {
             editStartDate.value = null;
             editStartDate.disabled = true;
         }
-        editEndDate.value = activityDiv.activity.deadline.toISOString().split('T')[0];
+        editEndDate.value = new Date(activityDiv.activity.deadline).toISOString().split('T')[0];
         editNotifyOS.checked = activityDiv.activity.notification.method?.includes('push');
         editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
