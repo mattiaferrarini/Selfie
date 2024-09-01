@@ -5,6 +5,7 @@ export interface IActivity extends Document{
     owners: string[];
     done: boolean;
     start?: Date;
+    projectId?: string;
     deadline: Date;
     notification: {
         method: string[];
@@ -42,6 +43,9 @@ const ActivitySchema = new Schema({
     },
     start: {
         type: Date
+    },
+    projectId: {
+        type: String,
     },
     deadline: {
         type: Date,

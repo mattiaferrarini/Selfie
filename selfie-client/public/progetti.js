@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // TODO: fix to add status
         newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({
             username: participantDiv.querySelector('.username').innerText,
-            'status': 'pending'
+            'status': 'accepted'
         }));
 
         selectedActivityDiv.querySelector('.activityTitle').innerText = editActivityTitle.value;
