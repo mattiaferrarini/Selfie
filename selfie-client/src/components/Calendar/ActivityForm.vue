@@ -15,6 +15,12 @@
                 <label><input type="checkbox" v-model="newActivity.done" :disabled="!modificationAllowed"> Completed </label><br>
             </div>
             <div>
+                <div class="flex items-center justify-between w-full gap-4" v-if="activity.start">
+                    <label> Start </label>
+                    <div class="flex gap-1">
+                        <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
+                    </div>
+                </div>
                 <div class="flex items-center justify-between w-full gap-4">
                     <label> Deadline </label>
                     <div class="flex gap-1">
@@ -23,6 +29,17 @@
                 </div>
             </div>
             <hr>
+            <div v-if="projectName && phaseName">
+                <div class="flex items-center justify-between w-full gap-4" v-if="projectName">
+                    <h4>Project</h4>
+                    <p>{{ projectName }}</p>
+                </div>
+                <div class="flex items-center justify-between w-full gap-4" v-if="phaseName">
+                    <h4>Phase</h4>
+                    <p>{{ phaseName }}</p>
+                </div>
+                <hr>
+            </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
                     Participants
@@ -33,7 +50,7 @@
                 </div>
             </div>
             <hr>
-            <div v-if="!newActivity.pomodoro && subActivitiesAllowed">
+            <div v-if="!newActivity.pomodoro && subActivitiesAllowed && !activity.projectId">
                 <div class="flex items-center justify-between w-full gap-4">
                     Sub-activities
                     <button type="button" @click="openSubActivitiesForm" @click.stop>
@@ -43,7 +60,7 @@
                 </div>
                 <hr>
             </div>
-            <div>
+            <div v-if="!activity.projectId">
                 <div class="flex items-center justify-between w-full gap-4">
                     <label> <input type="checkbox" :checked="newActivity.pomodoro != null" :disabled="!modificationAllowed"
                             @click="newActivity.pomodoro = newActivity.pomodoro == null ? { options: authStore.user.preferences.pomodoro, completedCycles: { [authStore.user.username]: 0 } } : null" />
@@ -72,8 +89,8 @@
                             style="max-width: 4em; text-align: center" :disabled="!modificationAllowed"/>
                     </label>
                 </div>
+                <hr>
             </div>
-            <hr>
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
                     <p>Notification after deadline</p>
@@ -114,7 +131,7 @@
                     <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
                 </div>
                 <div class="flex w-full space-x-1">
-                    <button v-if="modifying" type="button" @click="handleDeleteRequest"
+                    <button v-if="modifying && !activity.projectId" type="button" @click="handleDeleteRequest"
                         class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
                     <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
                 </div>
@@ -178,6 +195,7 @@ import { useAuthStore } from '@/stores/authStore';
 import activityService from '@/services/activityService';
 import { CalendarEvent } from '@/models/Event';
 import ConfirmationPanel from './ConfirmationPanel.vue';
+import projectService from '@/services/projectService';
 
 export default defineComponent({
     name: 'ActivityForm',
@@ -222,6 +240,8 @@ export default defineComponent({
             showSubForm: false,
             selectedSub: {} as Activity,
             modifyingSub: false,
+            projectName: '',
+            phaseName: ''
         }
     },
     mounted() {
@@ -239,6 +259,7 @@ export default defineComponent({
             }
             else {
                 await this.fetchSubActivities();
+                await this.fetchAssociatedProject();
             }
         },
         async fetchSubActivities() {
@@ -247,6 +268,14 @@ export default defineComponent({
                 }));
             this.subActivities = fetched.filter((a) => a) as Activity[];
             this.newSubActivities = [...this.subActivities];
+        },
+        async fetchAssociatedProject() {
+            if (this.activity.projectId) {
+                const project = await projectService.getProjectById(this.activity.projectId);
+                if(project) {
+                    this.projectName = project.title;
+                    this.phaseName = project.phases.find((p: any) => p.activities.some((a: any) => a.activityId === this.activity.id))?.title || '';    }
+            }
         },
         async closeForm() {
             await this.deleteUselessSubActivities();
@@ -268,6 +297,8 @@ export default defineComponent({
 
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
+
+            console.log('saving activity', this.newActivity);
 
             this.saveActivity(this.newActivity);
         },
@@ -388,6 +419,17 @@ export default defineComponent({
                 this.newActivity.deadline = new Date(value);
             }
         },
+        formattedStartDate: {
+            get(): string {
+                if(this.newActivity.start)
+                    return this.newActivity.start.toISOString().split('T')[0];
+                else
+                    return '';
+            },
+            set(value: string) {
+                this.newActivity.start = new Date(value);
+            }
+        },
         associatedEvent(): CalendarEvent {
             const event = new CalendarEvent();
             event.title = this.newActivity.title;
@@ -398,7 +440,7 @@ export default defineComponent({
             return event;
         },
         modificationAllowed(): boolean {
-            return this.newActivity.owners.includes(this.authStore.user.username);
+            return this.newActivity.owners.includes(this.authStore.user.username) && !this.activity.projectId;
         }
     }
 });

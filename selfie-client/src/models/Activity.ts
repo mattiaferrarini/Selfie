@@ -2,7 +2,9 @@ export class Activity {
     title: string;
     owners: string[];
     id: string | undefined;
+    projectId: string | undefined;
     done: boolean;
+    start: Date | undefined;
     deadline: Date;
     notification: {
         method: string[];
