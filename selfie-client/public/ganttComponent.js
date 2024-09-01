@@ -166,6 +166,10 @@ class GanttComponent extends HTMLElement {
         .gantt .head + .head {
             border-left:2px solid white;
         }
+        
+        .gantt div + .head {
+            border-left:2px solid white;
+        }
         `;
         let bar = '';
         bar += this.renderYears();
@@ -188,14 +192,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
             if (dateCol.getFullYear() !== year) {
-                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'border: 3px dotted yellow;' : ''}">${year}</div>`;
+                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'background-color: dodgerblue;' : ''}">${year}</div>`;
                 year = dateCol.getFullYear();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol + this.INFO_COLS) {
-            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(year === this._now.getFullYear())? 'border: 3px dotted yellow;' : ''}">${timeSlice.end.getFullYear()}</div>`;
+            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(year === this._now.getFullYear())? 'background-color: dodgerblue;' : ''}">${timeSlice.end.getFullYear()}</div>`;
         }
         return years;
     }
@@ -211,14 +215,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = this.INFO_COLS + 1; i <= numOfCol + this.INFO_COLS; i++) {
             if (dateCol.getMonth() !== month) {
-                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'border: 3px dotted yellow;' : ''}">${this.numToMonth(month)}</div>`;
+                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: dodgerblue;' : ''}">${this.numToMonth(month)}</div>`;
                 month = dateCol.getMonth();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol + this.INFO_COLS) {
-            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'border: 3px dotted yellow;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
+            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol + this.INFO_COLS - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: dodgerblue;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
         }
         return months;
     }
