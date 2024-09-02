@@ -135,7 +135,6 @@ class GanttComponent extends HTMLElement {
     MINUTE = 60 * this.SECOND;
     HOUR = 60 * this.MINUTE;
     DAY = 24 * this.HOUR;
-    WEEK = 7 * this.DAY;
     dayDiff(d1, d2) {
         return Math.ceil((d2 - d1) / this.DAY);
     }
