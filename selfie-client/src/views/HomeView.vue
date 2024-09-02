@@ -10,7 +10,7 @@
         <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
       </div>
     </div>
-    <div class="animate-fade-in w-full sm:w-11/12 p-4 mt-5 sm:mt-3 mb-4 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in sm:w-11/12 p-4 mt-5 sm:mt-3 mb-4 sm:p-5 rounded-lg shadow-xl shadow-emerald-600 bg-white">
       <h1 class="text-2xl sm:text-4xl font-bold text-emerald-600">Welcome, {{ realName }}!</h1>
       <h3 class="mt-2 sm:text-xl text-gray-700"> Manage your private, social and academic life with Selfie.</h3>
     </div>
@@ -28,7 +28,7 @@
             <label for="weekly" class="font-semibold">Weekly
               <input type="checkbox" class="ml-2" v-model="calendarWeekly" @change="updatePreferences" id="weekly"/>
             </label>
-            <select v-model="calendarContent" @change="updatePreferences" class="mt-2 p-1 rounded-md">
+            <select v-model="calendarContent" @change="updatePreferences" class="mt-2 p-1 rounded-md border">
               <option value="all">All</option>
               <option value="events">Events</option>
               <option value="activities">Activities</option>
@@ -48,9 +48,9 @@
               <label for="description" class="font-semibold mr-2">Category</label>
               <input type="checkbox" v-model="notesCategory" @change="updatePreferences" id="description"/>
             </div>
-            <div>
-              <label for="number" class="font-semibold mr-2">Number</label>
-              <input type="number" min="1" v-model="noteNumber" @change="updatePreferences" id="number"/>
+            <div class="w-min">
+              <label for="number" class="font-semibold">Number:</label>
+              <input type="number" min="1" class="border rounded" v-model="noteNumber" @change="updatePreferences" id="number"/>
             </div>
           </div>
         </div>
@@ -63,8 +63,8 @@
           <div v-if="showPomodoroTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
             <select v-model="pomodoroType" @change="updatePreferences" class="p-1 rounded-md">
-              <option value="settings">Impostazioni</option>
-              <option value="stats">Statistiche</option>
+              <option value="settings">Settings</option>
+              <option value="stats">Stats</option>
             </select>
           </div>
         </div>

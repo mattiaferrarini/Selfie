@@ -49,7 +49,7 @@ const saveActivity = async (newActivity: any) => {
   closeAddForms()
 };
 
-const deleteActivity = async (activity: any) => {
+const deleteActivity = async () => {
   todoData.value[index].activityID = null;
   closeAddForms()
 };
@@ -95,8 +95,8 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col flex-wrap border-black border-2 rounded p-3">
-    <h1 class="font-bold text-2xl">Todo List</h1>
+  <div class="flex flex-col flex-wrap rounded-md p-3 shadow-md bg-white">
+    <h1 class="font-bold text-xl">Todo List</h1>
     <div v-if="showActivityForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <ActivityForm
           v-if="showActivityForm"
@@ -109,23 +109,24 @@ onBeforeMount(async () => {
           :current-date="currentDate" class="m-4"/>
     </div>
     <ul>
-      <li v-for="(todo, i) in todoData" :key="todo.title" class="pb-3">
-        <div v-if="!todo.activityID" class="flex flex-row justify-between">
-          <input type="checkbox" v-model="todo.done" :disabled="editable">
+      <li v-for="(todo, i) in todoData" :key="todo.title">
+        <div v-if="!todo.activityID" class="flex items-center justify-between py-2">
+          <input type="checkbox" v-model="todo.done" class="h-4 w-4" :disabled="editable">
           <span>{{ todo.title }}</span>
-          <button class="bg-yellow-400 rounded-lg p-1" @click="makeActivity(todo, i)" :disabled="editable">Make Activity</button>
+          <button class="bg-gray-200 rounded-lg p-1 px-2" @click="makeActivity(todo, i)" :disabled="editable">Make activity</button>
         </div>
-        <div v-else class="flex flex-row justify-between">
+        <div v-else class="flex flex-row justify-between py-2">
           <input type="checkbox" :checked="dones[i]" disabled>
-          <span>{{ titles[i] }}</span>
+          <h4>{{ titles[i] }}</h4>
           <span>Deadline: {{ deadlines[i] }}</span>
-          <button class="bg-yellow-400 rounded-lg p-1" @click="editActivity(todo, i)" :disabled="editable">Edit Activity</button>
+          <button class="bg-gray-200 rounded-lg py-1 px-2" @click="editActivity(todo, i)" :disabled="editable">Edit activity</button>
         </div>
+        <hr>
       </li>
     </ul>
-    <div class="flex flex-row pt-3 gap-x-3">
-      <input type="text" v-model="newTodo" class="w-full" :disabled="editable">
-      <button @click="addTodo" class="bg-green-700 rounded-lg p-1" :disabled="editable">Add</button>
+    <div class="flex flex-row mt-5 gap-x-2">
+      <input type="text" v-model="newTodo" class="w-full border rounded px-1 border-gray-400" :disabled="editable">
+      <button @click="addTodo" class="bg-green-600 text-white rounded-md p-1 px-4" :disabled="editable">Add</button>
     </div>
   </div>
 </template>

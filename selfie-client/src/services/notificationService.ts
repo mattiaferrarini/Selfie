@@ -6,28 +6,22 @@ const subscribe = async () => {
     try {
         let registration = await navigator.serviceWorker.getRegistration();
         if (!registration) {
-            console.log("Registering service worker...");
             registration = await navigator.serviceWorker.register("/sw.js", {
                 scope: "/",
             });
 
             await navigator.serviceWorker.ready;
-            console.log("Service Worker Registered...");
         }
 
         let subscription = await registration.pushManager.getSubscription();
         if (!subscription) {
-            console.log("Registering Push...");
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(process.env.VUE_APP_PUBLIC_VAPID_KEY || ''),
             });
-            console.log("Push Registered...");
         }
 
-        console.log("Sending Push...");
         const response = await axios.post(`${API_URL}/subscribe`, subscription, { withCredentials: true });
-        console.log("Push Sent...");
         return response.data;
     } catch (error: any) {
         console.log(error);

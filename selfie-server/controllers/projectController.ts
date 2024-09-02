@@ -280,6 +280,16 @@ export const leaveProject = async (req: any, res: any) => {
         return res.status(404).send({error: "Project doesn't exist!"});
     }
     project.actors = project.actors.filter((actor: string) => actor !== req.user.username);
+    project.phases.map((phase: any) => {
+        phase.activities.map((activity: any) => {
+            Activity.findById(activity.activityId).then((act) => {
+                if (act) {
+                    act.participants = act.participants.filter((participant: any) => participant.username !== req.user.username);
+                    act.save();
+                }
+            });
+        });
+    });
     project.save().then(() => {
         res.status(204).send();
     }).catch(() => {
