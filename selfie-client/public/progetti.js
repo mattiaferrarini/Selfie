@@ -516,9 +516,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!(linkedActivity.output !== "" && linkedActivity.status === "Concluded"))
                 linkedOutputUnavailable = true;
         }
-        if (activity.status === "Abandoned" || getTimeMachineDate(new Date().setDate(new Date().getDate() + 2 * 7)) > activity.activity?.deadline) {
+        if (activity.status === "Abandoned" || getTimeMachineDate().setDate(getTimeMachineDate().getDate() + 2 * 7) > activity.activity?.deadline) {
             status = "Abbandonata";
-        } else if (activity.activity?.deadline < getTimeMachineDate(new Date()) && (activity.output === "" || activity.status !== "Concluded")) {
+        } else if (activity.activity?.deadline < getTimeMachineDate() && (activity.output === "" || activity.status !== "Concluded")) {
             status = "In ritardo";
         } else if (activity.input === "" || linkedOutputUnavailable) {
             status = "Non attivabile";
