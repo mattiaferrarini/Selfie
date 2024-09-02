@@ -218,6 +218,7 @@ export default defineComponent({
 
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: any) => {
+      console.log(newActivity);
       fetchActivities();
       hideAllForms();
     };
@@ -322,6 +323,8 @@ export default defineComponent({
         }
       }
 
+      console.log(rangeActivities.value);
+
       fetchUnavailabilities();
       fetchResources();
 
@@ -357,6 +360,7 @@ export default defineComponent({
             <option value="appointments">Appointments</option>
             <option value="events">Events</option>
             <option value="activities">Activities</option>
+            <option value="projects">Projects</option>
             <option value="unavailabilities">Unavailabilities</option>
             <option value="resources">Resources</option>
           </select>
@@ -402,10 +406,12 @@ export default defineComponent({
       :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
       :include-events="content === 'appointments' || content === 'events' || content === 'resources'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
+      :include-projects="content === 'appointments' || content === 'activities'"
       :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'"/>
 
-    <ActivitiesList v-if="content === 'activities'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
-      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view"/>
+    <ActivitiesList v-if="content === 'activities' || content === 'projects'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
+      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view"
+      :include-ordinary-activities="content === 'activities'" :include-project-activities="content === 'projects'"/>
     </main>
 
     <div class="flex flex-col fixed bottom-4 right-4" v-click-outside="closeAddOptions">

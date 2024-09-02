@@ -45,7 +45,8 @@ export default defineComponent({
       try {
         if (username.value.trim() == "" || password.value.trim() == "" || email.value.trim() == "" || realName.value.trim() == "" || birthday.value.trim() == "") {
           throw "All fields are required";
-        }
+        } else if (!/^[a-zA-Z0-9_]*$/.test(username.value.trim()))
+          throw "Username can only contain ascii letters, numbers and underscores";
         const data = await authService.register(username.value, realName.value, email.value, password.value, birthday.value);
         await authStore.setUser(data.user);
         router.push({name: 'home'})

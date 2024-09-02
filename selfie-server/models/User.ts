@@ -110,7 +110,7 @@ const UserSchema: Schema = new Schema<IUser>({
             calendarContent: {
                 type: String,
                 required: true,
-                enum: ['all', 'events', 'activities'],
+                enum: ['all', 'events', 'activities', 'projects'],
                 default: 'all'
             },
             notesCategory: {

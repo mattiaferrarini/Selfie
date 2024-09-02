@@ -1,7 +1,7 @@
 export const API_URL = "http://localhost:3000"; // TODO: Change this url in deployment
 
 export const forceLogout = () => {
-    localStorage.removeItem('auth');
+    localStorage.setItem('auth', '{"user":null,"isAuthenticated":false,"isAdmin":false}');
     window.location.href = '/#/login';
 }
 
@@ -27,6 +27,7 @@ export const logout = async () => {
         },
         body: JSON.stringify({})
     });
+    forceLogout();
 }
 
 export async function fetchWithMiddleware(url, options) {

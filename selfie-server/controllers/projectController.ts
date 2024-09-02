@@ -14,6 +14,20 @@ const formatProject = async (project: IProject) => {
     return project;
 }
 
+export const getProjectById = async (req: any, res: any) => {
+    const {id} = req.params;
+    try {
+        const project = await Project.findById(id);
+        if (project) {
+            res.status(200).send(await formatProject(project));
+        } else {
+            res.status(404).send({error: "Project doesn't exist!"});
+        }
+    } catch (error) {
+        res.status(404).send({error: "Project doesn't exist!"});
+    }
+}
+
 export const getAllProjects = async (req: any, res: any) => {
     const username = req.user.username;
 
@@ -60,6 +74,18 @@ const getAllProjectActivitiesIds = (project: any) => {
 const deleteAllProjectActivities = async (activitiesId: string[]) => {
     for (const activityId of activitiesId) {
         await deleteActivityById(activityId);
+    }
+}
+
+const addProjectIdToActivities = async (project: any) => {
+    for (const phase of project.phases) {
+        for (const activity of phase.activities) {
+            const act = await Activity.findById(activity.activityId);
+            if (act) {
+                act.projectId = project._id;
+                await act.save();
+            }
+        }
     }
 }
 
@@ -190,7 +216,11 @@ export const modifyProject = async (req: any, res: any) => {
 
         try {
             project.phases = phases;
-            await project.save();
+            const savedProject = await project.save();
+
+            // link activities to the project
+            await addProjectIdToActivities(savedProject);
+
             await deleteAllProjectActivities(oldIds);
             res.status(200).send(await formatProject(project));
         } catch (error) {
@@ -222,6 +252,10 @@ export const addProject = async (req: any, res: any) => {
 
     try {
         const savedProject = await newProject.save();
+
+        // link activities to the project
+        await addProjectIdToActivities(savedProject);
+
         // send notification to all the invited actors
         actors.map(async (actor: string) => {
             const user = await User.findOne({username: actor});
@@ -246,6 +280,16 @@ export const leaveProject = async (req: any, res: any) => {
         return res.status(404).send({error: "Project doesn't exist!"});
     }
     project.actors = project.actors.filter((actor: string) => actor !== req.user.username);
+    project.phases.map((phase: any) => {
+        phase.activities.map((activity: any) => {
+            Activity.findById(activity.activityId).then((act) => {
+                if (act) {
+                    act.participants = act.participants.filter((participant: any) => participant.username !== req.user.username);
+                    act.save();
+                }
+            });
+        });
+    });
     project.save().then(() => {
         res.status(204).send();
     }).catch(() => {

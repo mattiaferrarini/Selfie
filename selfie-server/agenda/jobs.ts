@@ -4,7 +4,7 @@ import Activity, { IActivity } from "../models/Activity";
 import jobSchedulerService from "../services/jobSchedulerService";
 import timeService from "../services/timeService";
 import notificationController from "../controllers/notificationController";
-import { findByUsername } from "../controllers/userController";
+import { getUserByUsername } from "../controllers/userController";
 
 
 const eventNotificationStartJobName = 'event notification start';
@@ -94,7 +94,7 @@ const sendNotificationsForEvent = async (event: IEvent) => {
             }
             if (event.notification.method.includes('push')) {
                 try {
-                    const user = await findByUsername(participant.username);
+                    const user = await getUserByUsername(participant.username);
                     if (user)
                         notificationController.sendPushNotification(user, { title: title, body: body });
                     else
@@ -184,7 +184,7 @@ const sendNotificationsForActivity = async (activity: IActivity) => {
             }
             if (activity.notification.method.includes('push')) {
                 try {
-                    const user = await findByUsername(participant.username);
+                    const user = await getUserByUsername(participant.username);
                     if (user)
                         notificationController.sendPushNotification(user, { title: title, body: body });
                     else

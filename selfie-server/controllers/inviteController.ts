@@ -7,7 +7,7 @@ import { IActivity } from "../models/Activity";
 import * as resourceController from "./resourceController";
 import * as unavailabilityController from "./unavailabilityController";
 import notificationController from "./notificationController";
-import { findByUsername } from "./userController";
+import { getUserByUsername } from "./userController";
 
 const formatInvite = (invite: IInvite) => {
     return {
@@ -96,7 +96,7 @@ export const addInvite = async(inviteeUsername: string, answerDate: Date, title:
     try{
         await newInvite.save();
 
-        const user = await findByUsername(inviteeUsername);
+        const user = await getUserByUsername(inviteeUsername);
         const notificationTitle = `Invite to join ${title}`;
         const body = `You have been invited to join ${title}. You can accept, decline or postpone the invite from the Calendar.`;
 

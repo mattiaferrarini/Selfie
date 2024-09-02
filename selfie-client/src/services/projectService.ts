@@ -11,6 +11,16 @@ const getAllProjects = async () => {
     }
 }
 
+const getProjectById = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
+        return response.data;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+}
+
 export default {
-    getAllProjects
+    getAllProjects,
+    getProjectById
 }
