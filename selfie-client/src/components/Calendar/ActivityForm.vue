@@ -1,5 +1,5 @@
-    <template>
-    <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
+<template>
+    <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop v-click-outside="closeForm">
         <div class="flex justify-end">
             <button @click="closeForm">
                 <v-icon name="md-close" />
@@ -123,17 +123,17 @@
             <hr>
             <div class="flex-col space-y-1 w-full mt-8">
                 <button v-if="modifying" type="button" @click="openExportPanel"
-                    class="w-full p-2 rounded-lg bg-gray-400 text-white">Export as event</button>
+                    class="w-full p-2 rounded-md bg-gray-400 text-white">Export as event</button>
                 <div v-else class="text-center cursor-pointer">
                     <label id="event-upload" for="fileInput"
-                        class="w-full p-2 rounded-lg bg-gray-400 text-white block">Import
+                        class="w-full p-2 rounded-md bg-gray-400 text-white block">Import
                         activity</label>
                     <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
                 </div>
                 <div class="flex w-full space-x-1">
                     <button v-if="modifying && !activity.projectId" type="button" @click="handleDeleteRequest"
-                        class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
-                    <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+                        class="flex-1 bg-red-600 text-white p-2 rounded-md">Delete</button>
+                    <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
                 </div>
             </div>
             <div v-if="!modificationAllowed" class="mt-4">
@@ -162,9 +162,9 @@
             </div>
             <div class="flex w-full space-x-1 mt-8">
                 <!--<button type="button" @click="discardSubActivityChanges"
-                    class="flex-1 bg-gray-400 text-white p-2 rounded-lg">Cancel</button>-->
+                    class="flex-1 bg-gray-400 text-white p-2 rounded-md">Cancel</button>-->
                 <button type="submit" @click="saveSubActivities"
-                    class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Done</button>
+                    class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Done</button>
             </div>
         </div>
 
@@ -278,15 +278,28 @@ export default defineComponent({
             }
         },
         async closeForm() {
-            await this.deleteUselessSubActivities();
+            await this.handleSubActivitiesChanges();
             this.$emit('closeForm');
         },
-        async deleteUselessSubActivities() {
+        async handleSubActivitiesChanges() {
+            // delete subactivities that were added but not saved
             await Promise.all(this.newSubActivities.map(async (sub) => {
                 if (sub.id && !this.activity.subActivitiesIDs.some((s) => s === sub.id)) {
                     await activityService.deleteActivity(sub);
                 }
             }));
+            
+            // remove the ids of subactivities that were deleted
+            if(this.modifying){
+                const newSubsIDs = this.activity.subActivitiesIDs.filter((id) => this.newSubActivities.some((s) => s.id === id));
+                const sameSubs = newSubsIDs.length === this.activity.subActivitiesIDs.length && newSubsIDs.every((id) => this.activity.subActivitiesIDs.includes(id));
+
+                if(!sameSubs){
+                    const updatedActivity = { ...this.activity };
+                    updatedActivity.subActivitiesIDs = newSubsIDs;
+                    await this.saveActivity(updatedActivity);
+                }
+            }
         },
         async handleSubmit(event: Event) {
             event.preventDefault();
@@ -300,11 +313,10 @@ export default defineComponent({
 
             console.log('saving activity', this.newActivity);
 
+            this.newActivity.subActivitiesIDs = this.newSubActivities.map((s) => s.id).filter((id): id is string => id !== undefined);
             this.saveActivity(this.newActivity);
         },
-        async saveActivity(activity: Activity) {
-            this.newActivity.subActivitiesIDs = this.newSubActivities.map((s) => s.id).filter((id): id is string => id !== undefined);
-            
+        async saveActivity(activity: Activity) {            
             let res;
             if (this.modifying)
                 res = await activityService.modifyActivity(activity);

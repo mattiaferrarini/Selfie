@@ -20,7 +20,7 @@
                             <ul>
                                 <li v-for="event in eventsForDay(date)" :key="event.id" class="clickable-item">
                                     <hr>
-                                    <div class="flex align-center justify-between py-1.5" @click="modifyEvent(event[0])">
+                                    <div class="flex align-center justify-between py-1.5" @click.stop="modifyEvent(event[0])">
                                         <h5>{{ event[0].title }}</h5>
                                         <p>{{ event[1] }}</p>
                                     </div>
@@ -37,17 +37,17 @@
                                     <hr>
                                     <div class="flex align-center justify-between py-1.5"
                                         :class="{ late: isLateActivity(activity, date) }"
-                                        @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                                        @click.stop="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                         <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                         <div class="flex flex-wrap justify-end space-x-4">
                                             <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles[username] +
                                                 '/' +
                                                 activity.pomodoro.options.numberOfCycles + ' cycles' : '' }}</span>
-                                            <button v-if="activity.pomodoro" @click="modifyActivity(activity)"
-                                                @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
-                                            <button v-if="!activity.done" @click="markAsDone(activity)"
-                                                @click.stop><v-icon name="md-done"></v-icon></button>
-                                            <button v-else @click="undoActivity(activity)" @click.stop><v-icon
+                                            <button v-if="activity.pomodoro" @click.stop="modifyActivity(activity)">
+                                                <v-icon name="md-modeeditoutline"></v-icon></button>
+                                            <button v-if="!activity.done" @click.stop="markAsDone(activity)">
+                                                <v-icon name="md-done"></v-icon></button>
+                                            <button v-else @click.stop="undoActivity(activity)"><v-icon
                                                     name="fa-undo"></v-icon></button>
                                         </div>
                                     </div>
@@ -62,7 +62,7 @@
                                 <li v-for="activity in projectActivitiesForTheDay(date)" :key="activity.id"
                                     class="clickable-item">
                                     <hr>
-                                    <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity, date) }" @click="modifyActivity(activity)">
+                                    <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity, date) }" @click.stop="modifyActivity(activity)">
                                         <div v-if="activity.start && timeMethods.sameDate(activity.start, date)" class="bg-blue-500 px-1 rounded-md text-white">
                                             Start
                                         </div>
@@ -83,7 +83,7 @@
                                     class="clickable-item">
                                     <hr>
                                     <div class="flex align-center justify-between py-1.5"
-                                        @click="modifyUnavailability(unav[0])">
+                                        @click.stop="modifyUnavailability(unav[0])">
                                         <h5>{{ unav[0].title }}</h5>
                                         <p>{{ unav[1] }}</p>
                                     </div>

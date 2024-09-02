@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
+  <div class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop v-click-outside="closeForm">
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -128,16 +128,16 @@
       </div>
       <hr>
       <div class="flex-col space-y-1 w-full mt-8">
-        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Export
+        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-md bg-gray-400 text-white">Export
           event</button>
         <div v-else class="text-center cursor-pointer">
-          <label id="event-upload" for="fileInput" class="w-full p-2 rounded-lg bg-gray-400 block text-white">Import event</label>
+          <label id="event-upload" for="fileInput" class="w-full p-2 rounded-md bg-gray-400 block text-white">Import event</label>
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
         <div class="flex w-full space-x-1">
           <button v-if="modifying" type="button" @click="handleDeleteRequest"
-            class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
-          <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+            class="flex-1 bg-red-600 text-white p-2 rounded-md">Delete</button>
+          <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
         </div>
       </div>
       <div v-if="!modificationAllowed" class="mt-4">

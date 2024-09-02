@@ -3,15 +3,15 @@
         <div class="p-4 flex flex-col justify-between w-full h-full">
             <div class="flex flex-col justify-stretch text-center mt-4 mb-4">
                 <h2 class="text-lg font-semibold mb-4">Export Options</h2>
-                <button @click="downloadICalendar" class="export-option">Download iCalendar File</button>
+                <button @click.stop="downloadICalendar" class="export-option">Download iCalendar File</button>
                 <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
                 <a :href="googleLink" target="_blank" class="export-option">Open in Google Calendar</a>
                 <a :href="outlookLink" target="_blank" class="export-option">Open in Outlook Web Calendar</a>
-                <button v-if="!emailSent" @click="sendAllToEmail" class="export-option">Send All to Email</button>
+                <button v-if="!emailSent" @click.stop="sendAllToEmail" class="export-option">Send All to Email</button>
                 <div v-if="emailSent" class="export-option">{{ emailSentResult }}</div>
             </div>
 
-            <button @click="closePanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Done</button>
+            <button @click.stop="closePanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Done</button>
         </div>
     </div>
 </template>
@@ -91,7 +91,7 @@ export default defineComponent({
 .export-option {
     padding: 0.5rem;
     border: 1px solid #ccc;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     margin-bottom: 0.5rem;
     cursor: pointer;
 }

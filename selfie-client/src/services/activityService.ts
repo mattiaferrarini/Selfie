@@ -33,7 +33,7 @@ const getActivityById = async (id: string) => {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
-        throw error.response.data;
+        return null;
     }
 }
 

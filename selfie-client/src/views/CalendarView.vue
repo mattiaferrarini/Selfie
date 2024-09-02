@@ -73,7 +73,6 @@ export default defineComponent({
     };
     const fetchActivities = async () => {
       rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
-      console.log(rangeActivities.value);
     };
     const fetchUnavailabilities = async () => {
       rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
@@ -429,8 +428,7 @@ export default defineComponent({
       </button>
     </div>
 
-    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
-      @click="closeAddForms">
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
         :admin-only-modification="eventAdminOnlyModification" />
