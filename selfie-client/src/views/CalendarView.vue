@@ -19,6 +19,7 @@ import { useDateStore } from '@/stores/dateStore';
 import { Resource } from '@/models/Resource';
 import inviteService from '@/services/inviteService';
 import router from '@/router';
+import { Invite } from '@/models/Invite';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -216,7 +217,7 @@ export default defineComponent({
     };
 
     /* Save new/modified activities and delete them */
-    const saveActivity = async (newActivity: any) => {
+    const saveActivity = async (newActivity: Activity) => {
       console.log(newActivity);
       fetchActivities();
       hideAllForms();
@@ -235,7 +236,7 @@ export default defineComponent({
     };
 
     /* Save new/modified unavailabilities and delete them */
-    const saveUnavailability = async (newUnav: any) => {
+    const saveUnavailability = async (newUnav: Unavailability) => {
       if (modifying.value) {
         const index = rangeUnavailabilities.value.findIndex(unav => unav.id === newUnav.id);
         rangeUnavailabilities.value[index] = newUnav;
@@ -261,7 +262,7 @@ export default defineComponent({
       hasPendingInvites.value = false;
       showInviteList.value = false;
     }
-    const acceptInvite = async (invite: any) => {
+    const acceptInvite = async (invite: Invite) => {
       if (invite.eventId) {
         const event = await eventService.getEventById(invite.eventId);
         if (event)

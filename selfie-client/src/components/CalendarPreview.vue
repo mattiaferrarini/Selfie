@@ -139,13 +139,13 @@ export default defineComponent({
       console.log(this.projectActivitiesInPeriod);
     }, 
     computeEventsWithDates() {
-      let withDates = this.events.map((event: any) => {
+      let withDates = this.events.map((event: CalendarEvent) => {
         return { event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay) };
       });
-      let inRange = withDates.filter((event: any) => {
+      let inRange = withDates.filter((event: {event: CalendarEvent, dates: {start: Date, end: Date}}) => {
         return event.dates.start <= this.endOfEndOfWeek && event.dates.end >= this.startOfDay;
       });
-      let valid = inRange.filter((event: any) => {
+      let valid = inRange.filter((event: {event: CalendarEvent, dates: {start: Date, end: Date}}) => {
         return eventRecurrenceService.isValidRepetition(event.event, event.dates.start, event.dates.end);
       });
       valid.sort((a, b) => a.dates.start.getTime() - b.dates.start.getTime());

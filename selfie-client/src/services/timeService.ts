@@ -210,7 +210,7 @@ const formatTime = (date: Date): string => {
 }
 
 const convertToTimezone = (date: Date, timezone: string): Date => {
-    const pad = (num: any) => num.toString().padStart(2, '0');
+    const pad = (num: number) => num.toString().padStart(2, '0');
 
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1); // Months are zero-based
@@ -224,7 +224,7 @@ const convertToTimezone = (date: Date, timezone: string): Date => {
 }
 
 const makeTimezoneLocal = (date: Date, timezone: string): Date => {
-    const pad = (num: any) => num.toString().padStart(2, '0');
+    const pad = (num: number) => num.toString().padStart(2, '0');
 
     const year = date.getUTCFullYear();
     const month = pad(date.getUTCMonth() + 1); // Months are zero-based

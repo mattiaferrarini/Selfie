@@ -241,12 +241,12 @@ export default defineComponent({
             // remove repetitions that are not on the date
             const startOfDay = timeMethods.getStartOfDay(date);
             const endOfDay = timeMethods.getEndOfDay(date);
-            let inRange = withDates.filter((event: any) => {
+            let inRange = withDates.filter((event: {event: any, dates: {start: Date, end: Date}}) => {
                 return event.dates.start <= endOfDay && event.dates.end >= startOfDay;
             });
 
             // remove repetitions that are not valid
-            let valid = inRange.filter((event: any) => {
+            let valid = inRange.filter((event: {event: any, dates: {start: Date, end: Date}}) => {
                 return this.isValidRepetition(event.event, event.dates.start, event.dates.end);
             });
 
