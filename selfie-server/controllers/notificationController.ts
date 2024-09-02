@@ -47,6 +47,12 @@ const sendNotificationTest = async (req: any, res: any) => {
     req.user?.pushSubscriptions.forEach((e: any) => pushNotificationService.sendNotification(e, {title: 'News', body: text}));
 }
 
+const sendNotificationToUsername = async (username: string, payload: any) => {
+    const user = await User.findOne({username: username});
+    if (user)
+        sendNotification(user, payload);
+}
+
 const sendNotification = async (user: IUser, payload: any) => {
     if (user.preferences.notificationType === "push" || user.preferences.notificationType === "both")
         user.pushSubscriptions.forEach((pushSubscription: any) => pushNotificationService.sendNotification(pushSubscription, payload));
@@ -72,6 +78,7 @@ export default {
     subscribe,
     unsubscribe,
     sendNotificationTest,
+    sendNotificationToUsername,
     sendNotification,
     sendPushNotification,
     sendEmailNotification
