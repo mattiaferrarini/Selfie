@@ -128,12 +128,12 @@ onBeforeRouteUpdate(async () => {
           ref="titleArea"
           class="w-full max-w-screen-md mb-2 font-bold text-2xl rounded-md text-center resize-none p-2 shadow-md bg-white mt-6 "
           v-model="title"
-          placeholder="edit me"
+          placeholder="Add a title"
           :disabled="viewMode">
       </textarea>
 
       <div v-if="viewMode" class="flex justify-center">
-        <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose"></div>
+        <div v-html='renderedMarkdown' class="w-screen max-w-screen-md bg-white prose rounded-md p-2 shadow-md"></div>
       </div>
       <div v-else class="flex justify-center resize-none" >
         <textarea
@@ -148,7 +148,7 @@ onBeforeRouteUpdate(async () => {
       <!-- show if only todoData is not empty -->
       <div class="mt-2 w-full flex justify-center">
         <todoList v-if="todoData.length > 0 || todoListShow" v-model="todoData" :editable="viewMode" class="w-full"></todoList>
-        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2 w-full shadow-md" :disabled="viewMode">Add todo list</button>
+        <button v-else @click="todoListShow = !todoListShow" class="bg-yellow-400 rounded p-2 w-full shadow-md text-gray-800" :disabled="viewMode">Add todo list</button>
       </div>
 
       <div class="flex items-center justify-between mt-8 w-full bg-white shadow-md rounded-md p-2">
