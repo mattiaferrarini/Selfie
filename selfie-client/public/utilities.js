@@ -46,11 +46,6 @@ export const getTimeMachineDate = () => {
     return new Date(new Date().getTime() + timeDifference);
 }
 
-export const getLastTimemachineSavedDate = () => {
-    let currentDate = JSON.parse(localStorage.getItem('date')).currentDate;
-    return new Date(currentDate)
-}
-
 export const getStatusFromActivity = (activity, activities) => {
     let status;
     let linkedOutputUnavailable = false;

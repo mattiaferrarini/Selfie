@@ -1,4 +1,4 @@
-import {API_URL, fetchWithMiddleware, logout, getTimeMachineDate, getStatusFromActivity, getLastTimemachineSavedDate} from "./utilities.js";
+import {API_URL, fetchWithMiddleware, logout, getTimeMachineDate, getStatusFromActivity} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({date: newDate})
         }).then(() => {
-            const timeDifference = newDate.getTime() - (getLastTimemachineSavedDate().getTime());
+            const timeDifference = newDate.getTime() - (new Date().getTime());
             timeMachineMessage.innerText = 'Time machine set!'
             localStorage.setItem('date', JSON.stringify({
                 "currentDate": newDate.toISOString(),
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
 
             // re-render gantt
-            document.querySelector("gantt-component").date = new Date(new Date().getTime() + timeDifference);
+            document.querySelector("gantt-component").date = getTimeMachineDate();
         }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
