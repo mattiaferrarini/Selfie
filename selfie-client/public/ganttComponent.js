@@ -89,6 +89,17 @@ class GanttComponent extends HTMLElement {
         this.render();
     }
 
+    set date(date) {
+        this._now = date;
+        if (this._project) {
+            this._project = structuredClone(this._untoachedProject);
+            this._timeslice = this.getTimeSlice(this._project);
+
+            this.adjustActivityDeadline();
+            this.render();
+        }
+    }
+
     adjustActivityDeadline() {
         let now = this._now;
 

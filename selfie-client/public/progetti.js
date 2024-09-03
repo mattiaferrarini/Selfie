@@ -94,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     "timeDiff": 0,
                     "realTimeDiff": 0
                 }));
+
+                // re-render gantt
+                document.querySelector("gantt-component").date = new Date();
             }
         ).catch(
             () => timeMachineMessage.innerText = 'Error restoring time machine!'
@@ -118,6 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 "timeDiff": 0,
                 "realTimeDiff": timeDifference
             }));
+
+            // re-render gantt
+            document.querySelector("gantt-component").date = new Date(new Date().getTime() + timeDifference);
         }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
@@ -535,7 +541,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const showGantt = (project) => {
-        console.log('Showing gantt:', project);
         const gantt = document.querySelector("gantt-component");
         gantt.project = [project, getTimeMachineDate()];
     };
