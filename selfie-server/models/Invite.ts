@@ -3,6 +3,7 @@ import { IEvent } from './Event';
 import { IActivity } from './Activity';
 
 export interface IInvite extends Document {
+    inviters: string[];
     inviteeUsername: string;
     eventId: IEvent['_id'];
     activityId: IActivity['_id'];
@@ -10,6 +11,10 @@ export interface IInvite extends Document {
 }
 
 const InviteSchema = new Schema({
+    inviters: {
+        type: [String],
+        required: true
+    },
     inviteeUsername: {
         type: String,
         required: true
