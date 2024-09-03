@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
         phaseDiv.innerHTML = `
             <div class="flex w-full gap-2">
-                <button type="button" class="toggleActivitiesVisButton text-white"><i class="bi bi-chevron-down"></i></button>
+                <button type="button" class="toggleActivitiesVisButton text-black"><i class="bi bi-chevron-down"></i></button>
                 <input type="text" placeholder="Phase Title" class="flex-1 p-2 border border-gray-300 rounded-md" required>
                 <button type="button" class="removePhaseButton bg-red-500 px-2 py-1 text-white p-2 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             phaseDiv.classList.add('phase', 'rounded', 'bg-gray-100', 'p-2', 'mt-2');
             phaseDiv.innerHTML = `
             <div class="flex w-full gap-2">
-                <button type="button" class="toggleActivitiesVisButton text-white"><i class="bi bi-chevron-down"></i></button>
+                <button type="button" class="toggleActivitiesVisButton text-black"><i class="bi bi-chevron-down"></i></button>
                 <input type="text" value="${phase.title}" class="flex-1 p-2 border border-gray-300 rounded-md" required>
                 <button type="button" class="removePhaseButton bg-red-500 text-white px-2 py-1 rounded-md"><i class="bi bi-x-lg"></i></button>
             </div>
