@@ -60,7 +60,7 @@ export const getStatusFromActivity = (activity, activities) => {
             linkedOutputUnavailable = true;
     }
     if (activity.status === "Abandoned" || getTimeMachineDate().setDate(getTimeMachineDate().getDate() + 2 * 7) > activity.activity?.deadline) {
-        status = "Abbandoned";
+        status = "Abandoned";
     } else if (activity.activity?.deadline < getTimeMachineDate() && (activity.output === "" || activity.status !== "Concluded")) {
         status = "Late";
     } else if (activity.input === "" || linkedOutputUnavailable) {

@@ -1,3 +1,5 @@
+import {getStatusFromActivity} from './utilities.js'
+
 class GanttComponent extends HTMLElement {
     constructor() {
         super();
@@ -85,6 +87,7 @@ class GanttComponent extends HTMLElement {
         this._now = now;
         this._timeslice = this.getTimeSlice(this._project);
 
+        this.calculateNewStatus();
         this.adjustActivityDeadline();
         this.render();
     }
@@ -94,7 +97,7 @@ class GanttComponent extends HTMLElement {
         if (this._project) {
             this._project = structuredClone(this._untoachedProject);
             this._timeslice = this.getTimeSlice(this._project);
-
+            this.calculateNewStatus();
             this.adjustActivityDeadline();
             this.render();
         }
@@ -118,6 +121,14 @@ class GanttComponent extends HTMLElement {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    calculateNewStatus() {
+        for (const phase of this._project.phases) {
+            for (const activity of phase.activities) {
+                activity.newStatus = getStatusFromActivity(activity, phase.activities)
             }
         }
     }
@@ -277,11 +288,13 @@ class GanttComponent extends HTMLElement {
         return `
         <div style="display: flex; flex-direction: row; gap: 1em; margin-top: 50px; flex-wrap: wrap" id="color-legend">
             ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}
-            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed')}
-            ${this.legendBlock('background-color: gray;', 'Not started')}
-            ${this.legendBlock('background-color: SpringGreen;', 'Started')}
+            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed part')}
+            ${this.legendBlock('background-color: gray;', 'Not activatable')}
+            ${this.legendBlock('background-color: lightslategray;', 'Activatable')}
+            ${this.legendBlock('background-color: SpringGreen;', 'Active')}
+            ${this.legendBlock('background-color: gold;', 'Late')}
             ${this.legendBlock('background-color: green;', 'Concluded')}
-            ${this.legendBlock('background-color: OrangeRed;', 'Rejected')}
+            ${this.legendBlock('background-color: OrangeRed;', 'Reactivated')}
             ${this.legendBlock('background-color: black;', 'Abandoned')}
         </div>
         `
@@ -386,25 +399,32 @@ class GanttComponent extends HTMLElement {
 
         let [rstartcol, rspannum] = this.getStartColSpanNum(startDate, endDate);
         let colorStyle = '';
-        // ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
-        switch (activity.status) {
-            case 'NotStarted':
+
+        // Abandoned Late Not activatable Activatable Reactivated Concluded Active
+        switch (activity.newStatus) {
+            case 'Not activatable':
                 colorStyle = 'background-color: gray;';
                 break;
-            case 'Started':
+            case 'Activatable':
+                colorStyle = 'background-color: lightslategray;';
+                break;
+            case 'Active':
                 colorStyle = 'background-color: SpringGreen;';
                 break;
             case 'Concluded':
                 colorStyle = 'background-color: green;';
                 break;
-            case 'Rejected':
+            case 'Reactivated':
                 colorStyle = 'background-color: OrangeRed;';
                 break;
             case 'Abandoned':
                 colorStyle = 'background-color: black;';
                 break;
+            case 'Late':
+                colorStyle = 'background-color: gold;';
+                break;
             default:
-                colorStyle = 'background-color: green;';
+                colorStyle = 'background-color: purple;';
         }
 
         if (activity.isMilestone) {
@@ -417,7 +437,7 @@ class GanttComponent extends HTMLElement {
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${rspannum}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${(activity.status === 'NotStarted')? 'Not started' : activity.status}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.newStatus}</div>
         `;
         let activityHtml = '';
 
