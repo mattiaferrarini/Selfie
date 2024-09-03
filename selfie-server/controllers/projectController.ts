@@ -95,7 +95,6 @@ const addEmailsToParticipants = async (activity: IActivity) => {
             const user = await User.findOne({ username: participant.username });
             if (user) {
                 participant.email = user.email;
-                console.log(participant.email);
             }
         }
     }
@@ -113,9 +112,6 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
 
                 await addEmailsToParticipants(createdActivity);
                 await createActivity(createdActivity, req);
-
-                console.log(createdActivity);
-                console.log(createdActivity.participants);
 
                 createdActivitiesIds.push(createdActivity._id as string);
                 activity.activityId = createdActivity._id;
