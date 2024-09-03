@@ -54,7 +54,8 @@ export const getStatusFromActivity = (activity, activities) => {
         if (!(linkedActivity.output !== "" && linkedActivity.status === "Concluded"))
             linkedOutputUnavailable = true;
     }
-    if (activity.status === "Abandoned" || getTimeMachineDate().setDate(getTimeMachineDate().getDate() + 2 * 7) > activity.activity?.deadline) {
+    // if two weeks have passed from the deadline or if the status is abandoned
+    if (activity.status === "Abandoned" || new Date(getTimeMachineDate().setDate(getTimeMachineDate().getDate() - 2 * 7)) > activity.activity?.deadline) {
         status = "Abandoned";
     } else if (activity.activity?.deadline < getTimeMachineDate() && (activity.output === "" || activity.status !== "Concluded")) {
         status = "Late";
