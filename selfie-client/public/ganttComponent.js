@@ -292,7 +292,7 @@ class GanttComponent extends HTMLElement {
             ${this.legendBlock('background-color: gray;', 'Not activatable')}
             ${this.legendBlock('background-color: lightslategray;', 'Activatable')}
             ${this.legendBlock('background-color: SpringGreen;', 'Active')}
-            ${this.legendBlock('background-color: gold;', 'Late')}
+            ${this.legendBlock('background-color: orange;', 'Late')}
             ${this.legendBlock('background-color: green;', 'Concluded')}
             ${this.legendBlock('background-color: OrangeRed;', 'Reactivated')}
             ${this.legendBlock('background-color: black;', 'Abandoned')}
@@ -421,7 +421,7 @@ class GanttComponent extends HTMLElement {
                 colorStyle = 'background-color: black;';
                 break;
             case 'Late':
-                colorStyle = 'background-color: gold;';
+                colorStyle = 'background-color: orange;';
                 break;
             default:
                 colorStyle = 'background-color: purple;';
