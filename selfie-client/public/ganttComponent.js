@@ -19,8 +19,28 @@ class GanttComponent extends HTMLElement {
 
         this.shadowRoot.appendChild(this.myStyle);
         this.shadowRoot.appendChild(this.content);
+    }
 
+    set project([project, now]) {
+        this._project = project;
+        this._untoachedProject = structuredClone(project);
+        this._now = now;
+        this._timeslice = this.getTimeSlice(this._project);
+
+        this.calculateNewStatus();
+        this.adjustActivityDeadline();
         this.render();
+    }
+
+    set date(date) {
+        this._now = date;
+        if (this._project) {
+            this._project = structuredClone(this._untoachedProject);
+            this._timeslice = this.getTimeSlice(this._project);
+            this.calculateNewStatus();
+            this.adjustActivityDeadline();
+            this.render();
+        }
     }
 
 
@@ -81,25 +101,11 @@ class GanttComponent extends HTMLElement {
         `
     }
 
-    set project([project, now]) {
-        this._project = project;
-        this._untoachedProject = structuredClone(project);
-        this._now = now;
-        this._timeslice = this.getTimeSlice(this._project);
-
-        this.calculateNewStatus();
-        this.adjustActivityDeadline();
-        this.render();
-    }
-
-    set date(date) {
-        this._now = date;
-        if (this._project) {
-            this._project = structuredClone(this._untoachedProject);
-            this._timeslice = this.getTimeSlice(this._project);
-            this.calculateNewStatus();
-            this.adjustActivityDeadline();
-            this.render();
+    calculateNewStatus() {
+        for (const phase of this._project.phases) {
+            for (const activity of phase.activities) {
+                activity.newStatus = getStatusFromActivity(activity, phase.activities)
+            }
         }
     }
 
@@ -121,14 +127,6 @@ class GanttComponent extends HTMLElement {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    calculateNewStatus() {
-        for (const phase of this._project.phases) {
-            for (const activity of phase.activities) {
-                activity.newStatus = getStatusFromActivity(activity, phase.activities)
             }
         }
     }
@@ -520,32 +518,10 @@ class GanttComponent extends HTMLElement {
         }
 
         if (!startDate) {
-            let firstEnd = this.getFirstEndDate(project);
-            if (firstEnd.getTime() < new Date().getTime()) {
-                startDate = firstEnd;
-            } else {
-                startDate = new Date();
-            }
+            throw new Error('no start date found');
+        } else {
+            return startDate;
         }
-        return startDate;
-    }
-
-    getFirstEndDate(project) {
-        let endDate = null;
-
-        for (const phase of project.phases) {
-            for (const activity of phase.activities) {
-                const deadline = new Date(activity.activity.deadline)
-                if (endDate) {
-                    if (deadline.getTime() < endDate.getTime()) {
-                        endDate = deadline;
-                    }
-                } else {
-                    endDate = deadline;
-                }
-            }
-        }
-        return endDate;
     }
 
     getEndDate(project) {
