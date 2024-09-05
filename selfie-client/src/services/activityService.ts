@@ -66,7 +66,8 @@ const deleteActivity = async (activity: Activity) => {
 const formatActivity = (activity: any) => {
     return {
         ...activity,
-        deadline: new Date(activity.deadline)
+        deadline: new Date(activity.deadline),
+        start: activity.start ? new Date(activity.start) : undefined,
     }
 }
 
@@ -80,6 +81,15 @@ const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> =
     return activity;
 }
 
+const removeParticipantFromActivity = async (activity: Activity, username: string) => {
+    try {
+        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {username: username}, { withCredentials: true });
+    }
+    catch (error: any) {
+        console.log(error);
+    }
+}
+
 export default {
     getActivitiesByUser,
     getPomodoroStats,
@@ -87,5 +97,6 @@ export default {
     addActivity,
     modifyActivity,
     deleteActivity,
-    convertICalendarToActivity
+    convertICalendarToActivity,
+    removeParticipantFromActivity
 }

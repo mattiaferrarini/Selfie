@@ -42,7 +42,7 @@
                                         <div class="flex flex-wrap justify-end space-x-4">
                                             <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles[username] +
                                                 '/' +
-                                                activity.pomodoro.cycles + ' cicli' : '' }}</span>
+                                                activity.pomodoro.options.numberOfCycles + ' cycles' : '' }}</span>
                                             <button v-if="activity.pomodoro" @click="modifyActivity(activity)"
                                                 @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
                                             <button v-if="!activity.done" @click="markAsDone(activity)"
@@ -54,6 +54,26 @@
                                 </li>
                             </ul>
                             <p class="mt-2 text-gray-700" v-if="activitiesForTheDay(date).length === 0">No activities end today!</p>
+                            <hr v-else>
+                        </div>
+                        <div v-if="includeProjects && (projectActivitiesForTheDay(date).length > 0 || view === 'day')" class="mt-4">
+                            <h4 class="font-medium text-gray-700 mb-1">Projects</h4>
+                            <ul>
+                                <li v-for="activity in projectActivitiesForTheDay(date)" :key="activity.id"
+                                    class="clickable-item">
+                                    <hr>
+                                    <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity, date) }" @click="modifyActivity(activity)">
+                                        <div v-if="activity.start && timeMethods.sameDate(activity.start, date)" class="bg-blue-500 px-1 rounded-md text-white">
+                                            Start
+                                        </div>
+                                        <div v-else class="bg-orange-500 px-1 rounded-md text-white">
+                                            Deadline
+                                        </div>
+                                        <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
+                                    </div>
+                                </li>
+                            </ul>
+                            <p class="mt-2 text-gray-700" v-if="projectActivitiesForTheDay(date).length === 0">No project acitivities start or end today!</p>
                             <hr v-else>
                         </div>
                         <div v-if="includeUnavailable && (unavailabiltiesForTheDay(date).length > 0 || view === 'day')" class="mt-4">
@@ -118,8 +138,12 @@ export default defineComponent({
             type: Boolean,
             required: true
         },
+        includeProjects: {
+            type: Boolean,
+            required: true
+        },
         allActivities: {
-            type: Array,
+            type: Array as PropType<Activity[]>,
             required: false
         },
         allUnavailabilities: {
@@ -157,12 +181,25 @@ export default defineComponent({
         modifyEvent(event: any) {
             this.$emit('modifyEvent', event);
         },
-        activitiesForTheDay(date: Date): any[] {
+        activitiesForTheDay(date: Date): Activity[] {
+            const dailyActivities = this.activitiesForDate(date);
+            return dailyActivities.filter((activity: Activity) => {
+                return !activity.projectId;
+            });
+        },
+        projectActivitiesForTheDay(date: Date): Activity[] {
+            const dailyActivities = this.activitiesForDate(date);
+            return dailyActivities.filter((activity: Activity) => {
+                return activity.projectId;
+            });
+        },
+        activitiesForDate(date: Date): Activity[]{
             const startOfDay = timeMethods.getStartOfDay(date);
             if (this.allActivities) {
-                return this.allActivities.filter((activity: any) => {
+                return this.allActivities.filter((activity: Activity) => {
                     return timeMethods.sameDate(activity.deadline, date) ||
-                        (!activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today));
+                        (!activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today)) ||
+                        (activity.start && activity.projectId && timeMethods.sameDate(activity.start, date));
                 }).sort((a: any, b: any) => {
                     if (a.done && !b.done) {
                         return 1;
@@ -243,7 +280,7 @@ export default defineComponent({
         },
         isLateActivity(activity: Activity, date: Date): boolean {
             const startOfDay = timeMethods.getStartOfDay(date);
-            return !activity.done && activity.deadline < startOfDay && startOfDay < timeMethods.getEndOfDay(this.today);
+            return !activity.done && activity.deadline < timeMethods.getEndOfDay(this.today);
         }
     },
     computed: {
@@ -317,6 +354,10 @@ export default defineComponent({
 
 .clickable-item {
     cursor: pointer;
+}
+
+.clickable-item:hover {
+    background-color: #f3f4f6;
 }
 
 .late {

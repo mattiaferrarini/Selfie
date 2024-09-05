@@ -6,10 +6,13 @@ import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
 import timeService from '../services/timeService';
 import jobSchedulerService from '../services/jobSchedulerService';
+import notificationController from './notificationController';
+import _ from 'lodash';
 
 const formatEvent = (event: any) => {
     return {
         id: event._id,
+        owner: event.owner,
         allDay: event.allDay,
         title: event.title,
         start: event.start,
@@ -93,6 +96,7 @@ export const deleteEvent = async (req: any, res: any) => {
 export const addEvent = async (req: any, res: any) => {
     const newEvent = new Event({
         allDay: req.body.allDay,
+        owner: req.body.owner,
         title: req.body.title,
         start: req.body.start,
         end: req.body.end,
@@ -121,6 +125,8 @@ export const modifyEvent = async (req: any, res: any) => {
         const event = await Event.findById(id);
 
         if (event) {
+            const originalEvent = _.cloneDeep(event.toObject());
+
             const participantUsernames = req.body.participants?.map((participant: any) => participant.username);
             const removedParticipants = req.body.participants ? event.participants.filter((participant: any) => !participantUsernames.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
@@ -136,10 +142,13 @@ export const modifyEvent = async (req: any, res: any) => {
             event.participants = req.body.participants;
 
             await event.save();
-            await inviteController.createInvitesForEvent(event);
-            await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
-            await jobSchedulerService.updateUpcomingEventNotification(event);
 
+            if(!_.isEqual(originalEvent, event.toObject())){
+                await inviteController.createInvitesForEvent(event);
+                await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
+                await notifyOfChanges(event);
+                await jobSchedulerService.updateUpcomingEventNotification(event);
+            }
             res.status(200).send(formatEvent(event));
         } else {
             res.status(404).send({ error: "Event doesn't exist!" });
@@ -147,6 +156,14 @@ export const modifyEvent = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error updatding event' });
     }
+}
+
+const notifyOfChanges = async(event: IEvent) => {
+    event.participants.forEach((participant: any) => {
+        if(participant.status === 'accepted'){
+            notificationController.sendNotificationToUsername(participant.username, {title: 'Event updated', body: `Event ${event.title} has been updated.`});
+        }
+    });
 }
 
 export const getOverlappingEvents = async (req: any, res: any) => {
@@ -203,6 +220,7 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
             event.participants.forEach((participant: any) => {
                 if (participant.username === username) {
                     participant.status = newStatus;
+                    console.log("Participant status changed");
                 }
             });
             await event.save();
@@ -223,5 +241,17 @@ export const otherEventsOverlap = async (username: string, event: IEvent) => {
     }
     catch{
         return false; // TODO: handle error
+    }
+}
+
+export const removeParticipant = async (req: any, res: any) => {
+    const { id } = req.params;
+    const username = req.body.username;
+
+    try {
+        await changeParticipantStatus(id, username, 'declined');
+        res.status(200).send('Participant removed');
+    } catch (error) {
+        res.status(500).send({ error: 'Error removing participant' });
     }
 }

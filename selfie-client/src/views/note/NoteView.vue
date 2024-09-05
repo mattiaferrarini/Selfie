@@ -41,10 +41,10 @@ const newnote = async () => {
   const date = new Date();
   const note = await noteService.create(
       "",
-      `new note ${date.toLocaleString()}`,
+      `New note ${date.toLocaleString()}`,
       `${date.toISOString()}`,
       `${date.toISOString()}`,
-      "uncategorized"
+      "Uncategorized"
   );
 
   const id = note._id;
@@ -60,30 +60,30 @@ onMounted(async () => {
 
 <template>
   <div class="p-3">
-    <div class="flex justify-center gap-5 pt-5 pb-5">
-      <button class="bg-green-700 rounded-lg p-3" @click="newnote()">new note</button>
-      <button class="bg-yellow-400 rounded-xl p-3" @click="changeOrder()">order by {{ order }}</button>
+    <div class="flex justify-center gap-2 pt-5 pb-5">
+      <button class="bg-green-700 w-5/12 sm:w-auto text-white rounded-md p-2 sm:py-3 sm:px-5" @click="newnote()">New note</button>
+      <button class="bg-yellow-400 w-7/12 sm:w-auto text-gray-800 rounded-md p-2 sm:py-3 sm:px-5" @click="changeOrder()">Order by {{ order }}</button>
     </div>
 
-    <div class="flex flex-row flex-wrap justify-center m-auto gap-3">
-      <div v-for="note in notes" :key="note._id" class="max-w-sm h-fit max-h-[700px] overflow-scroll rounded border-2 border-black">
+    <div class="flex flex-wrap justify-center m-auto gap-3 animate-fade-in">
+      <div v-for="note in notes" :key="note._id" class="max-w-sm w-full h-fit max-h-[700px] overflow-auto rounded-lg bg-slate-50 border-2 border-gray-400 shadow-lg">
         <router-link :to="`/note/${note._id}`">
           <div class="p-4">
             <div class="flex flex-col justify-center pb-2 gap-y-2">
               <!-- note header information -->
-              <div class="bg-gray-400 rounded w-fit">
-                <h1 class="font-bold text-3xl break-word">{{ note.title }}</h1>
+              <div class="w-fit">
+                <h1 class="font-bold text-3xl text-gray-800 break-word">{{ note.title }}</h1>
               </div>
 
-              <span class="bg-purple-500 break-words rounded w-fit">Category: {{ note.category }}</span>
+              <span class="bg-blue-500 py-1 px-2 text-white break-words rounded w-fit">{{ note.category }}</span>
 
-              <div class="flex flex-col bg-blue-500 rounded w-fit">
+              <div class="flex flex-col bg-gray-200 p-2 rounded w-fit">
                 <span class="break-words ">Created: {{ new Date(note.creation).toLocaleString() }}</span>
                 <span class="break-words">Updated: {{ new Date(note.lastmodify).toLocaleString() }}</span>
               </div>
             </div>
-            <div class="bg-black rounded h-1"></div>
-            <div class="text-gray-700 text-base break-words prose" v-html="marked(note.content)"></div>
+            <hr class="bg-gray-500 rounded h-1 mt-2"/>
+            <div class="text-gray-700 text-base break-words prose mt-4" v-html="marked(note.content)"></div>
           </div>
         </router-link>
       </div>

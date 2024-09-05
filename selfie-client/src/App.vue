@@ -25,7 +25,7 @@
           <router-link :to="{ name: 'calendar' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
-            <span class="hidden sm:block">Calendario</span>
+            <span class="hidden sm:block">Calendar</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="bi-calendar3" class="h-full w-full"/>
             </div>
@@ -33,7 +33,7 @@
           <router-link :to="{ name: 'note' }"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        :class="{ 'text-emerald-700 sm:border-teal-500': $route.name === 'note' || $route.name === 'note-edit' }">
-            <span class="hidden sm:block">Note</span>
+            <span class="hidden sm:block">Notes</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="md-stickynote2-outlined" class="h-full w-full"/>
             </div>
@@ -47,7 +47,7 @@
             </div>
           </router-link>
           <a href="/progetti.html" class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl">
-            <span class="hidden sm:block">Progetti</span>
+            <span class="hidden sm:block">Projects</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="bi-calendar2-range" class="h-full w-full"/>
             </div>
@@ -71,10 +71,10 @@
                 </div>
                 <div class="flex flex-col ml-2 gap-y-2">
                   <button @click="setCurrentDate"
-                          class=" bg-emerald-500 border border-emerald-900 text-white shadow p-2 rounded-md">Set
+                          class=" bg-emerald-500 border text-white p-2 rounded-md">Set
                   </button>
                   <button @click="resetDate"
-                          class=" bg-gray-500 border border-emerald-900 text-white shadow p-2 rounded-md">Reset
+                          class=" bg-gray-500 border text-white p-2 rounded-md">Reset
                   </button>
                 </div>
               </div>
@@ -92,7 +92,7 @@
           <router-link to="/profile"
                        class="font-semibold mr-2 sm:mr-3 sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl"
                        active-class="text-emerald-700 sm:border-teal-500">
-            <span class="hidden sm:block">Profilo</span>
+            <span class="hidden sm:block">Profile</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon name="ri-user-settings-line" class="h-full w-full"/>
             </div>
@@ -176,6 +176,7 @@ export default defineComponent({
       dateStore.setRealTimeDiff(0);
 
       displayTimeMachineMessage('Time machine reset.');
+      initializeDate();
     };
 
     const initializeDate = () => {

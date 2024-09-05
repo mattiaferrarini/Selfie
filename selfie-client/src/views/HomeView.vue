@@ -10,11 +10,11 @@
         <v-icon name="bi-chat-dots" class="w-full p-1.5 h-full"/>
       </div>
     </div>
-    <div class="animate-fade-in w-11/12 p-4 mt-3 mb-4 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in sm:w-11/12 p-4 mt-5 sm:mt-3 mb-4 sm:p-5 rounded-lg shadow-xl shadow-emerald-600 bg-white">
       <h1 class="text-2xl sm:text-4xl font-bold text-emerald-600">Welcome, {{ realName }}!</h1>
       <h3 class="mt-2 sm:text-xl text-gray-700"> Manage your private, social and academic life with Selfie.</h3>
     </div>
-    <div class="animate-fade-in w-11/12 p-4 mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
+    <div class="animate-fade-in w-full sm:w-11/12 p-4 sm:mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
       <div>{{ date }}</div>
       <div class="flex mt-4 flex-col sm:flex-row gap-4">
         <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showCalendarTooltip)">
@@ -28,10 +28,11 @@
             <label for="weekly" class="font-semibold">Weekly
               <input type="checkbox" class="ml-2" v-model="calendarWeekly" @change="updatePreferences" id="weekly"/>
             </label>
-            <select v-model="calendarContent" @change="updatePreferences" class="mt-2">
+            <select v-model="calendarContent" @change="updatePreferences" class="mt-2 p-1 rounded-md border">
               <option value="all">All</option>
               <option value="events">Events</option>
               <option value="activities">Activities</option>
+              <option value="projects">Projects</option>
             </select>
           </div>
         </div>
@@ -44,12 +45,12 @@
           <div v-if="showNotesTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
             <div>
-              <label for="description" class="font-semibold mr-2">Categoria</label>
+              <label for="description" class="font-semibold mr-2">Category</label>
               <input type="checkbox" v-model="notesCategory" @change="updatePreferences" id="description"/>
             </div>
-            <div>
-              <label for="number" class="font-semibold mr-2">Numero</label>
-              <input type="number" min="1" v-model="noteNumber" @change="updatePreferences" id="number"/>
+            <div class="w-min">
+              <label for="number" class="font-semibold">Number:</label>
+              <input type="number" min="1" class="border rounded" v-model="noteNumber" @change="updatePreferences" id="number"/>
             </div>
           </div>
         </div>
@@ -61,10 +62,24 @@
           <PomodoroPreview :date="new Date(date)" :type="pomodoroType"/>
           <div v-if="showPomodoroTooltip"
                class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
-            <select v-model="pomodoroType" @change="updatePreferences">
-              <option value="settings">Impostazioni</option>
-              <option value="stats">Statistiche</option>
+            <select v-model="pomodoroType" @change="updatePreferences" class="p-1 rounded-md">
+              <option value="settings">Settings</option>
+              <option value="stats">Stats</option>
             </select>
+          </div>
+        </div>
+        <div class="w-full flex-1 relative" v-click-outside="() => closeTooltip(refs.showProjectsTooltip)">
+          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showProjectsTooltip)">
+            <v-icon name="md-settings-round" :class="['h-5 w-5 m-1 duration-500',
+              showProjectsTooltip ? ' rotate-180' : '']"/>
+          </div>
+          <PorjectPreview :date="new Date(date)" :assigned="onlyAssigned"/>
+          <div v-if="showProjectsTooltip"
+               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
+            <div>
+              <label for="onlyAssigned" class="font-semibold mr-2">Only assigned</label>
+              <input type="checkbox" v-model="onlyAssigned" @change="updatePreferences" id="onlyAssigned"/>
+            </div>
           </div>
         </div>
       </div>
@@ -92,10 +107,11 @@ import ChatView from "@/components/ChatComponent.vue";
 import profileService from "@/services/profileService";
 import {useAuthStore} from "@/stores/authStore";
 import {useWebSocketStore} from "@/stores/wsStore";
+import PorjectPreview from "@/components/ProjectPreview.vue";
 
 export default defineComponent({
   methods: {ref},
-  components: {PomodoroPreview, NotesPreview, CalendarPreview, ChatView},
+  components: {PorjectPreview, PomodoroPreview, NotesPreview, CalendarPreview, ChatView},
   setup() {
     const dateStore = useDateStore();
     const homePreferences = useAuthStore().user.preferences.home;
@@ -106,12 +122,14 @@ export default defineComponent({
     const showCalendarTooltip = ref(false);
     const showNotesTooltip = ref(false);
     const showPomodoroTooltip = ref(false);
+    const showProjectsTooltip = ref(false);
 
     const calendarWeekly = ref(homePreferences.calendarWeekly);
     const calendarContent = ref(homePreferences.calendarContent);
     const notesCategory = ref(homePreferences.notesCategory);
     const noteNumber = ref(homePreferences.noteNumber);
     const pomodoroType = ref(homePreferences.pomodoroType);
+    const onlyAssigned = ref(homePreferences.onlyAssigned);
 
     const showChatModal = ref(false);
     const wsStore = useWebSocketStore();
@@ -137,7 +155,8 @@ export default defineComponent({
           calendarContent: calendarContent.value,
           notesCategory: notesCategory.value,
           noteNumber: noteNumber.value,
-          pomodoroType: pomodoroType.value
+          pomodoroType: pomodoroType.value,
+          onlyAssigned: onlyAssigned.value
         }
       });
     };
@@ -148,10 +167,12 @@ export default defineComponent({
       showCalendarTooltip,
       showNotesTooltip,
       showPomodoroTooltip,
+      showProjectsTooltip,
       refs: {
         showCalendarTooltip,
         showNotesTooltip,
         showPomodoroTooltip,
+        showProjectsTooltip
       },
       toggleTooltip,
       closeTooltip,
@@ -161,6 +182,7 @@ export default defineComponent({
       notesCategory,
       noteNumber,
       pomodoroType,
+      onlyAssigned,
       updatePreferences,
       showChatModal,
       realName

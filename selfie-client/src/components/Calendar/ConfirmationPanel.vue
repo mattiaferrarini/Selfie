@@ -3,6 +3,7 @@
         <div class="bg-white m-4 p-4 rounded-lg shadow-lg flex flex-col justify-center text-center" @click.stop>
             <h2 class="text-xl font-bold mb-8 mt-4">Are you sure?</h2>
             <p class="my-2">{{ message }}</p>
+            <p>This action cannot be undone.</p>
             <div class="flex mt-8 gap-x-2">
                 <button @click="cancel" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg">Cancel</button>
                 <button @click="confirm" class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg">Confirm</button>

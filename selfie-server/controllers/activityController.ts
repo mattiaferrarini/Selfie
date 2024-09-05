@@ -1,13 +1,18 @@
-import Activity from "../models/Activity";
+import Activity, {IActivity} from "../models/Activity";
 import timeService from "../services/timeService";
 import * as inviteController from './inviteController';
 import jobSchedulerService from "../services/jobSchedulerService";
+import notificationController from "./notificationController";
+import _ from 'lodash';
 
 const formatActivity = (activity: any) => {
     return {
         id: activity._id,
         title: activity.title,
+        owners: activity.owners,
         done: activity.done,
+        projectId: activity.projectId,
+        start: activity.start,
         deadline: activity.deadline,
         notification: activity.notification,
         participants: activity.participants,
@@ -21,14 +26,22 @@ export const getActivitiesByUser = async (req: any, res: any) => {
     const {start, end} = req.query;
 
     try {
-        let activities = await Activity.find({"participants.username": username});
+        let activities = await Activity.find({
+            participants: {
+                $elemMatch: {
+                    username: username,
+                    status: 'accepted'
+                }
+            }
+        });
 
         if (start && end) {
-            // filter activities whose deadline is in the selected period of time
+            // filter activities whose deadline or start is in the selected period of time
             // or activities that are not done and whose deadline is before the selected period of time
             activities = activities.filter((activity: any) => {
                 return timeService.inRange(activity.deadline, new Date(start), new Date(end)) ||
-                    (!activity.done && activity.deadline < timeService.getStartOfDay(new Date(start)));
+                    (!activity.done && activity.deadline < timeService.getStartOfDay(new Date(start))) || 
+                    (activity.start && timeService.inRange(activity.start, new Date(start), new Date(end)));
             });
         }
 
@@ -75,28 +88,62 @@ export const getActivityById = async (req: any, res: any) => {
     }
 }
 
+export const deleteActivityById = async (id: any) => {
+    const activity = await Activity.findById(id);
+
+    if (activity) {
+        await jobSchedulerService.clearActivityNotifications(activity);
+        await Activity.findByIdAndDelete(id);
+        await inviteController.deleteActivityInvites(id);
+    }
+}
+
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
     try {
-
-        const activity = await Activity.findById(id);
-
-        if(activity){
-            await jobSchedulerService.clearActivityNotifications(activity);
-            await Activity.findByIdAndDelete(id);
-            await inviteController.deleteActivityInvites(id);
-        }
-
+        await recursiveDeleteActivity(id);
         res.status(204).send();
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
 }
 
+export const recursiveDeleteActivity = async (id: string) => {
+    const activity = await Activity.findById(id);
+
+        if(activity){
+            await Promise.all(activity.subActivitiesIDs.map(async (subActivityID: string) => {
+                recursiveDeleteActivity(subActivityID);
+            }));
+
+            await jobSchedulerService.clearActivityNotifications(activity);
+            await Activity.findByIdAndDelete(id);
+            await inviteController.deleteActivityInvites(id);
+        }
+}
+
+export const createActivity = async (newActivity: any, req: any) => {
+    if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
+        const completedCycles = newActivity.pomodoro.completedCycles;
+        const participants = newActivity.participants.map((participant: any) => participant.username);
+
+        participants.forEach((username: string) => {
+            if (username !== req.user.username)
+                completedCycles.set(username, 0);
+        });
+
+        newActivity.pomodoro.completedCycles = completedCycles;
+    }
+    await newActivity.save();
+}
+
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
         title: req.body.title,
+        owners: req.body.owners,
         done: req.body.done,
+        start: req.body.start,
+        projectId: req.body.projectId,
         deadline: req.body.deadline,
         notification: req.body.notification,
         participants: req.body.participants,
@@ -105,19 +152,9 @@ export const addActivity = async (req: any, res: any) => {
     });
 
     try {
-        if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
-            const completedCycles = newActivity.pomodoro.completedCycles;
-            const participants = newActivity.participants.map((participant: any) => participant.username);
-
-            participants.forEach(username => {
-                if (username !== req.user.username)
-                    completedCycles.set(username, 0);
-            });
-
-            newActivity.pomodoro.completedCycles = completedCycles;
-        }
-        await newActivity.save();
+        await createActivity(newActivity, req);
         await inviteController.createInvitesForActivity(newActivity);
+        await jobSchedulerService.scheduleActivityNotification(newActivity);
         res.status(201).send(formatActivity(newActivity));
     } catch (error) {
         res.status(400).send({error: 'Error adding activity'});
@@ -129,13 +166,18 @@ export const modifyActivity = async (req: any, res: any) => {
     try {
         const activity = await Activity.findById(id);
         if (activity) {
+            const originalActivity = _.cloneDeep(activity.toObject());
+
             const participantUsernames = req.body.participants?.map((participant: any) => participant.username);
             const removedParticipants = req.body.participants ? activity.participants.filter((participant: any) => !participantUsernames.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
 
             if (req.body.pomodoro && req.body.pomodoro.completedCycles) {
                 if (!activity.pomodoro)
-                    activity.pomodoro = {options: req.body.pomodoro.options, completedCycles: new Map<string,number>()};
+                    activity.pomodoro = {
+                        options: req.body.pomodoro.options,
+                        completedCycles: new Map<string, number>()
+                    };
                 activity.pomodoro.options = req.body.pomodoro.options;
 
                 Object.entries(req.body.pomodoro.completedCycles).map((object: any) => {
@@ -154,11 +196,14 @@ export const modifyActivity = async (req: any, res: any) => {
 
             req.body.pomodoro?.completedCycles && delete req.body.pomodoro;
             Object.assign(activity, req.body);
-            activity.save();
+            await activity.save();
 
-            await inviteController.createInvitesForActivity(activity);
-            await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-
+            if(!_.isEqual(originalActivity, activity.toObject())){
+                await inviteController.createInvitesForActivity(activity);
+                await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
+                notifyOfChanges(activity);
+                await jobSchedulerService.updateLateActivityNotification(activity);
+            }
             res.status(200).send(formatActivity(activity));
         } else {
             res.status(404).send({error: "Activity doesn't exist!"});
@@ -166,6 +211,14 @@ export const modifyActivity = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
+}
+
+const notifyOfChanges = async(activity: IActivity) => {
+    activity.participants.forEach((participant: any) => {
+        if(participant.status === 'accepted'){
+            notificationController.sendNotificationToUsername(participant.username, {title: 'Activity updated', body: `Activity ${activity.title} has been updated.`});
+        }
+    });
 }
 
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {
@@ -183,5 +236,17 @@ export const changeParticipantStatus = async (id: string, username: string, newS
         }
     } catch (error) {
         throw new Error("Error changing participant status");
+    }
+}
+
+export const removeParticipant = async (req: any, res: any) => {
+    const { id } = req.params;
+    const username = req.body.username;
+
+    try {
+        await changeParticipantStatus(id, username, 'declined');
+        res.status(200).send('Participant removed');
+    } catch (error) {
+        res.status(500).send({ error: 'Error removing participant' });
     }
 }

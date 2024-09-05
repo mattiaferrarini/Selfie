@@ -13,5 +13,6 @@ router.post('/import', eventController.importICalendar);
 router.post('/export', upload.single('file'), eventController.sendExportViaEmail);
 router.post('/:id', eventController.modifyEvent);
 router.delete('/:id', eventController.deleteEvent);
+router.post('/removeParticipant/:id', eventController.removeParticipant);
 
 export default router;

@@ -1,5 +1,6 @@
 export class CalendarEvent {
     title: string;
+    owner: string | undefined;
     id: string | undefined;
     allDay: boolean;
     start: Date;
