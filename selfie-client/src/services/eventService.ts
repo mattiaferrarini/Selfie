@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {CalendarOptions, GoogleCalendar, ICalendar, OutlookCalendar, YahooCalendar} from "datebook";
+import {CalendarOptions, GoogleCalendar, ICalendar, ICSAlarm, OutlookCalendar, YahooCalendar} from "datebook";
 import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
 import {CalendarEvent} from '@/models/Event';
 import {useAuthStore} from '@/stores/authStore';
@@ -104,9 +104,67 @@ const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
     return options;
 }
 
-const convertOptionsToICalendar = (options: CalendarOptions): string => {
-    // TODO: possibly add alarms to file
-    return new ICalendar(options).render();
+const generateAlarmsForEvent = (event: CalendarEvent): ICSAlarm[] => {
+    const alarms: ICSAlarm[] = [];
+
+    if(event.notification.method.length > 0){
+        let whenMinutes = stringToMinutes(event.notification.when);
+        const repeatFrequencyMinutes = stringToMinutes(event.notification.repeat);
+
+        while(whenMinutes >= 0){
+            const newAlarm: ICSAlarm = {
+                action: 'METHOD',
+                summary: 'Reminder of ' + event.title,
+                description: event.title + ' is starting soon!',
+                trigger: {
+                    minutes: whenMinutes
+                },
+            };
+
+            if(event.notification.method.includes('email')){
+                newAlarm.action = 'EMAIL';
+                alarms.push(newAlarm);
+            }
+            if(event.notification.method.includes('push')){
+                newAlarm.action = 'DISPLAY';
+                alarms.push(newAlarm);
+            }
+
+            whenMinutes -= repeatFrequencyMinutes;
+        }
+    }
+    return alarms;
+}
+
+// converts a string representing a time amount to the corresponding number of minutes
+const stringToMinutes = (str: string) => {
+    const parts = str.split(' ');
+
+    if(parts.length !== 2)
+        return 0;
+    else{
+        const unit = parts[1];
+        const value = parseInt(parts[0]);
+
+        if (unit === 'minutes' || unit === 'minute')
+            return value;
+        else if (unit === 'hours' || unit === 'hour')
+            return value * 60;
+        else if (unit === 'days' || unit === 'day')
+            return value * 60 * 24;
+        else if (unit === 'weeks' || unit === 'week')
+            return value * 60 * 24 * 7;
+        else
+            return 0;
+    }
+}
+
+const convertOptionsToICalendar = (options: CalendarOptions, alarms: ICSAlarm[]): string => {
+    const iCal = new ICalendar(options);
+    for(const alarm of alarms){
+        iCal.addAlarm(alarm);
+    }
+    return iCal.render();
 }
 
 const convertOptionsToYahoo = (options: CalendarOptions): string => {
@@ -149,7 +207,7 @@ const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> 
 
                 // repetition
                 if(ev.rrule){
-                    const recRule = getRepcurrenceRule(icalStr);
+                    const recRule = getRecurrenceRule(icalStr);
 
                     if(recRule.freq)
                         event.repetition.frequency = recRule.freq;
@@ -180,7 +238,7 @@ const getEventFromIcal = async (icalStr: string) : Promise<any> => {
     }
 }
 
-const getRepcurrenceRule = (icalStr: string) => {
+const getRecurrenceRule = (icalStr: string) => {
     const rule: any = {};
     const lines = icalStr.split('\n');
     for (const line of lines) {
@@ -246,5 +304,6 @@ export default {
     convertICalendarToEvent,
     getEventFromIcal,
     sendExportViaEmail,
-    removeParticipantFromEvent
+    removeParticipantFromEvent,
+    generateAlarmsForEvent
 };

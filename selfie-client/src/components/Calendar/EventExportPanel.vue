@@ -20,7 +20,7 @@
 import { defineComponent } from 'vue';
 import eventService from '@/services/eventService';
 import { CalendarEvent } from '@/models/Event';
-import { CalendarOptions } from 'datebook';
+import { CalendarOptions, ICSAlarm } from 'datebook';
 import FileSaver from 'file-saver';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -35,6 +35,7 @@ export default defineComponent({
     data() {
         return {
             iCalendarOptions: {} as CalendarOptions,
+            iCalendarAlarms: [] as ICSAlarm[],
             iCalendarFile: '',
             yahooLink: '',
             googleLink: '',
@@ -79,7 +80,10 @@ export default defineComponent({
     },
     mounted() {
         this.iCalendarOptions = eventService.generateOptionsForEvent(this.event);
-        this.iCalendarFile = eventService.convertOptionsToICalendar(this.iCalendarOptions);
+        this.iCalendarAlarms = eventService.generateAlarmsForEvent(this.event);
+        console.log(this.iCalendarAlarms);
+
+        this.iCalendarFile = eventService.convertOptionsToICalendar(this.iCalendarOptions, this.iCalendarAlarms);
         this.yahooLink = eventService.convertOptionsToYahoo(this.iCalendarOptions);
         this.googleLink = eventService.convertOptionsToGoogle(this.iCalendarOptions);
         this.outlookLink = eventService.convertOptionsToOutlook(this.iCalendarOptions);

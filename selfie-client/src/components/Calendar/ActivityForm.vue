@@ -449,6 +449,7 @@ export default defineComponent({
             event.end = timeService.getEndOfDay(this.newActivity.deadline);
             event.allDay = true;
             event.participants = this.newActivity.participants;
+            event.notification.method = [];
             return event;
         },
         modificationAllowed(): boolean {

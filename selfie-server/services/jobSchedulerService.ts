@@ -118,19 +118,24 @@ const getNumberOfEventNotifications = (event: IEvent) => {
 // converts a string representing a time amount to the corresponding number of minutes
 const stringToMinutes = (str: string) => {
     const parts = str.split(' ');
-    const unit = parts[1];
-    const value = parseInt(parts[0]);
 
-    if (unit === 'minutes' || unit === 'minute')
-        return value;
-    else if (unit === 'hours' || unit === 'hour')
-        return value * 60;
-    else if (unit === 'days' || unit === 'day')
-        return value * 60 * 24;
-    else if (unit === 'weeks' || unit === 'week')
-        return value * 60 * 24 * 7;
-    else
+    if(parts.length !== 2)
         return 0;
+    else{
+        const unit = parts[1];
+        const value = parseInt(parts[0]);
+
+        if (unit === 'minutes' || unit === 'minute')
+            return value;
+        else if (unit === 'hours' || unit === 'hour')
+            return value * 60;
+        else if (unit === 'days' || unit === 'day')
+            return value * 60 * 24;
+        else if (unit === 'weeks' || unit === 'week')
+            return value * 60 * 24 * 7;
+        else
+            return 0;
+    }
 }
 
 // schedules the notification process for a late activity
