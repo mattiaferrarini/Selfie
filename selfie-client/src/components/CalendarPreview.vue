@@ -118,8 +118,6 @@ export default defineComponent({
   },
   methods: {
     async fetchData() {
-      console.log(this.date);
-
       this.startOfDay = timeService.getStartOfDay(this.date);
       this.endOfDay = timeService.getEndOfDay(this.date);
       this.endOfEndOfWeek = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
@@ -133,10 +131,6 @@ export default defineComponent({
       this.computeEventsWithDates();
       this.computeSortedActivities();
       this.computeSortedProjectActivities();
-
-      console.log(this.activities);
-      console.log(this.sortedProjectActivities);
-      console.log(this.projectActivitiesInPeriod);
     }, 
     computeEventsWithDates() {
       let withDates = this.events.map((event: CalendarEvent) => {
@@ -188,7 +182,6 @@ export default defineComponent({
       return !activity.done && activity.deadline < this.startOfDay;
     },
     getProjectActivitiesForPeriod(start: Date, end: Date): { activity: Activity, type: string }[] {
-      console.log(start, end);
       return this.sortedProjectActivities.filter((pair: { activity: Activity, type: string }) => {
         if (pair.type === 'start' && pair.activity.start) {
           return pair.activity.start <= end && pair.activity.start >= start;

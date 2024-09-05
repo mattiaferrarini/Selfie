@@ -311,8 +311,6 @@ export default defineComponent({
             if (this.newNotificationOptions.email)
                 this.newActivity.notification.method.push('email');
 
-            console.log('saving activity', this.newActivity);
-
             this.newActivity.subActivitiesIDs = this.newSubActivities.map((s) => s.id).filter((id): id is string => id !== undefined);
             this.saveActivity(this.newActivity);
         },

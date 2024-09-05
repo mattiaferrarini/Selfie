@@ -100,7 +100,6 @@ export default defineComponent({
             try{
                 const userData = await userService.getUserBasicInfo(this.newUsername);
             if (userData) {
-                console.log('user');
                 if (!this.userAlreadyAdded(userData.username)) {
                     if(this.event){
                         // event case: check if user is available
@@ -123,7 +122,6 @@ export default defineComponent({
                     this.onAddSuccess();
             } 
             else if(this.event){
-                console.log('resource');
                 //check if user is a resource
                 const resource = await resourceService.getResource(this.newUsername);
                 if(resource){
@@ -139,7 +137,6 @@ export default defineComponent({
             }
             }
             catch(error){
-                console.error(error);
                 this.onUserAddError();
             }
             this.newUsername = '';

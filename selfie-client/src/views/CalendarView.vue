@@ -118,11 +118,9 @@ export default defineComponent({
       }
     };
     watch(focusDate, async () => {
-      console.log('Focus date changed');
       await updateRangeAndFetchCalendarIfNecessary();
     });
     watch(currentDate, async () => {
-      console.log('Current date changed');
       focusDate.value = new Date(currentDate.value);
       checkInvites();
     });
@@ -139,7 +137,7 @@ export default defineComponent({
       document.getElementById(focusDate.value.toISOString().substring(0, 10))?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     };
     const onViewChange = () => {
-      console.log(`View changed to: ${view.value}`);
+      return;
     };
     const onContentChange = async () => {
       if (content.value === 'resources' && allResources.value.length > 0)
@@ -223,7 +221,6 @@ export default defineComponent({
 
     /* Save new/modified activities and delete them */
     const saveActivity = async (newActivity: Activity) => {
-      console.log(newActivity);
       fetchActivities();
       hideAllForms();
     };
@@ -327,9 +324,6 @@ export default defineComponent({
           modifyActivity(activity);
         }
       }
-
-      console.log(rangeActivities.value);
-
       fetchUnavailabilities();
       fetchResources();
 

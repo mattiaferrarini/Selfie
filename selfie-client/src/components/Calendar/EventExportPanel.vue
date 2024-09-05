@@ -81,7 +81,6 @@ export default defineComponent({
     mounted() {
         this.iCalendarOptions = eventService.generateOptionsForEvent(this.event);
         this.iCalendarAlarms = eventService.generateAlarmsForEvent(this.event);
-        console.log(this.iCalendarAlarms);
 
         this.iCalendarFile = eventService.convertOptionsToICalendar(this.iCalendarOptions, this.iCalendarAlarms);
         this.yahooLink = eventService.convertOptionsToYahoo(this.iCalendarOptions);
