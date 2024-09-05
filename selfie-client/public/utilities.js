@@ -1,4 +1,4 @@
-export const API_URL = "http://localhost:3000"; // TODO: Change this url in deployment
+export const API_URL = "https://site232410.tw.cs.unibo.it";
 
 export const forceLogout = () => {
     localStorage.setItem('auth', '{"user":null,"isAuthenticated":false,"isAdmin":false}');

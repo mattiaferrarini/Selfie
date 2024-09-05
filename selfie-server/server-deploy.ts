@@ -123,7 +123,6 @@ app.use('/user', ensureAuthenticated, userRoutes);
 app.use('/resource', ensureAuthenticated, resourceRoutes);
 app.use('/invite', ensureAuthenticated, inviteRoutes);
 app.use('/timeMachine', timeMachineRoutes);
-app.use('/timeMachine', timeMachineRoutes);
 app.use('/project', ensureAuthenticated, projectRoutes);
 
 const server = http.createServer(app);
