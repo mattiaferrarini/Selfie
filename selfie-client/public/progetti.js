@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return a.activity.participants.map(participant => participant.username).includes(auth.user.username) ? -1 : 1;
         });
 
-        const activityList = activities.map(activity => {
+        const activityList = activities.map((activity, index) => {
             const status = getStatusFromActivity(activity, activities);
             const participants = activity.activity?.participants.map(participant => participant.username);
             const startingDate = activity.linkedActivityId !== null ?
@@ -542,28 +542,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 :
                 new Date(activity.activity?.start).toLocaleDateString();
             return `
-        <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
-            <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
-            <div><strong>Title:</strong>${activity.activity?.title}</div> 
-            <div><strong>Id: #</strong>${activity.localId}</div> 
-            <div><strong>Actor:</strong> ${participants.join('')}</div>
-            <div><strong>Starting Date:</strong> ${startingDate}</div>
-            <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
-            <div><strong>Status:</strong> ${status}</div>
-            <div><strong>Input:</strong> ${activity.input}</div>
-            <div><strong>Output:</strong> ${activity.output}</div>
-            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+        <li class="activity-item border p-4 bg-white rounded-lg shadow-lg">
+            <div class="flex w-full items-center justify-between mb-3">
+                <h4 class="text-xl font-semibold">${activity.activity?.title}</h4>
+                <div class="size-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-bold">${index+1}</div>
+            </div>
+            <div class="text-gray-700">
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Phase</strong> ${activity.phaseTitle}</div>
+                <div class="flex items-center justify-between"><strong>Id</strong>#${activity.localId}</div> 
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Actors</strong> ${participants.join(', ')}</div>
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Starting Date</strong> ${startingDate}</div>
+                <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''} flex items-center justify-between"><strong>Ending Date</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Status</strong> ${status}</div>
+                <div class="flex items-center justify-between"><strong>Input</strong> ${activity.input}</div>
+                <div class="flex items-center justify-between"><strong>Output</strong> ${activity.output}</div>
+                <hr class="my-1">
+                <button type="button" class="edit-activity-button bg-emerald-500 text-white font-bold p-2 rounded-md w-full mt-4" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+            </div>
         </li>
     `
         }).join('');
 
+
+        const actionOptions = project.owner === auth.user.username ? `
+            <div class="flex gap-1 font-semibold">
+                <button type="button" class="edit-project-button bg-emerald-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-pencil-fill mr-2"></i> Edit
+                </button>
+                <button type="button" class="delete-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-trash-fill mr-2"></i> Delete
+                </button>
+            </div class="font-semibold">` 
+            : `<button type="button" class="leave-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                <i class="bi bi-x-circle-fill mr-2"></i>Leave
+            </button>`;
+
         listView.innerHTML = `
-            <div class="inline-flex items-center mb-2">
-                Project: <h3 class="text-2xl p-2">${project.title}</h3>
-                ${project.owner === auth.user.username
-            ? '<button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button><button type="button" class="delete-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Delete Project</button>'
-            : '<button type="button" class="leave-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Leave Project</button>'}</div>
-            <ul class="activity-list list-none p-0">${activityList}</ul>`;
+            <div class="inline-flex items-center flex-wrap w-full justify-between mt-2 mb-4">
+                <h3 class="text-3xl font-bold text-gray-800 p-2 mr-4">${project.title}</h3>
+                ${actionOptions}</div>
+            <ul class="activity-list list-none p-0 sm:grid md:grid-cols-2 lg:grid-cols-3 flex flex-col gap-2">${activityList}</ul>`;
 
         if (project.owner === auth.user.username) {
             document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
