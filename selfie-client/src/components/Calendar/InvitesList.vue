@@ -48,7 +48,11 @@ export default defineComponent({
     },
     watch: {
         username: {
-            handler: 'onUsernameChange',
+            handler: 'fetchInviteInfos',
+            immediate: true
+        },
+        currentDate: {
+            handler: 'fetchInviteInfos',
             immediate: true
         }
     },
@@ -57,10 +61,8 @@ export default defineComponent({
         formattedDescription(description: string) :string {
         return description.replace(/\n/g, '<br>');
         },
-        onUsernameChange() {
-            this.fetchInviteInfos();
-        },
         async fetchInviteInfos() {
+            console.log('Fetching invite infos');
             try {
                 const invites = await inviteService.getPendingInvitesByUser(this.username, this.currentDate);
                 let newInfos = [] as { invite: Invite, title: string, description: string }[];
@@ -68,14 +70,15 @@ export default defineComponent({
                 for (let invite of invites) {
                     if (invite.eventId) {
                         const event = await eventService.getEventById(invite.eventId)
-                        newInfos.push(this.formatEventInvite(invite, event));
+                        if(event)
+                            newInfos.push(this.formatEventInvite(invite, event));
                     }
                     else if (invite.activityId) {
                         const activity = await activityService.getActivityById(invite.activityId)
-                        newInfos.push(this.formatActivityInvite(invite, activity));
+                        if(activity)
+                            newInfos.push(this.formatActivityInvite(invite, activity));
                     }
                 }
-
                 this.inviteInfos = newInfos;
             }
             catch {

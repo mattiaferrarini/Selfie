@@ -43,6 +43,20 @@ export const getEventsByUser = async (req: any, res: any) => {
 
 export const getEventsByUserAndDate = async (username: string, start?: Date, end?: Date) => {
     try {
+        let events = await getAcceptedEventsByUser(username);
+
+        if (start && end) {
+            events = events.filter((event: any) => eventService.eventInRange(event, start, end));
+        }
+        return events;
+        
+    } catch (error) {
+        throw new Error('Error retrieving events');
+    }
+}
+
+export const getAcceptedEventsByUser = async (username: string) => {
+    try {
         let events = await Event.find({
             participants: {
                 $elemMatch: {
@@ -51,12 +65,7 @@ export const getEventsByUserAndDate = async (username: string, start?: Date, end
                 }
             }
         });
-
-        if (start && end) {
-            events = events.filter((event: any) => eventService.eventInRange(event, start, end));
-        }
         return events;
-        
     } catch (error) {
         throw new Error('Error retrieving events');
     }
@@ -220,7 +229,7 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
 
 export const otherEventsOverlap = async (username: string, event: IEvent) => {
     try{
-        let events = await Event.find({ username: username });
+        let events = await getAcceptedEventsByUser(username);
         events = events.filter((e: any) => eventService.eventsOverlap(e, event));
         return events.length > 0;
     }
