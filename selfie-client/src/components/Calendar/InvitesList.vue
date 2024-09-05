@@ -82,18 +82,18 @@ export default defineComponent({
                 console.log('Error fetching invite infos');
             }
         },
-        acceptInvite(invite: Invite) {
-            inviteService.acceptInvite(invite);
+        async acceptInvite(invite: Invite) {
+            await inviteService.acceptInvite(invite);
             this.removeInvite(invite);
             this.$emit('accept-invite', invite);
         },
-        declineInvite(invite: Invite) {
-            inviteService.declineInvite(invite);
+        async declineInvite(invite: Invite) {
+            await inviteService.declineInvite(invite);
             this.removeInvite(invite);
             this.$emit('decline-invite', invite);
         },
-        postponeInvite(invite: Invite) {
-            inviteService.postponeInvite(invite);
+        async postponeInvite(invite: Invite) {
+            await inviteService.postponeInvite(invite);
             this.removeInvite(invite);
             this.$emit('postpone-invite', invite);
         },
