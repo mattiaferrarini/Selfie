@@ -135,7 +135,7 @@
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
         <div class="flex w-full space-x-1">
-          <button v-if="modifying" type="button" @click="handleDeleteRequest"
+          <button v-if="modifying && deletionAllowed" type="button" @click="handleDeleteRequest"
             class="flex-1 bg-red-600 text-white p-2 rounded-md">Delete</button>
           <button v-if="modificationAllowed" type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
         </div>
@@ -450,6 +450,9 @@ export default defineComponent({
     modificationAllowed(): boolean {
       return (this.adminOnlyModification && useAuthStore().isAdmin) || 
         (!this.adminOnlyModification && this.newEvent.owner === useAuthStore().user.username);
+    },
+    deletionAllowed(): boolean {
+      return this.modifying && (!this.adminOnlyModification || useAuthStore().isAdmin);
     }
   }
 });

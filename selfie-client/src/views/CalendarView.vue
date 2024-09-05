@@ -64,7 +64,7 @@ export default defineComponent({
     const showInviteList = ref(false);
     const hasPendingInvites = ref(false);
     const modifying = ref(false);
-    const resource = ref('');
+    const selectedResourceName = ref('');
 
     /* Fetch content of the view */
     const fetchUserEvents = async () => {
@@ -81,10 +81,14 @@ export default defineComponent({
     const fetchResources = async () => {
       allResources.value = await resourceService.getAllResources();
       if (allResources.value.length > 0)
-        resource.value = allResources.value[0].name;
+        selectedResourceName.value = allResources.value[0].name;
     };
     const fetchResourceEvents = async () => {
-      return await eventService.getEventsByUser(resource.value, rangeStartDate.value, rangeEndDate.value);
+      const resourceUsername = allResources.value.find(res => res.name === selectedResourceName.value)?.username;
+      if (!resourceUsername) 
+        return [];
+      else
+        return await eventService.getEventsByUser(resourceUsername, rangeStartDate.value, rangeEndDate.value);
     };
     const reFetchCalendarContent = async () => {
       await fetchUserEvents();
@@ -213,6 +217,7 @@ export default defineComponent({
     };
     const deleteEvent = (event: CalendarEvent) => {
       rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
+      rangeUserEvents.value = rangeUserEvents.value.filter(e => e.id !== event.id);
       hideAllForms();
     };
 
@@ -338,7 +343,7 @@ export default defineComponent({
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
-      modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
+      modifying, deleteEvent, deleteActivity, deleteUnavailability, resource: selectedResourceName, onResourceChange, allResources, onContentChange,
       showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton,
       eventAdminOnlyModification, acceptInvite
     };
