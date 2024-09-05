@@ -40,3 +40,35 @@ export async function fetchWithMiddleware(url, options) {
     }
     return response;
 }
+
+export const getTimeMachineDate = () => {
+    let timeDifference = JSON.parse(localStorage.getItem('date')).realTimeDiff || 0;
+    return new Date(new Date().getTime() + timeDifference);
+}
+
+export const getStatusFromActivity = (activity, activities) => {
+    let status;
+    let linkedOutputUnavailable = false;
+    if (activity.linkedActivityId !== null) {
+        const linkedActivity = activities.find(act => act.localId === activity.linkedActivityId);
+        if (!(linkedActivity.output !== "" && linkedActivity.status === "Concluded"))
+            linkedOutputUnavailable = true;
+    }
+    // if two weeks have passed from the deadline or if the status is abandoned
+    if (activity.status === "Abandoned" || new Date(getTimeMachineDate().setDate(getTimeMachineDate().getDate() - 2 * 7)) > activity.activity?.deadline) {
+        status = "Abandoned";
+    } else if (activity.activity?.deadline < getTimeMachineDate() && (activity.output === "" || activity.status !== "Concluded")) {
+        status = "Late";
+    } else if (activity.input === "" || linkedOutputUnavailable) {
+        status = "Not activatable";
+    } else if (activity.status === "NotStarted") {
+        status = "Activatable";
+    } else if (activity.status === "Rejected") {
+        status = "Reactivated";
+    } else if (activity.status === "Concluded" && activity.output !== "") {
+        status = "Concluded";
+    } else {
+        status = "Active";
+    }
+    return status;
+}
