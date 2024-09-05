@@ -1,6 +1,6 @@
 import Project, {ActivityStatus, IProject} from "../models/Project";
 import User from "../models/User";
-import Activity from "../models/Activity";
+import Activity, { IActivity } from "../models/Activity";
 import notificationController from "./notificationController";
 import {createActivity, deleteActivityById} from "./activityController";
 
@@ -89,6 +89,17 @@ const addProjectIdToActivities = async (project: any) => {
     }
 }
 
+const addEmailsToParticipants = async (activity: IActivity) => {
+    if (activity && activity.participants) {
+        for (const participant of activity.participants) {
+            const user = await User.findOne({ username: participant.username });
+            if (user) {
+                participant.email = user.email;
+            }
+        }
+    }
+}
+
 const createActivities = async (phases: any, req: any, res: any): Promise<boolean> => {
     const createdActivitiesIds: string[] = [];
 
@@ -98,7 +109,10 @@ const createActivities = async (phases: any, req: any, res: any): Promise<boolea
             try {
                 activity.activity._id = undefined;
                 const createdActivity = new Activity(activity.activity);
+
+                await addEmailsToParticipants(createdActivity);
                 await createActivity(createdActivity, req);
+
                 createdActivitiesIds.push(createdActivity._id as string);
                 activity.activityId = createdActivity._id;
 
@@ -156,6 +170,13 @@ export const modifyStatus = async (req: any, res: any) => {
                 return res.status(403).send({error: 'You are not a participant in the activity'});
             }
 
+            // update activity
+            if(status === ActivityStatus.Concluded) {
+                activity.done = true;
+                await activity.save();
+            }
+
+            // update project
             phaseActivity.status = status;
             phaseActivity.output = output;
             if (phaseActivity.linkedActivityId == "")

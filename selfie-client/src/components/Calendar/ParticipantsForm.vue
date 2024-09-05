@@ -5,7 +5,7 @@
             <div class="mb-3" v-if="modificationAllowed">
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
-                    <input type="text" placeholder="Add username" v-model="newUsername"
+                    <input type="text" placeholder="Add username" v-model="newUsername" @keyup.enter="addParticipant"
                         class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md">
                     <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md"><v-icon name="md-add"></v-icon></button>
                 </div>
@@ -97,7 +97,8 @@ export default defineComponent({
             this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
         },
         async addParticipant() {
-            const userData = await userService.getUserBasicInfo(this.newUsername);
+            try{
+                const userData = await userService.getUserBasicInfo(this.newUsername);
             if (userData) {
                 console.log('user');
                 if (!this.userAlreadyAdded(userData.username)) {
@@ -136,6 +137,11 @@ export default defineComponent({
             else {
                 this.onUserNotExisting();
             }
+            }
+            catch(error){
+                console.error(error);
+                this.onUserAddError();
+            }
             this.newUsername = '';
         },
         userAlreadyAdded(username: string): boolean {
@@ -155,6 +161,10 @@ export default defineComponent({
         },
         onUnavailableUser() {
             this.failureText = `${this.newUsername} is unavailable at the time of the event.`;
+            this.onAddFailure();
+        },
+        onUserAddError() {
+            this.failureText = `An error occurred while adding ${this.newUsername}.`;
             this.onAddFailure();
         },
         onAddFailure() {

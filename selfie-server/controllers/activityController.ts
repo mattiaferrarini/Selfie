@@ -1,7 +1,9 @@
-import Activity from "../models/Activity";
+import Activity, {IActivity} from "../models/Activity";
 import timeService from "../services/timeService";
 import * as inviteController from './inviteController';
 import jobSchedulerService from "../services/jobSchedulerService";
+import notificationController from "./notificationController";
+import _ from 'lodash';
 
 const formatActivity = (activity: any) => {
     return {
@@ -164,6 +166,8 @@ export const modifyActivity = async (req: any, res: any) => {
     try {
         const activity = await Activity.findById(id);
         if (activity) {
+            const originalActivity = _.cloneDeep(activity.toObject());
+
             const participantUsernames = req.body.participants?.map((participant: any) => participant.username);
             const removedParticipants = req.body.participants ? activity.participants.filter((participant: any) => !participantUsernames.includes(participant.username)) : [];
             const removedUsernames = removedParticipants.map((participant: any) => participant.username);
@@ -192,14 +196,14 @@ export const modifyActivity = async (req: any, res: any) => {
 
             req.body.pomodoro?.completedCycles && delete req.body.pomodoro;
             Object.assign(activity, req.body);
-            activity.save();
+            await activity.save();
 
-            await inviteController.createInvitesForActivity(activity);
-            await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-            await jobSchedulerService.updateLateActivityNotification(activity);
-
-            // TODO: remove deleted subactivities from participants
-
+            if(!_.isEqual(originalActivity, activity.toObject())){
+                await inviteController.createInvitesForActivity(activity);
+                await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
+                notifyOfChanges(activity);
+                await jobSchedulerService.updateLateActivityNotification(activity);
+            }
             res.status(200).send(formatActivity(activity));
         } else {
             res.status(404).send({error: "Activity doesn't exist!"});
@@ -207,6 +211,14 @@ export const modifyActivity = async (req: any, res: any) => {
     } catch (error) {
         res.status(404).send({error: "Activity doesn't exist!"});
     }
+}
+
+const notifyOfChanges = async(activity: IActivity) => {
+    activity.participants.forEach((participant: any) => {
+        if(participant.status === 'accepted'){
+            notificationController.sendNotificationToUsername(participant.username, {title: 'Activity updated', body: `Activity ${activity.title} has been updated.`});
+        }
+    });
 }
 
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {
