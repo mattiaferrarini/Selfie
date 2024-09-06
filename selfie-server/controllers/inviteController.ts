@@ -48,7 +48,7 @@ export const getPendingInvitesByUser = async (req: any, res: any) => {
 
 export const createInvitesForEvent = async (event: IEvent) => {
     const participants = event.participants;
-    const answerDate = new Date(); // TODO: change to current date
+    const answerDate = new Date();
     const eventId = event._id as string;
 
     for (let i = 0; i < participants.length; i++) {

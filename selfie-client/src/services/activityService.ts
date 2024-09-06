@@ -14,7 +14,6 @@ const getActivitiesByUser = async (username: string, start?: Date, end?: Date) =
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -86,7 +85,7 @@ const removeParticipantFromActivity = async (activity: Activity, username: strin
         await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
-        console.log(error);
+        return;
     }
 }
 

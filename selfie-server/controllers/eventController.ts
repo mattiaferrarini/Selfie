@@ -196,12 +196,22 @@ const automaticallyAnswerInvites = async (event: IEvent) => {
         const participant = participants[i];
         if(participant.status === 'pending'){
             if(await resourceController.isResource(participant.username)){
-                if (!await otherEventsOverlap(participant.username, event))
-                    participant.status = 'accepted';
+                try{
+                    if (!await otherEventsOverlap(participant.username, event))
+                        participant.status = 'accepted';
+                }
+                catch{
+                    participant.status = 'pending';
+                }
             }
             else{
-                if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
-                    participant.status = 'declined';
+                try{
+                    if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
+                        participant.status = 'declined';
+                }
+                catch{
+                    participant.status = 'pending';
+                }
             }
         }
     }
@@ -275,7 +285,7 @@ export const otherEventsOverlap = async (username: string, event: IEvent) => {
         return events.length > 0;
     }
     catch{
-        return false; // TODO: handle error
+        throw new Error("Error checking for overlapping events");
     }
 }
 

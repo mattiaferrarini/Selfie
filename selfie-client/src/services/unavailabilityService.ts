@@ -13,7 +13,6 @@ const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: D
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }

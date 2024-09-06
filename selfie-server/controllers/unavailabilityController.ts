@@ -105,7 +105,7 @@ export const isUserFreeForEvent = async (username: string, event: IEvent) => {
         return unavailabilities.length === 0;
     }
     catch{
-        return false; // TODO: handle this
+        throw new Error("Error checking user availability");
     }
 }
 

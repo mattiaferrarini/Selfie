@@ -81,7 +81,7 @@ export default defineComponent({
                 this.inviteInfos = newInfos;
             }
             catch {
-                console.log('Error fetching invite infos');
+                return;
             }
         },
         async acceptInvite(invite: Invite) {

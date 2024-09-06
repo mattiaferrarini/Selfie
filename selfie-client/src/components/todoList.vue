@@ -55,7 +55,6 @@ const deleteActivity = async () => {
 };
 
 const makeActivity = (todo: any, i: number) => {
-  console.log(todo);
   modifying.value = false;
   selectedActivity.value = new Activity();
   selectedActivity.value.title = todo.title;

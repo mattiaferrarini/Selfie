@@ -81,8 +81,6 @@ const firstRepetitionOverlap = (event1: any, event2: any) => {
     if(isValidRepetition(event2, nextStart2, nextEnd2)){
         const { start: nextStart1, end: nextEnd1 } = getNextRepetition(event1, nextStart2);
 
-        console.log(event1.title, nextStart1, nextEnd1, event2.title, nextStart2, nextEnd2);
-
         if(isValidRepetition(event1, nextStart1, nextEnd1))
             return timeService.overlap(nextStart1, nextEnd1, nextStart2, nextEnd2);
         else

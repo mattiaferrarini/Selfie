@@ -37,7 +37,6 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
         // determine when notification should begin
         const notificationStart = getEventNotificationStart(event, eventRepStart);
 
-        // TODO: check this data is necessary
         const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
 
         await agenda.schedule(notificationStart, jobName, jobData);
@@ -51,9 +50,7 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
 const notifyEventRepetition = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
         const jobName = jobs.eventNotificationJobName;
-
-        // TODO: check this data is necessary
-        const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
+        const jobData = {eventId: event._id};
 
         // determine when notification should begin (computed again to limit agenda processing delay)
         let notificationStart = getEventNotificationStart(event, eventRepStart);
@@ -177,10 +174,8 @@ const scheduleActivityNotificationStart = async (activity: IActivity, date: Date
 const notifyActivityToday = async (activity: IActivity) => {
     try {
         const now = new Date();
-
         const jobName = jobs.activityNotificationJobName;
-        // TODO: check data is necessary
-        const jobData = {activityId: activity._id, end: timeService.getEndOfDay(now)};
+        const jobData = {activityId: activity._id};
 
         let notificationStart = timeService.getStartOfDay(now);
         const numberOfReps = getNumberOfActivityNotifications(activity, now);

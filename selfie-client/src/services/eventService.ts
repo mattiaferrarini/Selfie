@@ -3,6 +3,7 @@ import {CalendarOptions, GoogleCalendar, ICalendar, ICSAlarm, OutlookCalendar, Y
 import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
 import {CalendarEvent} from '@/models/Event';
 import {useAuthStore} from '@/stores/authStore';
+import userService from './userService';
 
 const API_URL = process.env.VUE_APP_API_URL + '/event';
 
@@ -15,7 +16,6 @@ const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -194,7 +194,8 @@ const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> 
                     }
                 }
 
-                // TODO: remove participants that do not have an account?
+                // remove participants that do not have an account
+                event.participants = await Promise.all(event.participants.filter(async participant => !await userService.getUserBasicInfo(participant.username)));
 
                 // repetition
                 if(ev.rrule){
@@ -224,7 +225,6 @@ const getEventFromIcal = async (icalStr: string) : Promise<any> => {
         return response.data;
     }
     catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -276,7 +276,7 @@ const removeParticipantFromEvent = async (event: CalendarEvent, username: string
         await axios.post(`${API_URL}/removeParticipant/${event.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
-        console.log(error);
+        return;
     }
 }
 
