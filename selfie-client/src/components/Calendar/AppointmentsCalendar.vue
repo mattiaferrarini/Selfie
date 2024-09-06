@@ -173,7 +173,7 @@ export default defineComponent({
             let start = eventStart <= startOfDay ? startOfDay : eventStart;
             let end = eventEnd >= endOfDay ? endOfDay : eventEnd;
 
-            if (start === startOfDay && endOfDay.getTime() - end.getTime() < 1000)
+            if ( Math.abs(start.getTime() - startOfDay.getTime()) < 1000 && Math.abs(endOfDay.getTime() - end.getTime()) < 1000)
                 return "All day";
             else
                 return `${start.getHours().toString()}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString()}:${end.getMinutes().toString().padStart(2, '0')}`;
