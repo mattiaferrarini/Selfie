@@ -128,9 +128,9 @@
       </div>
       <hr>
       <div class="flex-col space-y-1 w-full mt-8">
-        <button v-if="modifying" type="button" @click="openExportPanel" class="w-full p-2 rounded-md bg-gray-400 text-white">Export
+        <button v-if="exportAllowed" type="button" @click="openExportPanel" class="w-full p-2 rounded-md bg-gray-400 text-white">Export
           event</button>
-        <div v-else class="text-center cursor-pointer">
+        <div v-if="!modifying" class="text-center cursor-pointer">
           <label id="event-upload" for="fileInput" class="w-full p-2 rounded-md bg-gray-400 block text-white">Import event</label>
           <input class="hidden" type="file" id="fileInput" accept=".ics" @change="handleEventUpload">
         </div>
@@ -453,6 +453,10 @@ export default defineComponent({
     },
     deletionAllowed(): boolean {
       return this.modifying && (!this.adminOnlyModification || useAuthStore().isAdmin);
+    },
+    exportAllowed(): boolean {
+      return this.modifying && 
+        (this.newEvent.owner === useAuthStore().user.username || this.event.participants.some(p => p.username === useAuthStore().user.username));
     }
   }
 });
