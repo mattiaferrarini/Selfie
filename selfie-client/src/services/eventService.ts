@@ -12,7 +12,7 @@ const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
         if (start && end) {
             url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
         }
-        const response = await axios.get(url, { withCredentials: true });
+        const response = await axios.get(url, {withCredentials: true});
         return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
         console.log(error);
@@ -22,7 +22,7 @@ const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
 
 const getEventById = async (id: string) => {
     try {
-        const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/${id}`, {withCredentials: true});
         return formatEvent(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -31,7 +31,7 @@ const getEventById = async (id: string) => {
 
 const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
     try {
-        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/overlap/${username}`, event, {withCredentials: true});
         return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
         throw error.response.data;
@@ -40,7 +40,7 @@ const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
 
 const addEvent = async (event: CalendarEvent) => {
     try {
-        const response = await axios.put(`${API_URL}`, event, { withCredentials: true });
+        const response = await axios.put(`${API_URL}`, event, {withCredentials: true});
         return formatEvent(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -49,7 +49,7 @@ const addEvent = async (event: CalendarEvent) => {
 
 const modifyEvent = async (event: CalendarEvent) => {
     try {
-        const response = await axios.post(`${API_URL}/${event.id}`, event, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/${event.id}`, event, {withCredentials: true});
         return formatEvent(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -58,7 +58,7 @@ const modifyEvent = async (event: CalendarEvent) => {
 
 const deleteEvent = async (event: CalendarEvent) => {
     try {
-        await axios.delete(`${API_URL}/${event.id}`, { withCredentials: true });
+        await axios.delete(`${API_URL}/${event.id}`, {withCredentials: true});
     } catch (error: any) {
         throw error.response.data;
     }
@@ -77,7 +77,7 @@ const formatEvent = (event: any) => {
 }
 
 const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
-    
+
     const attendees: CalendarAttendee[] = event.participants.map(participant => {
         return {
             name: participant.username,
@@ -91,8 +91,8 @@ const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
         count: event.repetition.until == 'n-reps' ? event.repetition.numberOfRepetitions : undefined,
         end: event.repetition.until == 'date' ? new Date(event.repetition.endDate) : undefined
     };
-    
-    const options: CalendarOptions = {
+
+    return {
         title: event.title,
         start: new Date(event.start),
         end: new Date(event.end),
@@ -100,8 +100,6 @@ const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
         attendees: attendees,
         recurrence: event.repetition.frequency !== 'never' ? recurrence : undefined
     };
-
-    return options;
 }
 
 const convertOptionsToICalendar = (options: CalendarOptions): string => {
@@ -124,57 +122,55 @@ const convertOptionsToOutlook = (options: CalendarOptions): string => {
 const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> => {
     const data = await getEventFromIcal(icalStr);
 
-        const event = new CalendarEvent();
+    const event = new CalendarEvent();
 
-        for(const k in data){
-            const ev = data[k];
+    for (const k in data) {
+        const ev = data[k];
 
-            if(Object.prototype.hasOwnProperty.call(data, k) && ev.type == 'VEVENT'){
-                // general info
-                event.title = ev.summary;
-                event.location = ev.location;
-                event.start = new Date(ev.start);
-                event.end = new Date(ev.end);
+        if (Object.prototype.hasOwnProperty.call(data, k) && ev.type == 'VEVENT') {
+            // general info
+            event.title = ev.summary;
+            event.location = ev.location;
+            event.start = new Date(ev.start);
+            event.end = new Date(ev.end);
 
-                // participants
-                if (ev.attendee) {
-                    if (Array.isArray(ev.attendee)) {
-                        event.participants = ev.attendee.map(formatICAttendee);
-                    } else if (typeof ev.attendee === 'object') {
-                        event.participants = [formatICAttendee(ev.attendee)];
-                    }
+            // participants
+            if (ev.attendee) {
+                if (Array.isArray(ev.attendee)) {
+                    event.participants = ev.attendee.map(formatICAttendee);
+                } else if (typeof ev.attendee === 'object') {
+                    event.participants = [formatICAttendee(ev.attendee)];
                 }
-
-                // TODO: remove participants that do not have an account?
-
-                // repetition
-                if(ev.rrule){
-                    const recRule = getRepcurrenceRule(icalStr);
-
-                    if(recRule.freq)
-                        event.repetition.frequency = recRule.freq;
-
-                    if(recRule.count){
-                        event.repetition.until = 'n-reps';
-                        event.repetition.numberOfRepetitions = parseInt(recRule.count);
-                    }
-                    else if(recRule.until){
-                        event.repetition.until = 'date';
-                        event.repetition.endDate = new Date(ev.rrule.options.until);
-                    }
-                }
-                break;
             }
+
+            // TODO: remove participants that do not have an account?
+
+            // repetition
+            if (ev.rrule) {
+                const recRule = getRepcurrenceRule(icalStr);
+
+                if (recRule.freq)
+                    event.repetition.frequency = recRule.freq;
+
+                if (recRule.count) {
+                    event.repetition.until = 'n-reps';
+                    event.repetition.numberOfRepetitions = parseInt(recRule.count);
+                } else if (recRule.until) {
+                    event.repetition.until = 'date';
+                    event.repetition.endDate = new Date(ev.rrule.options.until);
+                }
+            }
+            break;
         }
-        return event;
+    }
+    return event;
 }
 
-const getEventFromIcal = async (icalStr: string) : Promise<any> => {
+const getEventFromIcal = async (icalStr: string): Promise<any> => {
     try {
-        const response = await axios.post(`${API_URL}/import`, {icalStr}, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/import`, {icalStr}, {withCredentials: true});
         return response.data;
-    }
-    catch (error: any) {
+    } catch (error: any) {
         console.log(error);
         throw error.response.data;
     }
@@ -213,20 +209,18 @@ const formatICAttendee = (attendee: any) => {
 }
 
 const sendExportViaEmail = async (formData: FormData) => {
-    try{
-        const response = await axios.post(`${API_URL}/export`, formData, { withCredentials: true });
+    try {
+        const response = await axios.post(`${API_URL}/export`, formData, {withCredentials: true});
         return response.data;
-    }
-    catch (error: any) {
+    } catch (error: any) {
         return "Error sending the email. Please try again later.";
     }
 }
 
 const removeParticipantFromEvent = async (event: CalendarEvent, username: string) => {
     try {
-        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {username: username}, { withCredentials: true });
-    }
-    catch (error: any) {
+        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {username: username}, {withCredentials: true});
+    } catch (error: any) {
         console.log(error);
     }
 }

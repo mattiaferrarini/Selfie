@@ -24,7 +24,7 @@ import WebSocket from "ws";
 import {IUser} from "./models/User";
 import {handleConnection} from "./ws/wsHandler";
 
-dotenv.config({ path: __dirname + '/.env.local' });
+dotenv.config({path: __dirname + '/.env.local'});
 
 // Create Express server
 const app = express();
@@ -41,7 +41,7 @@ app.use(express.urlencoded({extended: true}));
 
 // serve static files in selfie-client/dist
 const client_build_dir = __dirname + '/../selfie-client/dist';
-app.use('/'  , express.static(client_build_dir));
+app.use('/', express.static(client_build_dir));
 
 // https://stackoverflow.com/questions/40459511/in-express-js-req-protocol-is-not-picking-up-https-for-my-secure-link-it-alwa
 app.enable('trust proxy');

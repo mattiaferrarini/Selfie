@@ -14,7 +14,7 @@ const changePassword = async (old_password: string, new_password: string) => {
 
 const updatePreferences = async (preferences: Partial<Preferences>) => {
     try {
-        const response= await axios.post(`${API_URL}/preferences`, preferences, {withCredentials: true});
+        const response = await axios.post(`${API_URL}/preferences`, preferences, {withCredentials: true});
         const authStore = useAuthStore();
         authStore.setPreferences(response.data.preferences);
     } catch (error: any) {
