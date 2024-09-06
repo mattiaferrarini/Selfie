@@ -3,7 +3,7 @@ ssh [name.surname]@bettina.cs.unibo.it << EOF
 
     cd /home/web/site232410/html/Selfie
     
-    git checkout deploy
+    git checkout deploy-2
     git pull
 
     cd selfie-client
