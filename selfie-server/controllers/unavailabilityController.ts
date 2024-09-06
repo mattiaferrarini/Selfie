@@ -38,6 +38,11 @@ export const getUnavailabilitiesByUser = async (req: any, res: any) => {
 
 export const deleteUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
+    const authUsername = req.user.username;
+
+    if(!authUsername || !await modidicationAllowed(id, authUsername))
+        return res.status(403).send({ error: "You are not allowed to delete this unavailability!" });
+
     try {
         await Unavailability.findByIdAndDelete(id);
         res.status(204).send();
@@ -68,6 +73,11 @@ export const addUnavailability = async (req: any, res: any) => {
 export const modifyUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
     const { title, allDay, start, end, repetition, username } = req.body;
+    const authUsername = req.user.username;
+
+    if(!authUsername || !await modidicationAllowed(id, authUsername))
+        return res.status(403).send({ error: "You are not allowed to modify this unavailability!" });
+
     try {
         const updatedUnavailability = await Unavailability.findByIdAndUpdate(id, { title, allDay, start, end, repetition, username }, { new: true });
         res.status(200).send(formatUnavailability(updatedUnavailability));
@@ -99,5 +109,18 @@ export const isUserFreeForEvent = async (username: string, event: IEvent) => {
     }
     catch{
         return false; // TODO: handle this
+    }
+}
+
+const modidicationAllowed = async (id: string, authUsername: string) => {
+    try {
+        const unavailability = await Unavailability.findById(id);
+        
+        if(unavailability)
+            return unavailability.username === authUsername;
+        else
+            return false;
+    } catch {
+        return false;
     }
 }
