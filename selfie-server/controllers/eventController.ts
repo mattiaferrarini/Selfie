@@ -5,6 +5,8 @@ import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
 import { isResource } from './resourceController';
+import * as resourceController from './resourceController';
+import * as unavailabilityController from './unavailabilityController';
 import jobSchedulerService from '../services/jobSchedulerService';
 import notificationController from './notificationController';
 import _ from 'lodash';
@@ -171,9 +173,10 @@ export const modifyEvent = async (req: any, res: any) => {
             await event.save();
 
             if(!_.isEqual(originalEvent, event.toObject())){
-                await notifyOfChanges(event, authUsername);
+                await automaticallyAnswerInvites(event);
                 await inviteController.createInvitesForEvent(event);
                 await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
+                await notifyOfChanges(event, authUsername);
                 await jobSchedulerService.updateUpcomingEventNotification(event);
             }
             res.status(200).send(formatEvent(event));
@@ -183,6 +186,26 @@ export const modifyEvent = async (req: any, res: any) => {
     } catch (error) {
         res.status(500).send({ error: 'Error updatding event' });
     }
+}
+
+// automatically add participant if it's a free resource
+// automatically decline if it's an unavailable user
+const automaticallyAnswerInvites = async (event: IEvent) => {
+    const participants = event.participants;
+    for(let i = 0; i < participants.length; i++){
+        const participant = participants[i];
+        if(participant.status === 'pending'){
+            if(await resourceController.isResource(participant.username)){
+                if (!await otherEventsOverlap(participant.username, event))
+                    participant.status = 'accepted';
+            }
+            else{
+                if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
+                    participant.status = 'declined';
+            }
+        }
+    }
+    await event.save();
 }
 
 const notifyOfChanges = async(event: IEvent, committer: string) => {
