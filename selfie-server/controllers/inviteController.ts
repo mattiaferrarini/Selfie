@@ -62,6 +62,7 @@ export const createInvitesForEvent = async (event: IEvent) => {
                         await addInvite(participant.username, answerDate, event.title, [event.owner], eventId);
                 }
                 else { // user
+                    console.log(event);
                     if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
                         participant.status = 'declined';
                     else if (!await inviteAlreadyExists(participant.username, eventId))

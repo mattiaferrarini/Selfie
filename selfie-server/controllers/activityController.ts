@@ -218,9 +218,9 @@ export const modifyActivity = async (req: any, res: any) => {
             await activity.save();
 
             if(!_.isEqual(originalActivity, activity.toObject())){
+                notifyOfChanges(activity, authUsername);
                 await inviteController.createInvitesForActivity(activity);
                 await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-                notifyOfChanges(activity, authUsername);
                 await jobSchedulerService.updateLateActivityNotification(activity);
             }
             res.status(200).send(formatActivity(activity));

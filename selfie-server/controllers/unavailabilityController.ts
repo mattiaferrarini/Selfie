@@ -91,12 +91,15 @@ export const getOverlappingUnavailabilities = async (req: any, res: any) => {
     const { event } = req.body;
 
     try {
+        const newEvent = new Event(event);
+
         let unavailabilities = await Unavailability.find({ username: username });
-        unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, event));
+        unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, newEvent));
         const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
         
         res.status(200).send(formattedUnavailabilities);
     } catch (error) {
+        console.log(error);
         res.status(500).send({ error: 'Error retrieving unavailabilities' });
     }
 }

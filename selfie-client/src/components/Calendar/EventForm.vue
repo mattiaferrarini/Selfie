@@ -246,19 +246,22 @@ export default defineComponent({
       if (this.newNotificationOptions.email)
         this.newEvent.notification.method.push('email');
 
+      this.updateTimesOfNewEvent();
+
+      this.saveEvent(this.newEvent);
+    },
+    updateTimesOfNewEvent() {
       if (this.newEvent.allDay) {
         this.newEvent.start.setHours(0, 0, 0, 0);
         this.newEvent.end.setHours(23, 59, 59, 59);
       }
       else {
-        this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
-        this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
+        this.newEvent.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]), 0, 0);
+        this.newEvent.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]), 0, 0);
       }
 
       this.newEvent.start = timeService.convertToTimezone(this.newEvent.start, this.newEvent.timezone);
       this.newEvent.end = timeService.convertToTimezone(this.newEvent.end, this.newEvent.timezone);
-
-      this.saveEvent(this.newEvent);
     },
     async saveEvent(event: CalendarEvent) {
       let res: CalendarEvent;
@@ -271,6 +274,7 @@ export default defineComponent({
       this.$emit('saveEvent', res);
     },
     openParticipantsForm() {
+      this.updateTimesOfNewEvent();
       this.showParticipantsForm = true;
     },
     closeParticipantsForm() {

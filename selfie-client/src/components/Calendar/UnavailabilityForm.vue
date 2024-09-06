@@ -149,8 +149,8 @@ export default defineComponent({
         this.newUnavailability.end.setHours(23, 59, 59, 59);
       }
       else {
-        this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
-        this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
+        this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]), 0, 0);
+        this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]), 0, 0);
       }
 
       this.newUnavailability.start = timeService.convertToTimezone(this.newUnavailability.start, this.newUnavailability.timezone);

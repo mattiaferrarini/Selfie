@@ -116,20 +116,20 @@ export const deleteEvent = async (req: any, res: any) => {
 
 // Function to add a new event
 export const addEvent = async (req: any, res: any) => {
-    const newEvent = new Event({
-        allDay: req.body.allDay,
-        owner: req.body.owner,
-        title: req.body.title,
-        start: req.body.start,
-        end: req.body.end,
-        timezone: req.body.timezone,
-        repetition: req.body.repetition,
-        location: req.body.location,
-        notification: req.body.notification,
-        participants: req.body.participants
-    });
-
     try {
+        const newEvent = new Event({
+            allDay: req.body.allDay,
+            owner: req.body.owner,
+            title: req.body.title,
+            start: req.body.start,
+            end: req.body.end,
+            timezone: req.body.timezone,
+            repetition: req.body.repetition,
+            location: req.body.location,
+            notification: req.body.notification,
+            participants: req.body.participants
+        });
+
         await newEvent.save();
         await inviteController.createInvitesForEvent(newEvent);
         await jobSchedulerService.scheduleEventNotification(newEvent);
@@ -171,9 +171,9 @@ export const modifyEvent = async (req: any, res: any) => {
             await event.save();
 
             if(!_.isEqual(originalEvent, event.toObject())){
+                await notifyOfChanges(event, authUsername);
                 await inviteController.createInvitesForEvent(event);
                 await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
-                await notifyOfChanges(event, authUsername);
                 await jobSchedulerService.updateUpcomingEventNotification(event);
             }
             res.status(200).send(formatEvent(event));

@@ -20,7 +20,7 @@ const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: D
 
 const getOverlappingUnavailabilities = async (username: string, event: CalendarEvent) => {
     try {
-        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/overlap/${username}`, {event}, { withCredentials: true });
         return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
         throw error.response.data;
