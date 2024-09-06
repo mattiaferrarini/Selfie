@@ -56,20 +56,14 @@ export const createInvitesForEvent = async (event: IEvent) => {
         try {
             if (participant.status === 'pending') {
                 if (await resourceController.isResource(participant.username)) {
-                    if (!await eventController.otherEventsOverlap(participant.username, event))
-                        participant.status = 'accepted';
-                    else if (!await inviteAlreadyExists(participant.username, eventId))
+                    if (!await inviteAlreadyExists(participant.username, eventId))
                         await addInvite(participant.username, answerDate, event.title, [event.owner], eventId);
                 }
                 else { // user
-                    console.log(event);
-                    if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
-                        participant.status = 'declined';
-                    else if (!await inviteAlreadyExists(participant.username, eventId))
+                    if (!await inviteAlreadyExists(participant.username, eventId))
                         await addInvite(participant.username, answerDate, event.title, [event.owner], eventId);
                 }
             }
-            await event.save();
         }
         catch {
             console.log("Error creating invite");
