@@ -4,7 +4,6 @@ import * as unavailabilityController from '../controllers/unavailabilityControll
 const router = Router();
 
 router.get('/user/:username', unavailabilityController.getUnavailabilitiesByUser);
-router.post('/overlap/:username', unavailabilityController.getOverlappingUnavailabilities);
 router.put('/', unavailabilityController.addUnavailability);
 router.post('/:id', unavailabilityController.modifyUnavailability);
 router.delete('/:id', unavailabilityController.deleteUnavailability);

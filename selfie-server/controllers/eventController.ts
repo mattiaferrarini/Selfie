@@ -216,21 +216,6 @@ const notifyOfChanges = async(event: IEvent, committer: string) => {
     });
 }
 
-export const getOverlappingEvents = async (req: any, res: any) => {
-    const { username } = req.params;
-    const { event } = req.body;
-
-    try {
-        let events = await Event.find({ username: username });
-        events = events.filter((e: any) => eventService.eventsOverlap(e, event));
-        const formattedEvents = events.map((e: any) => formatEvent(e));
-        
-        res.status(200).send(formattedEvents);
-    } catch (error) {
-        res.status(500).send({ error: 'Error retrieving events' });
-    }
-}
-
 export const importICalendar = async (req: any, res: any) => {
     const { icalStr } = req.body;
     try {

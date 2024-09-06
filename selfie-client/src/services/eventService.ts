@@ -29,15 +29,6 @@ const getEventById = async (id: string) => {
     }
 }
 
-const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
-    try {
-        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
-        return response.data.map((event: any) => formatEvent(event));
-    } catch (error: any) {
-        throw error.response.data;
-    }
-}
-
 const addEvent = async (event: CalendarEvent) => {
     try {
         const response = await axios.put(`${API_URL}`, event, { withCredentials: true });
@@ -292,7 +283,6 @@ const removeParticipantFromEvent = async (event: CalendarEvent, username: string
 export default {
     getEventsByUser,
     getEventById,
-    getOverlappingEvents,
     addEvent,
     modifyEvent,
     deleteEvent,

@@ -1,4 +1,5 @@
 import Unavailability from "../models/Unavailability";
+import IUnavailability from "../models/Unavailability";
 import eventService from "../services/eventService";
 import Event, { IEvent } from "../models/Event";
 import timeService from "../services/timeService";
@@ -14,22 +15,33 @@ const formatUnavailability = (unavailability: any) => {
         repetition: unavailability.repetition,
         username: unavailability.username
     };
-};
+}
 
 export const getUnavailabilitiesByUser = async (req: any, res: any) => {
     const { username } = req.params;
-    const { start, end } = req.query;
+    const { start, end, frequency, until, numberOfRepetitions, endDate } = req.query;
 
     try {
         let unavailabilities = await Unavailability.find({ username: username });
 
-        if(start && end) {
-            const startDate = timeService.getStartOfDay(new Date(start));
-            const endDate = timeService.getEndOfDay(new Date(end));
+        if(start && end && frequency && until && numberOfRepetitions && endDate){
+            const period = new Unavailability();
+            period.start = new Date(start);
+            period.end = new Date(end);
+            period.repetition.frequency = frequency;
+            period.repetition.until = until;
+            period.repetition.numberOfRepetitions = numberOfRepetitions;
+            period.repetition.endDate = new Date(endDate);
+
+            unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, period));
+        }
+        else if(start && end) {
+            const startDate = new Date(start), endDate = new Date(end);
             unavailabilities = unavailabilities.filter((unav: any) => eventService.eventInRange(unav, startDate, endDate));
         }
+
         const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
-        
+
         res.status(200).send(formattedUnavailabilities);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving unavailabilities' });
@@ -83,24 +95,6 @@ export const modifyUnavailability = async (req: any, res: any) => {
         res.status(200).send(formatUnavailability(updatedUnavailability));
     } catch (error) {
         res.status(404).send({ error: "Unavailability doesn't exist!" });
-    }
-}
-
-export const getOverlappingUnavailabilities = async (req: any, res: any) => {
-    const { username } = req.params;
-    const { event } = req.body;
-
-    try {
-        const newEvent = new Event(event);
-
-        let unavailabilities = await Unavailability.find({ username: username });
-        unavailabilities = unavailabilities.filter((unav: any) => eventService.eventsOverlap(unav, newEvent));
-        const formattedUnavailabilities = unavailabilities.map((unavailability: any) => formatUnavailability(unavailability));
-        
-        res.status(200).send(formattedUnavailabilities);
-    } catch (error) {
-        console.log(error);
-        res.status(500).send({ error: 'Error retrieving unavailabilities' });
     }
 }
 
