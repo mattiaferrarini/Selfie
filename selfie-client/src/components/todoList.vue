@@ -55,6 +55,7 @@ const deleteActivity = async () => {
 };
 
 const makeActivity = (todo: any, i: number) => {
+  console.log(todo);
   modifying.value = false;
   selectedActivity.value = new Activity();
   selectedActivity.value.title = todo.title;
@@ -113,13 +114,13 @@ onBeforeMount(async () => {
         <div v-if="!todo.activityID" class="flex items-center justify-between py-2">
           <input type="checkbox" v-model="todo.done" class="h-4 w-4" :disabled="editable">
           <span>{{ todo.title }}</span>
-          <button class="bg-gray-200 rounded-lg p-1 px-2" @click="makeActivity(todo, i)" :disabled="editable">Make activity</button>
+          <button class="bg-gray-200 rounded-lg p-1 px-2" @click.stop="makeActivity(todo, i)" :disabled="editable">Make activity</button>
         </div>
         <div v-else class="flex flex-row justify-between py-2">
           <input type="checkbox" :checked="dones[i]" disabled>
           <h4>{{ titles[i] }}</h4>
           <span>Deadline: {{ deadlines[i] }}</span>
-          <button class="bg-gray-200 rounded-lg py-1 px-2" @click="editActivity(todo, i)" :disabled="editable">Edit activity</button>
+          <button class="bg-gray-200 rounded-lg py-1 px-2" @click.stop="editActivity(todo, i)" :disabled="editable">Edit activity</button>
         </div>
         <hr>
       </li>
