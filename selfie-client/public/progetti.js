@@ -457,8 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.hasOwnProperty("error"))
                     showError(data.error);
                 else {
-                    projects[projects.findIndex(project => project._id === currentProjectId)] = data;
-                    displayProject(data);
+                    const project = formatProject(data);
+                    projects[projects.findIndex(project => project._id === currentProjectId)] = project;
+                    displayProject(project);
                     showProjects();
                     closeModal();
                 }
@@ -475,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.hasOwnProperty("error"))
                     showError(data.error);
                 else {
-                    projects.push(data);
+                    projects.push(formatProject(data));
                     showProjects();
                     closeModal();
                 }
@@ -780,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.hasOwnProperty("error"))
                 editErrorMessage.innerText = data.error;
             else {
-                project = data;
+                project = formatProject(data);
                 showList(project);
             }
         });
@@ -791,7 +792,14 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelProjectEditButton.addEventListener('click', closeProjectEditActivityModal);
 
     fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
-        projects = data.map(project => ({
+        projects = data.map(project => formatProject(project));
+        showProjects();
+        projectSelector.selectedIndex = 0;
+        displayProject(projects[0]);
+    });
+
+    const formatProject = (project) => {
+        return {
             ...project,
             phases: project.phases.map(phase => ({
                 ...phase,
@@ -804,11 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     } : null
                 }))
             }))
-        }));
-        showProjects();
-        projectSelector.selectedIndex = 0;
-        displayProject(projects[0]);
-    });
+        };
+    };
 
     document.querySelector("#logout").addEventListener("click", logout);
 });
