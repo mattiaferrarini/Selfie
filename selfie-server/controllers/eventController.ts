@@ -143,8 +143,9 @@ export const addEvent = async (req: any, res: any) => {
 // Function to modify an existing event by ID
 export const modifyEvent = async (req: any, res: any) => {
     const { id } = req.params;
+    const authUsername = req.user.username;
 
-    if(!req.user.username || !await modificationAllowed(id, req.user.username, req.user.isAdmin))
+    if(!authUsername || !await modificationAllowed(id, authUsername, req.user.isAdmin))
         return res.status(403).send({ error: "You are not allowed to modify this event!" });
 
     try {
@@ -172,7 +173,7 @@ export const modifyEvent = async (req: any, res: any) => {
             if(!_.isEqual(originalEvent, event.toObject())){
                 await inviteController.createInvitesForEvent(event);
                 await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
-                await notifyOfChanges(event);
+                await notifyOfChanges(event, authUsername);
                 await jobSchedulerService.updateUpcomingEventNotification(event);
             }
             res.status(200).send(formatEvent(event));
@@ -184,9 +185,9 @@ export const modifyEvent = async (req: any, res: any) => {
     }
 }
 
-const notifyOfChanges = async(event: IEvent) => {
+const notifyOfChanges = async(event: IEvent, committer: string) => {
     event.participants.forEach((participant: any) => {
-        if(participant.status === 'accepted'){
+        if(participant.status === 'accepted' && participant.username !== committer){
             notificationController.sendNotificationToUsername(participant.username, {title: 'Event updated', body: `Event ${event.title} has been updated.`});
         }
     });

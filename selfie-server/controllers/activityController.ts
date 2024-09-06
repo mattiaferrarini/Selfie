@@ -220,7 +220,7 @@ export const modifyActivity = async (req: any, res: any) => {
             if(!_.isEqual(originalActivity, activity.toObject())){
                 await inviteController.createInvitesForActivity(activity);
                 await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-                notifyOfChanges(activity);
+                notifyOfChanges(activity, authUsername);
                 await jobSchedulerService.updateLateActivityNotification(activity);
             }
             res.status(200).send(formatActivity(activity));
@@ -232,9 +232,9 @@ export const modifyActivity = async (req: any, res: any) => {
     }
 }
 
-const notifyOfChanges = async(activity: IActivity) => {
+const notifyOfChanges = async(activity: IActivity, committer: string) => {
     activity.participants.forEach((participant: any) => {
-        if(participant.status === 'accepted'){
+        if(participant.status === 'accepted' && participant.username !== committer){
             notificationController.sendNotificationToUsername(participant.username, {title: 'Activity updated', body: `Activity ${activity.title} has been updated.`});
         }
     });
