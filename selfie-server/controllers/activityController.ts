@@ -260,14 +260,10 @@ export const changeParticipantStatus = async (id: string, username: string, newS
 
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
-    const username = req.body.username;
     const authUsername = req.user.username;
 
-    if(!authUsername || !await modificationAllowed(id, authUsername))
-        return res.status(403).send({error: "You are not allowed to remove participants from this activity!"});
-
     try {
-        await changeParticipantStatus(id, username, 'declined');
+        await changeParticipantStatus(id, authUsername, 'declined');
         res.status(200).send('Participant removed');
     } catch (error) {
         res.status(500).send({ error: 'Error removing participant' });

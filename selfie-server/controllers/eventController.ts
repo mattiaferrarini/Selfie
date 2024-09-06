@@ -4,7 +4,7 @@ import ical from 'node-ical';
 import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
-import timeService from '../services/timeService';
+import { isResource } from './resourceController';
 import jobSchedulerService from '../services/jobSchedulerService';
 import notificationController from './notificationController';
 import _ from 'lodash';
@@ -29,6 +29,11 @@ const formatEvent = (event: any) => {
 export const getEventsByUser = async (req: any, res: any) => {
     const { username } = req.params;
     const { start, end } = req.query;
+
+    const authUsername = req.user.username;
+
+    if(!authUsername || authUsername !== username && !isResource(username))
+        return res.status(403).send({ error: "You are not allowed to view this user's events!" });
     
     try {
         let startDate = start ? new Date(start) : undefined;
@@ -75,6 +80,10 @@ export const getAcceptedEventsByUser = async (username: string) => {
 
 export const getEventById = async (req: any, res: any) => {
     const { id } = req.params;
+
+    if(!req.user.username || !await accessAllowed(id, req.user.username))
+        return res.status(403).send({ error: "You are not allowed to view this event!" });
+
     try {
         const event = await Event.findById(id);
         res.status(200).send(formatEvent(event));
@@ -86,6 +95,10 @@ export const getEventById = async (req: any, res: any) => {
 // Function to delete an event by ID
 export const deleteEvent = async (req: any, res: any) => {
     const { id } = req.params;
+
+    if(!req.user.username || !await modificationAllowed(id, req.user.username, req.user.isAdmin))
+        return res.status(403).send({ error: "You are not allowed to delete this event!" });
+
     try {
         const event = await Event.findById(id);
 
@@ -130,6 +143,10 @@ export const addEvent = async (req: any, res: any) => {
 // Function to modify an existing event by ID
 export const modifyEvent = async (req: any, res: any) => {
     const { id } = req.params;
+
+    if(!req.user.username || !await modificationAllowed(id, req.user.username, req.user.isAdmin))
+        return res.status(403).send({ error: "You are not allowed to modify this event!" });
+
     try {
         const event = await Event.findById(id);
 
@@ -255,12 +272,40 @@ export const otherEventsOverlap = async (username: string, event: IEvent) => {
 
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
-    const username = req.body.username;
+    const authUsername = req.user.username;
 
     try {
-        await changeParticipantStatus(id, username, 'declined');
+        await changeParticipantStatus(id, authUsername, 'declined');
         res.status(200).send('Participant removed');
     } catch (error) {
         res.status(500).send({ error: 'Error removing participant' });
+    }
+}
+
+const accessAllowed = async (id: string, authUsername: string) => {
+    try {
+        const event = await Event.findById(id);
+        if(event)
+            return event.owner === authUsername || 
+                event.participants.some((participant: any) => participant.username === authUsername || isResource(participant.username));
+        else
+            return false;
+    } 
+    catch (error) {
+        return false;
+    }
+}
+
+const modificationAllowed = async (id: string, authUsername: string, isAdmin: boolean) => {
+    try {
+        const event = await Event.findById(id);
+        if(event)
+            return event.owner === authUsername || 
+                (isAdmin && event.participants.some((participant: any) => isResource(participant.username)));
+        else
+            return false;
+    } 
+    catch (error) {
+        return false;
     }
 }

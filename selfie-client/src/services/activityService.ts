@@ -83,7 +83,7 @@ const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> =
 
 const removeParticipantFromActivity = async (activity: Activity, username: string) => {
     try {
-        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {username: username}, { withCredentials: true });
+        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
         console.log(error);

@@ -282,7 +282,7 @@ const sendExportViaEmail = async (formData: FormData) => {
 
 const removeParticipantFromEvent = async (event: CalendarEvent, username: string) => {
     try {
-        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {username: username}, { withCredentials: true });
+        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
         console.log(error);
