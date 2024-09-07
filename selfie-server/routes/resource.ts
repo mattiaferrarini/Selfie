@@ -1,6 +1,6 @@
-import { Router } from "express";
+import {Router} from "express";
 import * as resourceController from "../controllers/resourceController";
-import { isAdmin } from "../middlewares/authMiddleware";
+import {isAdmin} from "../middlewares/authMiddleware";
 
 const router = Router();
 

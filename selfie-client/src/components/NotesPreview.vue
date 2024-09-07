@@ -1,15 +1,14 @@
-<script setup lang="ts">
-import {defineProps, onMounted, toRefs, watch} from 'vue';
-import { ref } from 'vue';
+<script lang="ts" setup>
+import {defineProps, onMounted, ref, toRefs, watch} from 'vue';
 import noteService from "@/services/noteService";
 
-const props = defineProps< {
+const props = defineProps<{
   date: Date,
   category: boolean,
   number: number
 }>()
 
-const { date, category, number } = toRefs(props)
+const {date, category, number} = toRefs(props)
 
 let notes: any[] = []
 const noteList = ref<any[]>([]);
@@ -20,7 +19,7 @@ const makeNoteList = (notes: any[]) => {
   notes.sort((a, b) => (date.value.getTime() - new Date(a.lastmodify).getTime()) - (date.value.getTime() - new Date(b.lastmodify).getTime()));
 
   // limit to MAX_NOTES
-  noteList.value =  notes.slice(0, number.value);
+  noteList.value = notes.slice(0, number.value);
 }
 
 watch(number, () => {

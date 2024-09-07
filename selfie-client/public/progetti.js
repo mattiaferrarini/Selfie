@@ -1,4 +1,4 @@
-import {API_URL, fetchWithMiddleware, logout} from "./utilities.js";
+import {API_URL, fetchWithMiddleware, logout, getTimeMachineDate, getStatusFromActivity} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -66,9 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('selectedDate');
     const timeInput = document.getElementById('selectedTime');
     const timeMachineMessage = document.getElementById('timeMachineMessage');
-    let timeDifference = JSON.parse(localStorage.getItem('date')).realTimeDiff || 0;
 
-    const getTimeMachineDate = () => new Date(new Date().getTime() + timeDifference);
 
     const toggleTooltip = () => {
         showTooltip = !showTooltip;
@@ -87,13 +85,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const date = new Date();
                 dateInput.value = date.toISOString().split('T')[0];
                 timeInput.value = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                timeDifference = 0;
                 timeMachineMessage.innerText = 'Time machine restored!'
                 localStorage.setItem('date', JSON.stringify({
                     "currentDate": new Date().toISOString(),
                     "timeDiff": 0,
                     "realTimeDiff": 0
                 }));
+
+                // re-render gantt
+                document.querySelector("gantt-component").date = new Date();
             }
         ).catch(
             () => timeMachineMessage.innerText = 'Error restoring time machine!'
@@ -111,13 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({date: newDate})
         }).then(() => {
-            timeDifference = new Date().getTime() - newDate.getTime();
+            const timeDifference = newDate.getTime() - (new Date().getTime());
             timeMachineMessage.innerText = 'Time machine set!'
             localStorage.setItem('date', JSON.stringify({
                 "currentDate": newDate.toISOString(),
                 "timeDiff": 0,
                 "realTimeDiff": timeDifference
             }));
+
+            // re-render gantt
+            document.querySelector("gantt-component").date = getTimeMachineDate();
         }).catch(
             () => timeMachineMessage.innerText = 'Error setting time machine!'
         );
@@ -508,34 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const listView = document.getElementById('listView');
 
-    const getStatusFromActivity = (activity, activities) => {
-        let status;
-        let linkedOutputUnavailable = false;
-        if (activity.linkedActivityId !== null) {
-            const linkedActivity = activities.find(act => act.localId === activity.linkedActivityId);
-            if (!(linkedActivity.output !== "" && linkedActivity.status === "Concluded"))
-                linkedOutputUnavailable = true;
-        }
-        if (activity.status === "Abandoned" || getTimeMachineDate().setDate(getTimeMachineDate().getDate() + 2 * 7) > activity.activity?.deadline) {
-            status = "Abbandonata";
-        } else if (activity.activity?.deadline < getTimeMachineDate() && (activity.output === "" || activity.status !== "Concluded")) {
-            status = "In ritardo";
-        } else if (activity.input === "" || linkedOutputUnavailable) {
-            status = "Non attivabile";
-        } else if (activity.status === "NotStarted") {
-            status = "Attivabile";
-        } else if (activity.status === "Rejected") {
-            status = "Riattivata";
-        } else if (activity.status === "Concluded" && activity.output !== "") {
-            status = "Conclusa";
-        } else {
-            status = "Attiva";
-        }
-        return status;
-    }
-
     const showGantt = (project) => {
-        console.log('Showing gantt:', project);
         const gantt = document.querySelector("gantt-component");
         gantt.project = [project, getTimeMachineDate()];
     };
@@ -572,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div><strong>Id: #</strong>${activity.localId}</div> 
             <div><strong>Actor:</strong> ${participants.join('')}</div>
             <div><strong>Starting Date:</strong> ${startingDate}</div>
-            <div class="${status === "Abbandonata" || status === "In Ritardo" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
+            <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
             <div><strong>Status:</strong> ${status}</div>
             <div><strong>Input:</strong> ${activity.input}</div>
             <div><strong>Output:</strong> ${activity.output}</div>
@@ -727,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editNotifyEmail.checked) {
             newActivity.notification.method.push('email');
         }
-        // TODO: fix to add status
         newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({
             username: participantDiv.querySelector('.username').innerText,
             'status': 'accepted'

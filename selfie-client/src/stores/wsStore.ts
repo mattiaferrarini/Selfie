@@ -61,7 +61,6 @@ export const useWebSocketStore = defineStore('websocket', {
                             }
                         }
                     } catch (err) {
-                        // TODO: display?
                         console.log(err);
                     }
                 };

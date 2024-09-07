@@ -1,3 +1,5 @@
+import {getStatusFromActivity} from './utilities.js'
+
 class GanttComponent extends HTMLElement {
     constructor() {
         super();
@@ -17,8 +19,28 @@ class GanttComponent extends HTMLElement {
 
         this.shadowRoot.appendChild(this.myStyle);
         this.shadowRoot.appendChild(this.content);
+    }
 
+    set project([project, now]) {
+        this._project = project;
+        this._untoachedProject = structuredClone(project);
+        this._now = now;
+        this._timeslice = this.getTimeSlice(this._project);
+
+        this.calculateNewStatus();
+        this.adjustActivityDeadline();
         this.render();
+    }
+
+    set date(date) {
+        this._now = date;
+        if (this._project) {
+            this._project = structuredClone(this._untoachedProject);
+            this._timeslice = this.getTimeSlice(this._project);
+            this.calculateNewStatus();
+            this.adjustActivityDeadline();
+            this.render();
+        }
     }
 
 
@@ -79,14 +101,12 @@ class GanttComponent extends HTMLElement {
         `
     }
 
-    set project([project, now]) {
-        this._project = project;
-        this._untoachedProject = structuredClone(project);
-        this._now = now;
-        this._timeslice = this.getTimeSlice(this._project);
-
-        this.adjustActivityDeadline();
-        this.render();
+    calculateNewStatus() {
+        for (const phase of this._project.phases) {
+            for (const activity of phase.activities) {
+                activity.newStatus = getStatusFromActivity(activity, phase.activities)
+            }
+        }
     }
 
     adjustActivityDeadline() {
@@ -266,11 +286,13 @@ class GanttComponent extends HTMLElement {
         return `
         <div style="display: flex; flex-direction: row; gap: 1em; margin-top: 50px; flex-wrap: wrap" id="color-legend">
             ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}
-            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed')}
-            ${this.legendBlock('background-color: gray;', 'Not started')}
-            ${this.legendBlock('background-color: SpringGreen;', 'Started')}
+            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed part')}
+            ${this.legendBlock('background-color: gray;', 'Not activatable')}
+            ${this.legendBlock('background-color: lightslategray;', 'Activatable')}
+            ${this.legendBlock('background-color: SpringGreen;', 'Active')}
+            ${this.legendBlock('background-color: orange;', 'Late')}
             ${this.legendBlock('background-color: green;', 'Concluded')}
-            ${this.legendBlock('background-color: OrangeRed;', 'Rejected')}
+            ${this.legendBlock('background-color: OrangeRed;', 'Reactivated')}
             ${this.legendBlock('background-color: black;', 'Abandoned')}
         </div>
         `
@@ -375,25 +397,32 @@ class GanttComponent extends HTMLElement {
 
         let [rstartcol, rspannum] = this.getStartColSpanNum(startDate, endDate);
         let colorStyle = '';
-        // ['NotStarted', 'Started', 'Concluded', 'Rejected', 'Abandoned']
-        switch (activity.status) {
-            case 'NotStarted':
+
+        // Abandoned Late Not activatable Activatable Reactivated Concluded Active
+        switch (activity.newStatus) {
+            case 'Not activatable':
                 colorStyle = 'background-color: gray;';
                 break;
-            case 'Started':
+            case 'Activatable':
+                colorStyle = 'background-color: lightslategray;';
+                break;
+            case 'Active':
                 colorStyle = 'background-color: SpringGreen;';
                 break;
             case 'Concluded':
                 colorStyle = 'background-color: green;';
                 break;
-            case 'Rejected':
+            case 'Reactivated':
                 colorStyle = 'background-color: OrangeRed;';
                 break;
             case 'Abandoned':
                 colorStyle = 'background-color: black;';
                 break;
+            case 'Late':
+                colorStyle = 'background-color: orange;';
+                break;
             default:
-                colorStyle = 'background-color: green;';
+                colorStyle = 'background-color: purple;';
         }
 
         if (activity.isMilestone) {
@@ -406,7 +435,7 @@ class GanttComponent extends HTMLElement {
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
         <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${rspannum}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${(activity.status === 'NotStarted')? 'Not started' : activity.status}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.newStatus}</div>
         `;
         let activityHtml = '';
 
@@ -489,32 +518,10 @@ class GanttComponent extends HTMLElement {
         }
 
         if (!startDate) {
-            let firstEnd = this.getFirstEndDate(project);
-            if (firstEnd.getTime() < new Date().getTime()) {
-                startDate = firstEnd;
-            } else {
-                startDate = new Date();
-            }
+            throw new Error('no start date found');
+        } else {
+            return startDate;
         }
-        return startDate;
-    }
-
-    getFirstEndDate(project) {
-        let endDate = null;
-
-        for (const phase of project.phases) {
-            for (const activity of phase.activities) {
-                const deadline = new Date(activity.activity.deadline)
-                if (endDate) {
-                    if (deadline.getTime() < endDate.getTime()) {
-                        endDate = deadline;
-                    }
-                } else {
-                    endDate = deadline;
-                }
-            }
-        }
-        return endDate;
     }
 
     getEndDate(project) {

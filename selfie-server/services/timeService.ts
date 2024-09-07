@@ -14,8 +14,8 @@ const dayDifference = (date1: Date, date2: Date, roundUp: boolean = false): numb
     const oneDay = 24 * 60 * 60 * 1000; // Number of milliseconds in a day
     const time1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()).getTime();
     const time2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate()).getTime();
-    
-    if(roundUp)
+
+    if (roundUp)
         return Math.ceil(Math.abs((time1 - time2) / oneDay));
     else
         return Math.round(Math.abs((time1 - time2) / oneDay));
@@ -55,13 +55,13 @@ const moveAheadByMonths = (date: Date, months: number): Date => {
 }
 
 const moveAheadByYears = (date: Date, years: number): Date => {
-    if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
+    if (date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
         return new Date(date.getFullYear() + years, date.getMonth(), 28);
     else
         return new Date(date.getFullYear() + years, date.getMonth(), date.getDate());
 }
 
-const cropDate = (year: number, month: number, day: number): Date =>{
+const cropDate = (year: number, month: number, day: number): Date => {
     const daysInMonth = getDaysInMonth(year, month);
     return new Date(year, month, Math.min(day, daysInMonth));
 }
