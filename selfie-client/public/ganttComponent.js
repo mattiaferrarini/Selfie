@@ -57,12 +57,7 @@ class GanttComponent extends HTMLElement {
         </div>
         `;
 
-        this.myStyle.textContent += `
-            .activity-info {
-                display: flex;
-                align-items: center;
-            }
-        `;
+        this.addStyle();
 
         /*
         this.content.innerHTML = `
@@ -76,6 +71,15 @@ class GanttComponent extends HTMLElement {
         </div>
         `
         */
+    }
+
+    addStyle() {
+        this.myStyle.textContent += `
+            .activity-info {
+                display: flex;
+                align-items: center;
+            }
+        `;
     }
 
     renderHeading() {
