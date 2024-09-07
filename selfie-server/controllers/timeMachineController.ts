@@ -87,3 +87,7 @@ const rescheduleActivityNotifications = async () => {
         await jobSchedulerService.scheduleActivityNotification(activity);
     }
 }
+
+export const getTime = async(req: any, res: any) => {
+    res.status(200).send({ time: new Date() });
+}

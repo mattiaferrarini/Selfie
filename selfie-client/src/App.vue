@@ -194,9 +194,9 @@ export default defineComponent({
     };
 
     // recover the time machine state
-    onMounted(() => {
-      const date = new Date(new Date().getTime() + dateStore.realTimeDiff);
-      dateStore.realTimeDiff ? timeMachineService.setGlobalClock(date) : timeMachineService.restoreGlobalClock();
+    onMounted(async () => {
+      const date = await timeMachineService.getTimeOfServer(); 
+      timeMachineService.setLocalGlobalClock(date);
       dateStore.setCurrentDate(date);
     });
 
