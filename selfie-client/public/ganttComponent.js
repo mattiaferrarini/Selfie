@@ -101,7 +101,7 @@ class GanttComponent extends HTMLElement {
         return `
         <div>
             
-            <div style="display: grid; grid-template-columns: auto 1fr; background: #e4e4e7; border-radius: 0.375rem; overflow: hidden; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            <div style="display: grid; grid-template-columns: auto 1fr; background: #e2e8f0; border-radius: 0.375rem; overflow: hidden; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
                 <div class="infogrid" style="grid-column: 1;">
                     <div style="display: grid; grid-template-columns: repeat(${this.INFO_COLS}, auto);">
                         <div style="grid-row: 1;"></div>
@@ -309,7 +309,7 @@ class GanttComponent extends HTMLElement {
 
     renderColorLegend() {
         return `
-        <div style="margin-top: 50px; padding: 1rem; background: #e4e4e7; border-radius: 0.375rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+        <div style="margin-top: 50px; padding: 1rem; background: #e2e8f0; border-radius: 0.375rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
             <h3 style="margin-bottom: 0.75rem; font-size: 1.125rem; font-weight: 700;">Legend</h3>
             <div style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap" id="color-legend">
                 ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}

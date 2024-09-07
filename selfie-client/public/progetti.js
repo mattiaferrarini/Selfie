@@ -646,6 +646,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantsContainer = editActivityModal.querySelector('#actParticipantsContainer');
     const usernameInput = editActivityModal.querySelector('#actNewParticipantUsername');
 
+    editStartDate.addEventListener('change', () => {
+        editEndDate.min = editStartDate.value;
+    });
+
+    editEndDate.addEventListener('change', () => {
+        editStartDate.max = editEndDate.value;
+    });
+
     const openEditActivityModal = (activity) => {
         editProjectActivityId.value = activity.activityId;
         editInput.value = activity.input;
@@ -682,6 +690,10 @@ document.addEventListener('DOMContentLoaded', () => {
         editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
 
+        // add limits
+        editStartDate.max = editEndDate.value;
+        editEndDate.min = editStartDate.value;
+
         // populate the participants list
         participantsContainer.innerHTML = '';
         activityDiv.activity.participants.forEach(participant => {
@@ -695,6 +707,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedActivityDiv = activityDiv;
         selectedPhaseDiv = phaseDiv;
         modifyingActivity = false;
+
+        // add default dates
+        const now = new Date(localStorage.getItem('date') ? JSON.parse(localStorage.getItem('date')).currentDate : new Date());
+        editStartDate.value = now.toISOString().split('T')[0];
+        const oneWeekLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        editEndDate.value = oneWeekLater.toISOString().split('T')[0];
+
+        // add limits
+        editStartDate.max = editEndDate.value;
+        editEndDate.min = editStartDate.value;
+
         editActivityModal.show();
     };
 
