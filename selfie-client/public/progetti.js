@@ -459,8 +459,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 else {
                     const project = formatProject(data);
                     projects[projects.findIndex(project => project._id === currentProjectId)] = project;
-                    displayProject(project);
                     showProjects();
+                    displayProject(project);
                     closeModal();
                 }
             })
@@ -476,8 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.hasOwnProperty("error"))
                     showError(data.error);
                 else {
-                    projects.push(formatProject(data));
+                    const project = formatProject(data);
+                    projects.push(project);
                     showProjects();
+                    displayProject(project);
                     closeModal();
                 }
             })
@@ -502,12 +504,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const displayProject = (project) => {
+        showHeader(project);
         auth.user.preferences.projectsView === 'gantt' ? showGantt(project) : showList(project);
+        projectSelector.value = project._id;
+    }
+
+    const showHeader = (project) => {
+        const header = document.getElementById('projectHeader');
+
+        const actionOptions = project.owner === auth.user.username ? `
+            <div class="flex gap-1 font-semibold">
+                <button type="button" class="edit-project-button bg-emerald-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-pencil-fill mr-2"></i> Edit
+                </button>
+                <button type="button" class="delete-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-trash-fill mr-2"></i> Delete
+                </button>
+            </div class="font-semibold">`
+            : `<button type="button" class="leave-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                <i class="bi bi-x-circle-fill mr-2"></i>Leave
+            </button>`;
+
+        header.innerHTML = `
+            <h3 class="text-3xl font-bold text-gray-800 p-2 mr-4">${project.title}</h3>
+            ${actionOptions}`;
+
+        if (project.owner === auth.user.username) {
+            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
+            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}`,
+                { method: 'DELETE' }
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                projectSelector.selectedIndex = 0;
+                displayProject(projects[0]);
+            }));
+        } else {
+            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}/leave`,
+                { method: 'POST' }
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                projectSelector.selectedIndex = 0;
+                displayProject(projects[0]);
+            }));
+        }
     }
 
     projectSelector.addEventListener('change', () => {
         const project = projects.find(project => project._id === projectSelector.value);
-        auth.user.preferences.projectsView === 'gantt' ? showGantt(project) : showList(project);
+        displayProject(project);
     });
 
     const listView = document.getElementById('listView');
@@ -568,46 +616,8 @@ document.addEventListener('DOMContentLoaded', () => {
     `
         }).join('');
 
+        listView.innerHTML = `<ul class="activity-list list-none p-0 sm:grid md:grid-cols-2 lg:grid-cols-3 flex flex-col gap-2">${activityList}</ul>`;
 
-        const actionOptions = project.owner === auth.user.username ? `
-            <div class="flex gap-1 font-semibold">
-                <button type="button" class="edit-project-button bg-emerald-500 text-white px-3 py-2 rounded-md">
-                    <i class="bi bi-pencil-fill mr-2"></i> Edit
-                </button>
-                <button type="button" class="delete-project-button bg-red-500 text-white px-3 py-2 rounded-md">
-                    <i class="bi bi-trash-fill mr-2"></i> Delete
-                </button>
-            </div class="font-semibold">` 
-            : `<button type="button" class="leave-project-button bg-red-500 text-white px-3 py-2 rounded-md">
-                <i class="bi bi-x-circle-fill mr-2"></i>Leave
-            </button>`;
-
-        listView.innerHTML = `
-            <div class="inline-flex items-center flex-wrap w-full justify-between mt-2 mb-4">
-                <h3 class="text-3xl font-bold text-gray-800 p-2 mr-4">${project.title}</h3>
-                ${actionOptions}</div>
-            <ul class="activity-list list-none p-0 sm:grid md:grid-cols-2 lg:grid-cols-3 flex flex-col gap-2">${activityList}</ul>`;
-
-        if (project.owner === auth.user.username) {
-            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
-            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
-                `${API_URL}/project/${project._id}`,
-                {method: 'DELETE'}
-            ).then(() => {
-                projects.splice(projects.findIndex(p => p._id === project._id), 1);
-                showProjects();
-                showList(projects[0]);
-            }));
-        } else {
-            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
-                `${API_URL}/project/${project._id}/leave`,
-                {method: 'POST'}
-            ).then(() => {
-                projects.splice(projects.findIndex(p => p._id === project._id), 1);
-                showProjects();
-                showList(projects[0]);
-            }));
-        }
         document.querySelectorAll('.edit-activity-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 openEditActivityModal(activities.find(activity => activity.activityId === event.target.dataset.activityId));
@@ -782,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editErrorMessage.innerText = data.error;
             else {
                 project = formatProject(data);
-                showList(project);
+                displayProject(project);
             }
         });
         closeProjectEditActivityModal();
