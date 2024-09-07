@@ -20,28 +20,35 @@ const formatInvite = (invite: IInvite) => {
 }
 
 export const getPendingInvitesByUser = async (req: any, res: any) => {
-    const { username } = req.params;
+    const authUsername = req.user?.username;
+    const authIsAdmin = req.user?.isAdmin;
+    const username = req.params.username;
     const { date } = req.query;
 
-    try {
-        let invites = await Invite.find({ inviteeUsername: username });
+    if (await accessAllowed(authUsername, authIsAdmin, username)) {
+        try {
+            let invites = await Invite.find({ inviteeUsername: username });
 
-        if (date) {
-            const cutoffDate = new Date(date);
-            invites = invites.filter((invite: any) => invite.answerDate <= cutoffDate);
+            if (date) {
+                const cutoffDate = new Date(date);
+                invites = invites.filter((invite: any) => invite.answerDate <= cutoffDate);
+            }
+            const formattedInvites = invites.map((invite: any) => formatInvite(invite));
+
+            res.status(200).send(formattedInvites);
         }
-        const formattedInvites = invites.map((invite: any) => formatInvite(invite));
-
-        res.status(200).send(formattedInvites);
+        catch (error) {
+            res.status(500).send({ error: 'Error getting invites' });
+        }
     }
-    catch (error) {
-        res.status(500).send({ error: 'Error getting invites' });
+    else {
+        res.status(403).send({ error: 'Access denied' });
     }
 }
 
 export const createInvitesForEvent = async (event: IEvent) => {
     const participants = event.participants;
-    const answerDate = new Date(); // TODO: change to current date
+    const answerDate = new Date();
     const eventId = event._id as string;
 
     for (let i = 0; i < participants.length; i++) {
@@ -49,19 +56,14 @@ export const createInvitesForEvent = async (event: IEvent) => {
         try {
             if (participant.status === 'pending') {
                 if (await resourceController.isResource(participant.username)) {
-                    if (!await eventController.otherEventsOverlap(participant.username, event))
-                        participant.status = 'accepted';
-                    else if (!await inviteAlreadyExists(participant.username, eventId))
+                    if (!await inviteAlreadyExists(participant.username, eventId))
                         await addInvite(participant.username, answerDate, event.title, [event.owner], eventId);
                 }
                 else { // user
-                    if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
-                        participant.status = 'declined';
-                    else if (!await inviteAlreadyExists(participant.username, eventId))
+                    if (!await inviteAlreadyExists(participant.username, eventId))
                         await addInvite(participant.username, answerDate, event.title, [event.owner], eventId);
                 }
             }
-            await event.save();
         }
         catch {
             console.log("Error creating invite");
@@ -169,12 +171,20 @@ export const declineInvite = async (req: any, res: any) => {
 
 export const postponeInvite = async (req: any, res: any) => {
     const { id } = req.params;
+    const authUsername = req.user?.username;
+    const authIsAdmin = req.user?.isAdmin;
+
     try {
         const invite = await Invite.findById(id);
         if (invite) {
-            invite.answerDate = timeService.moveAheadByDays(invite.answerDate, 1);
-            await invite.save();
-            res.status(200).send(formatInvite(invite));
+            if (await accessAllowed(authUsername, authIsAdmin, invite.inviteeUsername)) {
+                invite.answerDate = timeService.moveAheadByDays(invite.answerDate, 1);
+                await invite.save();
+                res.status(200).send(formatInvite(invite));
+            }
+            else {
+                res.status(403).send({ error: 'Access denied' });
+            }
         }
         else {
             res.status(404).send({ error: "Invite doesn't exist!" });
@@ -187,43 +197,54 @@ export const postponeInvite = async (req: any, res: any) => {
 
 const actOnInvite = async (req: any, res: any, response: string) => {
     const { id } = req.params;
+    const authUsername = req.user?.username;
+    const authIsAdmin = req.user?.isAdmin;
 
     try {
         const invite = await Invite.findById(id);
         if (invite) {
+            if (await accessAllowed(authUsername, authIsAdmin, invite.inviteeUsername)) {
+                if (invite.eventId)
+                    await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
+                else if (invite.activityId)
+                    await activityController.changeParticipantStatus(invite.activityId as string, invite.inviteeUsername, response);
 
-            let inviters = [];
-            let title = '';
+                let inviters = [];
+                let title = '';
 
-            if (invite.eventId) {
-                await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
-                const event = await Event.findById(invite.eventId);
-                if(event){
-                    title = event.title;
-                    inviters = [event.owner];
+                if (invite.eventId) {
+                    await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
+                    const event = await Event.findById(invite.eventId);
+                    if (event) {
+                        title = event.title;
+                        inviters = [event.owner];
+                    }
                 }
-            }
-            else if (invite.activityId) {
-                await activityController.changeParticipantStatus(invite.activityId as string, invite.inviteeUsername, response);
-                const activity = await Activity.findById(invite.activityId);
-                if (activity) {
-                    title = activity.title;
-                    inviters = activity.owners;
+                else if (invite.activityId) {
+                    await activityController.changeParticipantStatus(invite.activityId as string, invite.inviteeUsername, response);
+                    const activity = await Activity.findById(invite.activityId);
+                    if (activity) {
+                        title = activity.title;
+                        inviters = activity.owners;
+                    }
                 }
-            }
 
-            for (let i = 0; i < inviters.length; i++) {
-                const inviter = invite.inviters[i];
-                const user = await getUserByUsername(inviter);
-                if (user) {
-                    const notificationTitle = `${invite.inviteeUsername} ${response} your invite`;
-                    const body = `${invite.inviteeUsername} ${response} your invite to join ${invite.eventId ? 'event' : 'activity'} ${title}.`;
-                    await notificationController.sendNotification(user, { title: notificationTitle, body: body });
+                for (let i = 0; i < inviters.length; i++) {
+                    const inviter = invite.inviters[i];
+                    const user = await getUserByUsername(inviter);
+                    if (user) {
+                        const notificationTitle = `${invite.inviteeUsername} ${response} your invite`;
+                        const body = `${invite.inviteeUsername} ${response} your invite to join ${invite.eventId ? 'event' : 'activity'} ${title}.`;
+                        await notificationController.sendNotification(user, { title: notificationTitle, body: body });
+                    }
                 }
-            }
 
-            await deleteInvite(id);
-            res.status(204).send();
+                await deleteInvite(id);
+                res.status(204).send();
+            }
+            else {
+                res.status(403).send({ error: 'Access denied' });
+            }
         }
         else {
             res.status(404).send({ error: "Invite doesn't exist!" });
@@ -232,4 +253,8 @@ const actOnInvite = async (req: any, res: any, response: string) => {
     catch (error) {
         res.status(500).send({ error: 'Error acting on invite' });
     }
+}
+
+const accessAllowed = async (authUsername: string, isAdmin: boolean, inviteeUsername: string) => {
+    return authUsername === inviteeUsername || isAdmin && await resourceController.isResource(inviteeUsername);
 }

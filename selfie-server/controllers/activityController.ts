@@ -24,6 +24,10 @@ const formatActivity = (activity: any) => {
 export const getActivitiesByUser = async (req: any, res: any) => {
     const {username} = req.params;
     const {start, end} = req.query;
+    const authUsername = req.user.username;
+
+    if(!authUsername || username !== authUsername)
+        return res.status(403).send({error: "You are not allowed to access this user's activities!"});
 
     try {
         let activities = await Activity.find({
@@ -80,6 +84,11 @@ export const getPomodoroStats = async (req: any, res: any) => {
 
 export const getActivityById = async (req: any, res: any) => {
     const {id} = req.params;
+    const authUsername = req.user.username;
+
+    if(!authUsername || !await accessAllowed(id, authUsername))
+        return res.status(403).send({error: "You are not allowed to access this activity!"});
+
     try {
         const activity = await Activity.findById(id);
         res.status(200).send(formatActivity(activity));
@@ -100,6 +109,11 @@ export const deleteActivityById = async (id: any) => {
 
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
+    const authUsername = req.user.username;
+
+    if(!authUsername || !await modificationAllowed(id, authUsername))
+        return res.status(403).send({error: "You are not allowed to delete this activity!"});
+
     try {
         await recursiveDeleteActivity(id);
         res.status(204).send();
@@ -163,6 +177,11 @@ export const addActivity = async (req: any, res: any) => {
 
 export const modifyActivity = async (req: any, res: any) => {
     const {id} = req.params;
+    const authUsername = req.user.username;
+
+    if(!authUsername || !await modificationAllowed(id, authUsername))
+        return res.status(403).send({error: "You are not allowed to modify this activity!"});
+
     try {
         const activity = await Activity.findById(id);
         if (activity) {
@@ -201,7 +220,7 @@ export const modifyActivity = async (req: any, res: any) => {
             if(!_.isEqual(originalActivity, activity.toObject())){
                 await inviteController.createInvitesForActivity(activity);
                 await inviteController.deleteActivityParticipantsInvites(id, removedUsernames);
-                notifyOfChanges(activity);
+                notifyOfChanges(activity, authUsername);
                 await jobSchedulerService.updateLateActivityNotification(activity);
             }
             res.status(200).send(formatActivity(activity));
@@ -213,9 +232,9 @@ export const modifyActivity = async (req: any, res: any) => {
     }
 }
 
-const notifyOfChanges = async(activity: IActivity) => {
+const notifyOfChanges = async(activity: IActivity, committer: string) => {
     activity.participants.forEach((participant: any) => {
-        if(participant.status === 'accepted'){
+        if(participant.status === 'accepted' && participant.username !== committer){
             notificationController.sendNotificationToUsername(participant.username, {title: 'Activity updated', body: `Activity ${activity.title} has been updated.`});
         }
     });
@@ -241,12 +260,39 @@ export const changeParticipantStatus = async (id: string, username: string, newS
 
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
-    const username = req.body.username;
+    const authUsername = req.user.username;
 
     try {
-        await changeParticipantStatus(id, username, 'declined');
+        await changeParticipantStatus(id, authUsername, 'declined');
         res.status(200).send('Participant removed');
     } catch (error) {
         res.status(500).send({ error: 'Error removing participant' });
+    }
+}
+
+const accessAllowed = async (activityId: string, authUsername: string) => {
+    try {
+        const activity = await Activity.findById(activityId);
+        if(activity)
+            return activity.participants.some((participant: any) => participant.username === authUsername) || activity.owners.includes(authUsername);
+        else
+            return false;
+    }
+    catch{
+        return false;
+    }
+
+}
+
+const modificationAllowed = async (activityId: string, authUsername: string) => {
+    try {
+        const activity = await Activity.findById(activityId);
+        if(activity)
+            return activity.owners.includes(authUsername);
+        else
+            return false;
+    }
+    catch{
+        return false;
     }
 }

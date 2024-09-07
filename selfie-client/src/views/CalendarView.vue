@@ -19,6 +19,7 @@ import { useDateStore } from '@/stores/dateStore';
 import { Resource } from '@/models/Resource';
 import inviteService from '@/services/inviteService';
 import router from '@/router';
+import { Invite } from '@/models/Invite';
 
 export default defineComponent({
   name: 'CalendarView',
@@ -63,7 +64,7 @@ export default defineComponent({
     const showInviteList = ref(false);
     const hasPendingInvites = ref(false);
     const modifying = ref(false);
-    const resource = ref('');
+    const selectedResourceName = ref('');
 
     /* Fetch content of the view */
     const fetchUserEvents = async () => {
@@ -73,7 +74,6 @@ export default defineComponent({
     };
     const fetchActivities = async () => {
       rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
-      console.log(rangeActivities.value);
     };
     const fetchUnavailabilities = async () => {
       rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
@@ -81,10 +81,14 @@ export default defineComponent({
     const fetchResources = async () => {
       allResources.value = await resourceService.getAllResources();
       if (allResources.value.length > 0)
-        resource.value = allResources.value[0].name;
+        selectedResourceName.value = allResources.value[0].name;
     };
     const fetchResourceEvents = async () => {
-      return await eventService.getEventsByUser(resource.value, rangeStartDate.value, rangeEndDate.value);
+      const resourceUsername = allResources.value.find(res => res.name === selectedResourceName.value)?.username;
+      if (!resourceUsername) 
+        return [];
+      else
+        return await eventService.getEventsByUser(resourceUsername, rangeStartDate.value, rangeEndDate.value);
     };
     const reFetchCalendarContent = async () => {
       await fetchUserEvents();
@@ -114,11 +118,9 @@ export default defineComponent({
       }
     };
     watch(focusDate, async () => {
-      console.log('Focus date changed');
       await updateRangeAndFetchCalendarIfNecessary();
     });
     watch(currentDate, async () => {
-      console.log('Current date changed');
       focusDate.value = new Date(currentDate.value);
       checkInvites();
     });
@@ -135,7 +137,7 @@ export default defineComponent({
       document.getElementById(focusDate.value.toISOString().substring(0, 10))?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     };
     const onViewChange = () => {
-      console.log(`View changed to: ${view.value}`);
+      return;
     };
     const onContentChange = async () => {
       if (content.value === 'resources' && allResources.value.length > 0)
@@ -213,12 +215,12 @@ export default defineComponent({
     };
     const deleteEvent = (event: CalendarEvent) => {
       rangeEvents.value = rangeEvents.value.filter(e => e.id !== event.id);
+      rangeUserEvents.value = rangeUserEvents.value.filter(e => e.id !== event.id);
       hideAllForms();
     };
 
     /* Save new/modified activities and delete them */
-    const saveActivity = async (newActivity: any) => {
-      console.log(newActivity);
+    const saveActivity = async (newActivity: Activity) => {
       fetchActivities();
       hideAllForms();
     };
@@ -236,7 +238,7 @@ export default defineComponent({
     };
 
     /* Save new/modified unavailabilities and delete them */
-    const saveUnavailability = async (newUnav: any) => {
+    const saveUnavailability = async (newUnav: Unavailability) => {
       if (modifying.value) {
         const index = rangeUnavailabilities.value.findIndex(unav => unav.id === newUnav.id);
         rangeUnavailabilities.value[index] = newUnav;
@@ -262,7 +264,7 @@ export default defineComponent({
       hasPendingInvites.value = false;
       showInviteList.value = false;
     }
-    const acceptInvite = async (invite: any) => {
+    const acceptInvite = async (invite: Invite) => {
       if (invite.eventId) {
         const event = await eventService.getEventById(invite.eventId);
         if (event)
@@ -322,9 +324,6 @@ export default defineComponent({
           modifyActivity(activity);
         }
       }
-
-      console.log(rangeActivities.value);
-
       fetchUnavailabilities();
       fetchResources();
 
@@ -338,7 +337,7 @@ export default defineComponent({
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
-      modifying, deleteEvent, deleteActivity, deleteUnavailability, resource, onResourceChange, allResources, onContentChange,
+      modifying, deleteEvent, deleteActivity, deleteUnavailability, resource: selectedResourceName, onResourceChange, allResources, onContentChange,
       showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton,
       eventAdminOnlyModification, acceptInvite
     };
@@ -429,8 +428,7 @@ export default defineComponent({
       </button>
     </div>
 
-    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
-      @click="closeAddForms">
+    <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
         :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
         :admin-only-modification="eventAdminOnlyModification" />

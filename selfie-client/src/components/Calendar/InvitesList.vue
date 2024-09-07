@@ -48,7 +48,11 @@ export default defineComponent({
     },
     watch: {
         username: {
-            handler: 'onUsernameChange',
+            handler: 'fetchInviteInfos',
+            immediate: true
+        },
+        currentDate: {
+            handler: 'fetchInviteInfos',
             immediate: true
         }
     },
@@ -56,9 +60,6 @@ export default defineComponent({
     methods: {
         formattedDescription(description: string) :string {
         return description.replace(/\n/g, '<br>');
-        },
-        onUsernameChange() {
-            this.fetchInviteInfos();
         },
         async fetchInviteInfos() {
             try {
@@ -68,32 +69,33 @@ export default defineComponent({
                 for (let invite of invites) {
                     if (invite.eventId) {
                         const event = await eventService.getEventById(invite.eventId)
-                        newInfos.push(this.formatEventInvite(invite, event));
+                        if(event)
+                            newInfos.push(this.formatEventInvite(invite, event));
                     }
                     else if (invite.activityId) {
                         const activity = await activityService.getActivityById(invite.activityId)
-                        newInfos.push(this.formatActivityInvite(invite, activity));
+                        if(activity)
+                            newInfos.push(this.formatActivityInvite(invite, activity));
                     }
                 }
-
                 this.inviteInfos = newInfos;
             }
             catch {
-                console.log('Error fetching invite infos');
+                return;
             }
         },
-        acceptInvite(invite: Invite) {
-            inviteService.acceptInvite(invite);
+        async acceptInvite(invite: Invite) {
+            await inviteService.acceptInvite(invite);
             this.removeInvite(invite);
             this.$emit('accept-invite', invite);
         },
-        declineInvite(invite: Invite) {
-            inviteService.declineInvite(invite);
+        async declineInvite(invite: Invite) {
+            await inviteService.declineInvite(invite);
             this.removeInvite(invite);
             this.$emit('decline-invite', invite);
         },
-        postponeInvite(invite: Invite) {
-            inviteService.postponeInvite(invite);
+        async postponeInvite(invite: Invite) {
+            await inviteService.postponeInvite(invite);
             this.removeInvite(invite);
             this.$emit('postpone-invite', invite);
         },
@@ -145,7 +147,7 @@ export default defineComponent({
 <style scoped>
 .action-button {
     padding: 0.3rem 0.3rem;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     color: white;
 }
 div {

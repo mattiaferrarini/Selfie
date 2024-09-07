@@ -32,13 +32,13 @@
         </div>
         <div class="justify-self-end flex w-full space-x-1 mt-8" v-if="modificationAllowed">
             <button type="button" @click="cancelChanges"
-                class="flex-1 bg-gray-400 text-white rounded-lg p-2">Cancel</button>
+                class="flex-1 bg-gray-400 text-white rounded-md p-2">Cancel</button>
             <button type="submit" @click="saveChanges"
-                class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+                class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
         </div>
         <div v-else>
             <button type="button" @click="closeForm"
-                class="bg-gray-400 text-white rounded-lg p-2 w-full">Back</button>
+                class="bg-gray-400 text-white rounded-md p-2 w-full">Back</button>
         </div>
     </div>
 </template>
@@ -100,7 +100,6 @@ export default defineComponent({
             try{
                 const userData = await userService.getUserBasicInfo(this.newUsername);
             if (userData) {
-                console.log('user');
                 if (!this.userAlreadyAdded(userData.username)) {
                     if(this.event){
                         // event case: check if user is available
@@ -123,7 +122,6 @@ export default defineComponent({
                     this.onAddSuccess();
             } 
             else if(this.event){
-                console.log('resource');
                 //check if user is a resource
                 const resource = await resourceService.getResource(this.newUsername);
                 if(resource){
@@ -139,7 +137,6 @@ export default defineComponent({
             }
             }
             catch(error){
-                console.error(error);
                 this.onUserAddError();
             }
             this.newUsername = '';

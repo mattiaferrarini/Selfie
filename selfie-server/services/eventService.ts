@@ -78,9 +78,10 @@ const yearlyOverlap = (event1: any, event2: any) => {
 const firstRepetitionOverlap = (event1: any, event2: any) => {
     const {start: nextStart2, end: nextEnd2} = getNextRepetition(event2, event1.start);
 
-    if (isValidRepetition(event2, nextStart2, nextEnd2)) {
-        const {start: nextStart1, end: nextEnd1} = getNextRepetition(event1, nextStart2);
-        if (isValidRepetition(event1, nextStart1, nextEnd1))
+    if(isValidRepetition(event2, nextStart2, nextEnd2)){
+        const { start: nextStart1, end: nextEnd1 } = getNextRepetition(event1, nextStart2);
+
+        if(isValidRepetition(event1, nextStart1, nextEnd1))
             return timeService.overlap(nextStart1, nextEnd1, nextStart2, nextEnd2);
         else
             return false;
