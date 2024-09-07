@@ -14,7 +14,6 @@ const getActivitiesByUser = async (username: string, start?: Date, end?: Date) =
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -33,7 +32,7 @@ const getActivityById = async (id: string) => {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
-        throw error.response.data;
+        return null;
     }
 }
 
@@ -83,10 +82,10 @@ const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> =
 
 const removeParticipantFromActivity = async (activity: Activity, username: string) => {
     try {
-        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {username: username}, { withCredentials: true });
+        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
-        console.log(error);
+        return;
     }
 }
 

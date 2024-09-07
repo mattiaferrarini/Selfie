@@ -80,7 +80,6 @@ export default defineComponent({
             newUsername: '',
             errorText: '',
             selectedResourceName: '',
-            currentDate: useDateStore().currentDate,
             confirmationMessage: '',
             resourceToDelete: {} as Resource
         }
@@ -143,6 +142,9 @@ export default defineComponent({
     computed: {
         selectedResourceUsername(): string {
             return this.resources.find(res => res.name === this.selectedResourceName)?.username || '';
+        },
+        currentDate(): Date {
+            return useDateStore().getCurrentDate();
         }
     },
     mounted() {

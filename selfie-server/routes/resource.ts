@@ -4,7 +4,6 @@ import { isAdmin } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-
 router.get("/all", resourceController.getAllResources);
 router.get("/:username", resourceController.getResource);
 router.post("/", isAdmin, resourceController.addResource);

@@ -1,8 +1,9 @@
 import axios from 'axios';
-import {CalendarOptions, GoogleCalendar, ICalendar, OutlookCalendar, YahooCalendar} from "datebook";
+import {CalendarOptions, GoogleCalendar, ICalendar, ICSAlarm, OutlookCalendar, YahooCalendar} from "datebook";
 import CalendarAttendee from "datebook/dist/src/types/CalendarAttendee";
 import {CalendarEvent} from '@/models/Event';
 import {useAuthStore} from '@/stores/authStore';
+import userService from './userService';
 
 const API_URL = process.env.VUE_APP_API_URL + '/event';
 
@@ -15,7 +16,6 @@ const getEventsByUser = async (username: string, start?: Date, end?: Date) => {
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -24,15 +24,6 @@ const getEventById = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return formatEvent(response.data);
-    } catch (error: any) {
-        throw error.response.data;
-    }
-}
-
-const getOverlappingEvents = async (username: string, event: CalendarEvent) => {
-    try {
-        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
-        return response.data.map((event: any) => formatEvent(event));
     } catch (error: any) {
         throw error.response.data;
     }
@@ -104,9 +95,67 @@ const generateOptionsForEvent = (event: CalendarEvent): CalendarOptions => {
     return options;
 }
 
-const convertOptionsToICalendar = (options: CalendarOptions): string => {
-    // TODO: possibly add alarms to file
-    return new ICalendar(options).render();
+const generateAlarmsForEvent = (event: CalendarEvent): ICSAlarm[] => {
+    const alarms: ICSAlarm[] = [];
+
+    if(event.notification.method.length > 0){
+        let whenMinutes = stringToMinutes(event.notification.when);
+        const repeatFrequencyMinutes = stringToMinutes(event.notification.repeat);
+
+        while(whenMinutes >= 0){
+            const newAlarm: ICSAlarm = {
+                action: 'METHOD',
+                summary: 'Reminder of ' + event.title,
+                description: event.title + ' is starting soon!',
+                trigger: {
+                    minutes: whenMinutes
+                },
+            };
+
+            if(event.notification.method.includes('email')){
+                newAlarm.action = 'EMAIL';
+                alarms.push(newAlarm);
+            }
+            if(event.notification.method.includes('push')){
+                newAlarm.action = 'DISPLAY';
+                alarms.push(newAlarm);
+            }
+
+            whenMinutes -= repeatFrequencyMinutes;
+        }
+    }
+    return alarms;
+}
+
+// converts a string representing a time amount to the corresponding number of minutes
+const stringToMinutes = (str: string) => {
+    const parts = str.split(' ');
+
+    if(parts.length !== 2)
+        return 0;
+    else{
+        const unit = parts[1];
+        const value = parseInt(parts[0]);
+
+        if (unit === 'minutes' || unit === 'minute')
+            return value;
+        else if (unit === 'hours' || unit === 'hour')
+            return value * 60;
+        else if (unit === 'days' || unit === 'day')
+            return value * 60 * 24;
+        else if (unit === 'weeks' || unit === 'week')
+            return value * 60 * 24 * 7;
+        else
+            return 0;
+    }
+}
+
+const convertOptionsToICalendar = (options: CalendarOptions, alarms: ICSAlarm[]): string => {
+    const iCal = new ICalendar(options);
+    for(const alarm of alarms){
+        iCal.addAlarm(alarm);
+    }
+    return iCal.render();
 }
 
 const convertOptionsToYahoo = (options: CalendarOptions): string => {
@@ -145,11 +194,12 @@ const convertICalendarToEvent = async (icalStr: string): Promise<CalendarEvent> 
                     }
                 }
 
-                // TODO: remove participants that do not have an account?
+                // remove participants that do not have an account
+                event.participants = await Promise.all(event.participants.filter(async participant => !await userService.getUserBasicInfo(participant.username)));
 
                 // repetition
                 if(ev.rrule){
-                    const recRule = getRepcurrenceRule(icalStr);
+                    const recRule = getRecurrenceRule(icalStr);
 
                     if(recRule.freq)
                         event.repetition.frequency = recRule.freq;
@@ -175,12 +225,11 @@ const getEventFromIcal = async (icalStr: string) : Promise<any> => {
         return response.data;
     }
     catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
 
-const getRepcurrenceRule = (icalStr: string) => {
+const getRecurrenceRule = (icalStr: string) => {
     const rule: any = {};
     const lines = icalStr.split('\n');
     for (const line of lines) {
@@ -224,17 +273,16 @@ const sendExportViaEmail = async (formData: FormData) => {
 
 const removeParticipantFromEvent = async (event: CalendarEvent, username: string) => {
     try {
-        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {username: username}, { withCredentials: true });
+        await axios.post(`${API_URL}/removeParticipant/${event.id}`, {}, { withCredentials: true });
     }
     catch (error: any) {
-        console.log(error);
+        return;
     }
 }
 
 export default {
     getEventsByUser,
     getEventById,
-    getOverlappingEvents,
     addEvent,
     modifyEvent,
     deleteEvent,
@@ -246,5 +294,6 @@ export default {
     convertICalendarToEvent,
     getEventFromIcal,
     sendExportViaEmail,
-    removeParticipantFromEvent
+    removeParticipantFromEvent,
+    generateAlarmsForEvent
 };

@@ -10,17 +10,17 @@
                     <li v-for="activity in sortedActivities" :key="activity.id" class="clickable-item">
                         <hr>
                         <div class="flex align-center justify-between py-1.5" :class="{ late: isLateActivity(activity) }"
-                            @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                            @click.stop="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                             <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                             <div class="flex gap-4">
                                 {{ activity.pomodoro ? activity.pomodoro.completedCycles[username] + '/' +
                                     activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}
-                                <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon
+                                <button v-if="activity.pomodoro" @click.stop="modifyActivity(activity)"><v-icon
                                         name="md-modeeditoutline"></v-icon></button>
                                 {{ timeMethods.formatDayMonth(activity.deadline) }}
-                                <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon
+                                <button v-if="!activity.done" @click.stop="markAsDone(activity)"><v-icon
                                         name="md-done"></v-icon></button>
-                                <button v-else @click="undoActivity(activity)" @click.stop><v-icon
+                                <button v-else @click.stop="undoActivity(activity)"><v-icon
                                         name="fa-undo"></v-icon></button>
                             </div>
                         </div>
@@ -38,7 +38,7 @@
                 <ul class="my-4" v-if="sortedProjectActivities.length > 0">
                     <li v-for="activity in sortedProjectActivities" :key="activity.activity.id" class="clickable-item">
                         <hr>
-                        <div class="flex align-center justify-between gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click="modifyActivity(activity.activity)">
+                        <div class="flex align-center justify-between gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click.stop="modifyActivity(activity.activity)">
                             <div v-if="activity.type=='start'" class="bg-blue-500 px-1 rounded-md text-white">
                                 Start
                             </div>

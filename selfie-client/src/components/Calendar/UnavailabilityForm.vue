@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop>
+  <div class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop v-click-outside="closeForm">
     <div class="flex justify-end">
       <button @click="closeForm">
         <v-icon name="md-close" />
@@ -70,8 +70,8 @@
       <hr>
       <div class="flex w-full space-x-1 mt-8">
         <button v-if="modifying" type="button" @click="handleDeleteRequest"
-          class="flex-1 bg-red-600 text-white p-2 rounded-lg">Delete</button>
-        <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+          class="flex-1 bg-red-600 text-white p-2 rounded-md">Delete</button>
+        <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
       </div>
     </form>
 
@@ -149,8 +149,8 @@ export default defineComponent({
         this.newUnavailability.end.setHours(23, 59, 59, 59);
       }
       else {
-        this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]));
-        this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]));
+        this.newUnavailability.start.setHours(Number(this.newStartTime.split(':')[0]), Number(this.newStartTime.split(':')[1]), 0, 0);
+        this.newUnavailability.end.setHours(Number(this.newEndTime.split(':')[0]), Number(this.newEndTime.split(':')[1]), 0, 0);
       }
 
       this.newUnavailability.start = timeService.convertToTimezone(this.newUnavailability.start, this.newUnavailability.timezone);
