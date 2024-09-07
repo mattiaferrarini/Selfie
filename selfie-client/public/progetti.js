@@ -703,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editNotifyEmail.checked) {
             newActivity.notification.method.push('email');
         }
-        // TODO: fix to add status
         newActivity.participants = Array.from(participantsContainer.querySelectorAll('.participant')).map(participantDiv => ({
             username: participantDiv.querySelector('.username').innerText,
             'status': 'accepted'

@@ -18,57 +18,57 @@
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Change Notification</legend>
         <form @submit.stop="changeNotificationType">
-          <label for="notification_mode" class="block text-sm font-medium text-gray-700">Notification Type</label>
-          <select type="password" v-model="notificationType" id="notification_mode"
-                  class="w-full px-3 py-2 mb-3 border rounded" required>
+          <label class="block text-sm font-medium text-gray-700" for="notification_mode">Notification Type</label>
+          <select id="notification_mode" v-model="notificationType" class="w-full px-3 py-2 mb-3 border rounded"
+                  required type="password">
             <option value="email">Email</option>
             <option value="push">Web Push</option>
             <option value="both">Both</option>
           </select>
-          <input type="submit" value="Change Notification"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
+          <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
+                 value="Change Notification"/>
         </form>
         <p v-if="notificationErrorMessage" class="mt-2 text-red-500">{{ notificationErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Change Password</legend>
         <form @submit.stop="changePassword">
-          <label for="old_password" class="block text-sm font-medium text-gray-700">Old Password</label>
-          <input type="password" v-model="old_password" id="old_password"
-                 class="w-full px-3 py-2 mb-3 border rounded" required
-                 placeholder="Old Password"/>
-          <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
-          <input type="password" v-model="new_password" id="new_password"
-                 class="w-full px-3 py-2 mb-3 border rounded" required
-                 placeholder="New Password"/>
-          <label for="new_password_r" class="block text-sm font-medium text-gray-700">Repeat New Password</label>
-          <input type="password" v-model="new_password_r" id="new_password_r"
-                 class="w-full px-3 py-2 mb-3 border rounded" required
-                 placeholder="Repeat New Password"/>
-          <input type="submit" value="Change Password"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
+          <label class="block text-sm font-medium text-gray-700" for="old_password">Old Password</label>
+          <input id="old_password" v-model="old_password" class="w-full px-3 py-2 mb-3 border rounded"
+                 placeholder="Old Password" required
+                 type="password"/>
+          <label class="block text-sm font-medium text-gray-700" for="new_password">New Password</label>
+          <input id="new_password" v-model="new_password" class="w-full px-3 py-2 mb-3 border rounded"
+                 placeholder="New Password" required
+                 type="password"/>
+          <label class="block text-sm font-medium text-gray-700" for="new_password_r">Repeat New Password</label>
+          <input id="new_password_r" v-model="new_password_r" class="w-full px-3 py-2 mb-3 border rounded"
+                 placeholder="Repeat New Password" required
+                 type="password"/>
+          <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
+                 value="Change Password"/>
         </form>
         <p v-if="passErrorMessage" class="mt-2 text-red-500">{{ passErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 p-2 mt-4 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Change Birthday</legend>
         <form @submit.stop="changeBirthday">
-          <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
-          <input type="date" v-model="birthday" id="birthday" :max="(new Date()).toISOString().substring(0,10)"
-                 min="1900-01-01" class="w-full px-3 py-2 mb-3 border rounded" required/>
-          <input type="submit" value="Change Birthday"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
+          <label class="block text-sm font-medium text-gray-700" for="birthday">Birthday</label>
+          <input id="birthday" v-model="birthday" :max="(new Date()).toISOString().substring(0,10)" class="w-full px-3 py-2 mb-3 border rounded"
+                 min="1900-01-01" required type="date"/>
+          <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
+                 value="Change Birthday"/>
         </form>
         <p v-if="birthErrorMessage" class="mt-2 text-red-500">{{ birthErrorMessage }}</p>
       </fieldset>
       <fieldset class="border-2 rounded-xl border-emerald-500 p-2 mt-4 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Change Name</legend>
         <form @submit.stop="changeName">
-          <label for="name" class="block text-sm font-medium text-gray-700">Real Name</label>
-          <input type="text" v-model="realName" id="name" placeholder="Fabio Rossi"
-                 class="w-full px-3 py-2 mb-3 border rounded" required/>
-          <input type="submit" value="Change Name"
-                 class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer"/>
+          <label class="block text-sm font-medium text-gray-700" for="name">Real Name</label>
+          <input id="name" v-model="realName" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Fabio Rossi"
+                 required type="text"/>
+          <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
+                 value="Change Name"/>
         </form>
         <p v-if="nameErrorMessage" class="mt-2 text-red-500">{{ nameErrorMessage }}</p>
       </fieldset>
@@ -106,7 +106,6 @@ export default defineComponent({
       }
     };
 
-    //TODO: password validation?
     const changePassword = async () => {
       try {
         if (new_password.value !== new_password_r.value) {
