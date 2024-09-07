@@ -46,6 +46,25 @@ class GanttComponent extends HTMLElement {
 
     render() {
         this._row = 1;
+
+        this.content.innerHTML = `
+        <div class="gantt-container">
+            <link rel="stylesheet" href="tailwind.css" >
+            ${this.renderHeading()}
+            ${this.renderGantt()}
+            <!-- Color legend -->
+            ${this.renderColorLegend()}
+        </div>
+        `;
+
+        this.myStyle.textContent += `
+            .activity-info {
+                display: flex;
+                align-items: center;
+            }
+        `;
+
+        /*
         this.content.innerHTML = `
         <div class="gantt-container">
             <link rel="stylesheet" href="tailwind.css" >
@@ -56,12 +75,15 @@ class GanttComponent extends HTMLElement {
             ${this.renderColorLegend()}
         </div>
         `
+        */
     }
 
     renderHeading() {
         if (!this._project) {
             return '';
         }
+        return "";
+        /*
         return `
         <div class="text-xl font-bold">
             <h1>Project: ${this._project.title}</h1>
@@ -69,6 +91,7 @@ class GanttComponent extends HTMLElement {
             <p>Actors: ${this._project.actors}</p>
         </div>
         `
+        */
     }
 
     renderGantt() {
@@ -78,7 +101,7 @@ class GanttComponent extends HTMLElement {
         return `
         <div>
             
-            <div style="display: grid; grid-template-columns: auto 1fr;">
+            <div style="display: grid; grid-template-columns: auto 1fr; background: #e4e4e7; border-radius: 0.375rem; overflow: hidden; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
                 <div class="infogrid" style="grid-column: 1;">
                     <div style="display: grid; grid-template-columns: repeat(${this.INFO_COLS}, auto);">
                         <div style="grid-row: 1;"></div>
@@ -192,10 +215,12 @@ class GanttComponent extends HTMLElement {
         }
 
         .head {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
             color: #fff;
-            background: #103a99;
+            background: #047857;
             white-space: nowrap;
         }
         
@@ -232,14 +257,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = 1; i <= numOfCol; i++) {
             if (dateCol.getFullYear() !== year) {
-                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'background-color: dodgerblue;' : ''}">${year}</div>`;
+                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'background-color: #34d399;' : ''}">${year}</div>`;
                 year = dateCol.getFullYear();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol) {
-            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(year === this._now.getFullYear())? 'background-color: dodgerblue;' : ''}">${timeSlice.end.getFullYear()}</div>`;
+            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(year === this._now.getFullYear())? 'background-color: #34d399;' : ''}">${timeSlice.end.getFullYear()}</div>`;
         }
         return years;
     }
@@ -255,14 +280,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = 1; i <= numOfCol; i++) {
             if (dateCol.getMonth() !== month) {
-                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: dodgerblue;' : ''}">${this.numToMonth(month)}</div>`;
+                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: #059669;' : ''}">${this.numToMonth(month)}</div>`;
                 month = dateCol.getMonth();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol) {
-            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: dodgerblue;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
+            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: #059669;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
         }
         return months;
     }
@@ -284,16 +309,19 @@ class GanttComponent extends HTMLElement {
 
     renderColorLegend() {
         return `
-        <div style="display: flex; flex-direction: row; gap: 1em; margin-top: 50px; flex-wrap: wrap" id="color-legend">
-            ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}
-            ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed part')}
-            ${this.legendBlock('background-color: gray;', 'Not activatable')}
-            ${this.legendBlock('background-color: lightslategray;', 'Activatable')}
-            ${this.legendBlock('background-color: SpringGreen;', 'Active')}
-            ${this.legendBlock('background-color: orange;', 'Late')}
-            ${this.legendBlock('background-color: green;', 'Concluded')}
-            ${this.legendBlock('background-color: OrangeRed;', 'Reactivated')}
-            ${this.legendBlock('background-color: black;', 'Abandoned')}
+        <div style="margin-top: 50px; padding: 1rem; background: #e4e4e7; border-radius: 0.375rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            <h3 style="margin-bottom: 0.75rem; font-size: 1.125rem; font-weight: 700;">Legend</h3>
+            <div style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap" id="color-legend">
+                ${this.legendBlock('background-color: gray; border-right: 1rem solid red;', 'Milestone')}
+                ${this.legendBlock('background-color: gray; border: white 3px dashed;', 'Delayed part')}
+                ${this.legendBlock('background-color: gray;', 'Not activatable')}
+                ${this.legendBlock('background-color: lightslategray;', 'Activatable')}
+                ${this.legendBlock('background-color: SpringGreen;', 'Active')}
+                ${this.legendBlock('background-color: orange;', 'Late')}
+                ${this.legendBlock('background-color: green;', 'Concluded')}
+                ${this.legendBlock('background-color: OrangeRed;', 'Reactivated')}
+                ${this.legendBlock('background-color: black;', 'Abandoned')}
+            </div>
         </div>
         `
     }
@@ -315,7 +343,7 @@ class GanttComponent extends HTMLElement {
         let infoHtml = '';
         for (const phase of this._project.phases) {
             this._row++;
-            infoHtml += `<div style="grid-row: ${this._row}; grid-column: 1 / span ${this.INFO_COLS}; font-weight: bold">${phase.title}</div>`;
+            infoHtml += `<div style="grid-row: ${this._row}; grid-column: 1 / span ${this.INFO_COLS}; font-weight: bold; display: flex; align-items: center;">${phase.title}</div>`;
             phasesHtml += `<div style="grid-row: ${this._row}; grid-column: 1;"></div>`;
             const [i, p] = this.renderPhase(phase);
             infoHtml += i;
