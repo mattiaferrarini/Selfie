@@ -37,7 +37,6 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
         // determine when notification should begin
         const notificationStart = getEventNotificationStart(event, eventRepStart);
 
-        // TODO: check this data is necessary
         const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
 
         await agenda.schedule(notificationStart, jobName, jobData);
@@ -51,9 +50,7 @@ const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date
 const notifyEventRepetition = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
         const jobName = jobs.eventNotificationJobName;
-
-        // TODO: check this data is necessary
-        const jobData = {eventId: event._id, eventRepStart: eventRepStart, eventRepEnd: eventRepEnd};
+        const jobData = {eventId: event._id};
 
         // determine when notification should begin (computed again to limit agenda processing delay)
         let notificationStart = getEventNotificationStart(event, eventRepStart);
@@ -118,19 +115,24 @@ const getNumberOfEventNotifications = (event: IEvent) => {
 // converts a string representing a time amount to the corresponding number of minutes
 const stringToMinutes = (str: string) => {
     const parts = str.split(' ');
-    const unit = parts[1];
-    const value = parseInt(parts[0]);
 
-    if (unit === 'minutes' || unit === 'minute')
-        return value;
-    else if (unit === 'hours' || unit === 'hour')
-        return value * 60;
-    else if (unit === 'days' || unit === 'day')
-        return value * 60 * 24;
-    else if (unit === 'weeks' || unit === 'week')
-        return value * 60 * 24 * 7;
-    else
+    if(parts.length !== 2)
         return 0;
+    else{
+        const unit = parts[1];
+        const value = parseInt(parts[0]);
+
+        if (unit === 'minutes' || unit === 'minute')
+            return value;
+        else if (unit === 'hours' || unit === 'hour')
+            return value * 60;
+        else if (unit === 'days' || unit === 'day')
+            return value * 60 * 24;
+        else if (unit === 'weeks' || unit === 'week')
+            return value * 60 * 24 * 7;
+        else
+            return 0;
+    }
 }
 
 // schedules the notification process for a late activity
@@ -172,10 +174,8 @@ const scheduleActivityNotificationStart = async (activity: IActivity, date: Date
 const notifyActivityToday = async (activity: IActivity) => {
     try {
         const now = new Date();
-
         const jobName = jobs.activityNotificationJobName;
-        // TODO: check data is necessary
-        const jobData = {activityId: activity._id, end: timeService.getEndOfDay(now)};
+        const jobData = {activityId: activity._id};
 
         let notificationStart = timeService.getStartOfDay(now);
         const numberOfReps = getNumberOfActivityNotifications(activity, now);

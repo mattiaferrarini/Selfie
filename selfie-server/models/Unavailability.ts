@@ -61,4 +61,5 @@ const UnavailabilitySchema = new Schema({
     }
 });
 
-export default model<IUnavailability>('Unavailability', UnavailabilitySchema);
+const Unavailability = model<IUnavailability>('Unavailability', UnavailabilitySchema);
+export default Unavailability;

@@ -148,13 +148,13 @@ const moveAheadByMonths = (date: Date, months: number): Date => {
 }
 
 const moveAheadByYears = (date: Date, years: number): Date => {
-    if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
+    if (date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
         return new Date(date.getFullYear() + years, date.getMonth(), 28);
     else
         return new Date(date.getFullYear() + years, date.getMonth(), date.getDate());
 }
 
-const cropDate = (year: number, month: number, day: number): Date =>{
+const cropDate = (year: number, month: number, day: number): Date => {
     const daysInMonth = getDaysInMonth(year, month);
     return new Date(year, month, Math.min(day, daysInMonth));
 }
@@ -166,13 +166,11 @@ const getDaysInMonth = (year: number, month: number): number => {
 const formatPeriodString = (currentDate: Date, timeUnit: string): string => {
     if (timeUnit === 'day') {
         return formatDayMonth(currentDate);
-    }
-    else if (timeUnit === 'week') {
+    } else if (timeUnit === 'week') {
         const firstDay = getFirstDayOfWeek(currentDate);
         const lastDay = getLastDayOfWeek(currentDate);
         return `${formatDayMonth(firstDay)} - ${formatDayMonth(lastDay)}`;
-    }
-    else {
+    } else {
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const month = months[currentDate.getMonth()];
         const year = currentDate.getFullYear();
@@ -184,8 +182,7 @@ const dayDifference = (date1: Date, date2: Date): number => {
     const oneDay = 24 * 60 * 60 * 1000; // Number of milliseconds in a day
     const time1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()).getTime();
     const time2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate()).getTime();
-    const diffDays = Math.round(Math.abs((time1 - time2) / oneDay));
-    return diffDays;
+    return Math.round(Math.abs((time1 - time2) / oneDay));
 }
 
 const monthDifference = (endDate: Date, startDate: Date): number => {
@@ -210,37 +207,40 @@ const formatTime = (date: Date): string => {
 }
 
 const convertToTimezone = (date: Date, timezone: string): Date => {
-    const pad = (num: any) => num.toString().padStart(2, '0');
+    const pad = (num: number) => num.toString().padStart(2, '0');
 
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1); // Months are zero-based
     const day = pad(date.getDate());
     const hours = pad(date.getHours());
     const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
 
-    const str = `${year}-${month}-${day} ${hours}:${minutes}`;
+    const str = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     return new Date(moment.tz(str, timezone).format());
 }
 
 const makeTimezoneLocal = (date: Date, timezone: string): Date => {
-    const pad = (num: any) => num.toString().padStart(2, '0');
+    const pad = (num: number) => num.toString().padStart(2, '0');
 
     const year = date.getUTCFullYear();
     const month = pad(date.getUTCMonth() + 1); // Months are zero-based
     const day = pad(date.getUTCDate());
     const hours = pad(date.getUTCHours());
     const minutes = pad(date.getUTCMinutes());
+    const seconds = pad(date.getUTCSeconds());
 
-    const str = `${year}-${month}-${day} ${hours}:${minutes}`;
+    const str = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     const formatted = moment.utc(str).tz(timezone).format();
+
     const parts = formatted.split('T');
     const dateStr = parts[0];
     const hStr = parts[1].split(':')[0];
     const mStr = parts[1].split(':')[1];
 
-    return new Date(dateStr + 'T' + hStr + ':' + mStr + ':00');
+    return new Date(dateStr + 'T' + hStr + ':' + mStr + ':' + seconds);
 }
 
 export default {
