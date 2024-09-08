@@ -1,6 +1,11 @@
 import {getStatusFromActivity} from './utilities.js'
 
 class GanttComponent extends HTMLElement {
+    SECOND = 1000;
+    MINUTE = 60 * this.SECOND;
+    HOUR = 60 * this.MINUTE;
+    DAY = 24 * this.HOUR;
+
     constructor() {
         super();
         this._project = {};
@@ -12,13 +17,6 @@ class GanttComponent extends HTMLElement {
         this._timeslice = {start: null, end: null};
 
         this.INFO_COLS = 6;
-    }
-
-    connectedCallback() {
-        this.attachShadow({ mode: "open" });
-
-        this.shadowRoot.appendChild(this.myStyle);
-        this.shadowRoot.appendChild(this.content);
     }
 
     set project([project, now]) {
@@ -43,6 +41,12 @@ class GanttComponent extends HTMLElement {
         }
     }
 
+    connectedCallback() {
+        this.attachShadow({mode: "open"});
+
+        this.shadowRoot.appendChild(this.myStyle);
+        this.shadowRoot.appendChild(this.content);
+    }
 
     render() {
         this._row = 1;
@@ -143,11 +147,11 @@ class GanttComponent extends HTMLElement {
             for (const activity of phase.activities) {
                 if (!activity.isMilestone) {
                     if (['NotStarted', 'Started', 'Rejected'].includes(activity.status)) { // is affected by time translation
-                        if (activity.activity.deadline.getTime() < now.getTime()) {
+                        if (new Date(activity.activity.deadline).getTime() < now.getTime()) {
                             if (now.getTime() > this._timeslice.end.getTime()) {
                                 this._timeslice.end = now;
                             }
-                            const increment = now.getTime() - activity.activity.deadline.getTime();
+                            const increment = now.getTime() - new Date(activity.activity.deadline).getTime();
                             activity.activity.deadline = now;
 
                             this.adjustActivityDeadLineRecursive(activity, phase.activities, increment);
@@ -177,11 +181,6 @@ class GanttComponent extends HTMLElement {
         }
     }
 
-
-    SECOND = 1000;
-    MINUTE = 60 * this.SECOND;
-    HOUR = 60 * this.MINUTE;
-    DAY = 24 * this.HOUR;
     dayDiff(d1, d2) {
         return Math.ceil((d2 - d1) / this.DAY);
     }
@@ -261,14 +260,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = 1; i <= numOfCol; i++) {
             if (dateCol.getFullYear() !== year) {
-                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear())? 'background-color: #34d399;' : ''}">${year}</div>`;
+                years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(year === this._now.getFullYear()) ? 'background-color: dodgerblue;' : ''}">${year}</div>`;
                 year = dateCol.getFullYear();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol) {
-            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(year === this._now.getFullYear())? 'background-color: #34d399;' : ''}">${timeSlice.end.getFullYear()}</div>`;
+            years += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(year === this._now.getFullYear()) ? 'background-color: dodgerblue;' : ''}">${timeSlice.end.getFullYear()}</div>`;
         }
         return years;
     }
@@ -284,14 +283,14 @@ class GanttComponent extends HTMLElement {
 
         for (let i = 1; i <= numOfCol; i++) {
             if (dateCol.getMonth() !== month) {
-                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: #059669;' : ''}">${this.numToMonth(month)}</div>`;
+                months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${i - savedI}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth()) ? 'background-color: dodgerblue;' : ''}">${this.numToMonth(month)}</div>`;
                 month = dateCol.getMonth();
                 savedI = i;
             }
             dateCol = this.nextDay(dateCol);
         }
         if (savedI < numOfCol) {
-            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth())? 'background-color: #059669;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
+            months += `<div class="head" style="grid-row: ${this._row}; grid-column: ${savedI} / span ${numOfCol - savedI + 1}; ${(dateCol.getFullYear() === this._now.getFullYear() && month === this._now.getMonth()) ? 'background-color: dodgerblue;' : ''}">${this.numToMonth(timeSlice.end.getMonth())}</div>`;
         }
         return months;
     }
@@ -336,7 +335,7 @@ class GanttComponent extends HTMLElement {
         let dateCol = timeSlice.start;
         let days = '';
         for (let i = 1; i <= numOfCol; i++) {
-            days += `<div class="head" style="grid-row: ${this._row}; grid-column: ${i}; ${(dateCol.toLocaleDateString() === this._now.toLocaleDateString())? 'background-color: yellow; color: black' : ''}"><span class="day">${dateCol.getDate()}</span></div>`;
+            days += `<div class="head" style="grid-row: ${this._row}; grid-column: ${i}; ${(dateCol.toLocaleDateString() === this._now.toLocaleDateString()) ? 'background-color: yellow; color: black' : ''}"><span class="day">${dateCol.getDate()}</span></div>`;
             dateCol = this.nextDay(dateCol);
         }
         return days;
@@ -394,18 +393,16 @@ class GanttComponent extends HTMLElement {
         let startDate;
         if (activity.linkedActivityId) {
             startDate = prevActivity.activity.deadline;
-        }
-        else if (activity.activity.start.getTime() !== Date.parse("Thu Jan 01 1970 01:00:00 GMT+0100")) {
+        } else if (new Date(activity.activity.start).getTime() !== Date.parse("Thu Jan 01 1970 01:00:00 GMT+0100")) {
             startDate = activity.activity.start;
-        }
-        else {
+        } else {
             startDate = this._timeslice.start;
         }
 
         let endDate = activity.activity.deadline;
 
 
-        return [startDate, endDate];
+        return [new Date(startDate), new Date(endDate)];
     }
 
     getPrevActivity(activity, activities) {
@@ -424,7 +421,7 @@ class GanttComponent extends HTMLElement {
     }
 
     renderActivity(activity, startDate, endDate) {
-        const oldEndDate = this.getActivitybyId(activity.activity._id, this._untoachedProject).activity.deadline;
+        const oldEndDate = new Date(this.getActivitybyId(activity.activity._id, this._untoachedProject).activity.deadline);
         this._row++;
 
         let [, rspannum] = this.getStartColSpanNum(startDate, endDate);
@@ -462,12 +459,12 @@ class GanttComponent extends HTMLElement {
         }
 
         const infoHtml = `
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.activity.title}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.activity.participants.map((obj) => obj.username)}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${rspannum}</div>
-        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone)? 'color: red;' : ''}">${activity.newStatus}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 1 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${activity.activity.title}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 2 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${activity.activity.participants.map((obj) => obj.username)}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 3 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${startDate.toLocaleDateString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 4 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${endDate.toLocaleDateString()}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 5 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${rspannum}</div>
+        <div class="activity-info" style="grid-row: ${this._row}; grid-column: 6 / span 1; ${(activity.isMilestone) ? 'color: red;' : ''}">${activity.newStatus}</div>
         `;
         let activityHtml = '';
 
@@ -484,8 +481,7 @@ class GanttComponent extends HTMLElement {
                 [startCol, spanNum] = this.getStartColSpanNum(startDate, endDate);
                 activityHtml += `<div class="" style="${colorStyle}; border: white 3px dashed; grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
             }
-        }
-        else {
+        } else {
             let [startCol, spanNum] = this.getStartColSpanNum(startDate, endDate);
             activityHtml += `<div class="" style="${colorStyle} grid-row: ${this._row}; grid-column: ${startCol} / span ${spanNum}"></div>`;
         }

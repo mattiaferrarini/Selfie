@@ -181,7 +181,7 @@ export const modifyStatus = async (req: any, res: any) => {
             // update project
             phaseActivity.status = status;
             phaseActivity.output = output;
-            if (phaseActivity.linkedActivityId == "")
+            if (!phaseActivity.linkedActivityId)
                 phaseActivity.input = input;
             await project.save();
             res.status(200).send(await formatProject(project));
