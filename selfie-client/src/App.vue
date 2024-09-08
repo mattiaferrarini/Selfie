@@ -46,7 +46,7 @@
               <v-icon class="h-full w-full" name="md-timer-sharp"/>
             </div>
           </router-link>
-          <a class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl" href="/progetti.html">
+          <a class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl" href="/projects.html">
             <span class="hidden sm:block">Projects</span>
             <div class="block sm:hidden h-7 w-7">
               <v-icon class="h-full w-full" name="bi-calendar2-range"/>
