@@ -10,12 +10,15 @@ const getEndOfDay = (date: Date): Date => {
     return endOfDay;
 }
 
-const dayDifference = (date1: Date, date2: Date): number => {
+const dayDifference = (date1: Date, date2: Date, roundUp: boolean = false): number => {
     const oneDay = 24 * 60 * 60 * 1000; // Number of milliseconds in a day
     const time1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()).getTime();
     const time2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate()).getTime();
-    const diffDays = Math.round(Math.abs((time1 - time2) / oneDay));
-    return diffDays;
+
+    if (roundUp)
+        return Math.ceil(Math.abs((time1 - time2) / oneDay));
+    else
+        return Math.round(Math.abs((time1 - time2) / oneDay));
 }
 
 const monthDifference = (endDate: Date, startDate: Date): number => {
@@ -29,6 +32,10 @@ const monthDifference = (endDate: Date, startDate: Date): number => {
 
 const yearDifference = (endDate: Date, startDate: Date): number => {
     return endDate.getFullYear() - startDate.getFullYear();
+}
+
+const moveAheadByMinutes = (date: Date, minutes: number): Date => {
+    return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
 const moveAheadByHours = (date: Date, hours: number): Date => {
@@ -48,13 +55,13 @@ const moveAheadByMonths = (date: Date, months: number): Date => {
 }
 
 const moveAheadByYears = (date: Date, years: number): Date => {
-    if(date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
+    if (date.getMonth() === 1 && date.getDate() === 29 && getDaysInMonth(date.getFullYear() + years, 1) === 28)
         return new Date(date.getFullYear() + years, date.getMonth(), 28);
     else
         return new Date(date.getFullYear() + years, date.getMonth(), date.getDate());
 }
 
-const cropDate = (year: number, month: number, day: number): Date =>{
+const cropDate = (year: number, month: number, day: number): Date => {
     const daysInMonth = getDaysInMonth(year, month);
     return new Date(year, month, Math.min(day, daysInMonth));
 }
@@ -71,16 +78,22 @@ const inRange = (date: Date, start: Date, end: Date): boolean => {
     return date >= getStartOfDay(start) && date <= getEndOfDay(end);
 }
 
+const sameDay = (date1: Date, date2: Date): boolean => {
+    return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+}
+
 export default {
     getStartOfDay,
     getEndOfDay,
     dayDifference,
     monthDifference,
     yearDifference,
+    moveAheadByMinutes,
     moveAheadByHours,
     moveAheadByDays,
     moveAheadByMonths,
     moveAheadByYears,
     overlap,
-    inRange
+    inRange,
+    sameDay
 };

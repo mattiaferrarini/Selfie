@@ -6,29 +6,25 @@ const subscribe = async () => {
     try {
         let registration = await navigator.serviceWorker.getRegistration();
         if (!registration) {
-            console.log("Registering service worker...");
             registration = await navigator.serviceWorker.register("/sw.js", {
                 scope: "/",
             });
-            console.log("Service Worker Registered...");
+
+            await navigator.serviceWorker.ready;
         }
 
         let subscription = await registration.pushManager.getSubscription();
         if (!subscription) {
-            console.log("Registering Push...");
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(process.env.VUE_PUBLIC_VAPID_KEY || ''),
+                applicationServerKey: urlBase64ToUint8Array(process.env.VUE_APP_PUBLIC_VAPID_KEY || ''),
             });
-            console.log("Push Registered...");
         }
 
-        console.log("Sending Push...");
-        const response = await axios.post(`${API_URL}/subscribe`, subscription, { withCredentials: true });
-        console.log("Push Sent...");
+        const response = await axios.post(`${API_URL}/subscribe`, subscription, {withCredentials: true});
         return response.data;
     } catch (error: any) {
-        throw error.response.data;
+        console.log(error);
     }
 };
 
@@ -37,7 +33,7 @@ const unsubscribe = async () => {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
         await registration?.unregister();
-        const response = await axios.post(`${API_URL}/unsubscribe`, { endpoint: subscription?.endpoint }, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/unsubscribe`, {endpoint: subscription?.endpoint}, {withCredentials: true});
         return response.data;
     } catch (error: any) {
         throw error.response.data;

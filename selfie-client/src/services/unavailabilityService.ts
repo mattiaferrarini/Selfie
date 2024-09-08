@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { Unavailability } from '@/models/Unavailability';
-import { CalendarEvent } from '@/models/Event';
+import {Unavailability} from '@/models/Unavailability';
+import {CalendarEvent} from '@/models/Event';
 
-const API_URL = process.env.VUE_APP_API_URL + '/unavailability'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/unavailability';
 
 const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {
@@ -11,19 +11,17 @@ const getUnavailabilitiesByUser = async (username: string, start?: Date, end?: D
             url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
         }
         const response = await axios.get(url, { withCredentials: true });
-        const transformedData = response.data.map((unavailability: any) => formatUnavailability(unavailability));
-        return transformedData;
+        return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
 
 const getOverlappingUnavailabilities = async (username: string, event: CalendarEvent) => {
     try {
-        const response = await axios.post(`${API_URL}/overlap/${username}`, event, { withCredentials: true });
-        const transformedData = response.data.map((unavailability: any) => formatUnavailability(unavailability));
-        return transformedData;
+        const url = `${API_URL}/user/${username}?start=${event.start.toISOString()}&end=${event.end.toISOString()}&frequency=${event.repetition.frequency}&until=${event.repetition.until}&numberOfRepetitions=${event.repetition.numberOfRepetitions}&endDate=${event.repetition.endDate.toISOString()}`;
+        const response = await axios.get(url, { withCredentials: true });
+        return response.data.map((unavailability: any) => formatUnavailability(unavailability));
     } catch (error: any) {
         throw error.response.data;
     }
@@ -31,7 +29,7 @@ const getOverlappingUnavailabilities = async (username: string, event: CalendarE
 
 const addUnavailability = async (unavailability: Unavailability) => {
     try {
-        const response = await axios.post(`${API_URL}`, unavailability, { withCredentials: true });
+        const response = await axios.put(`${API_URL}`, unavailability, { withCredentials: true });
         return formatUnavailability(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -40,7 +38,7 @@ const addUnavailability = async (unavailability: Unavailability) => {
 
 const modifyUnavailability = async (unavailability: Unavailability) => {
     try {
-        const response = await axios.put(`${API_URL}/${unavailability.id}`, unavailability, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/${unavailability.id}`, unavailability, { withCredentials: true });
         return formatUnavailability(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -73,4 +71,4 @@ export default {
     modifyUnavailability,
     deleteUnavailability,
     getOverlappingUnavailabilities
-};
+}

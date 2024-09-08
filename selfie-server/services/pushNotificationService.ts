@@ -1,6 +1,7 @@
-import PushNotifications, { Settings } from "node-pushnotifications";
+import PushNotifications, {Settings} from "node-pushnotifications";
 import dotenv from "dotenv";
-dotenv.config({ path: './.env.local' });
+
+dotenv.config({path: './.env.local'});
 
 class PushNotificationService {
     private pushService: PushNotifications;
@@ -25,13 +26,7 @@ class PushNotificationService {
     }
 
     public sendNotification(subscription: any, payload: any): void {
-        this.pushService.send(subscription, payload, (err: any, result: any) => {
-            if (err) {
-                console.error(err);
-            } else {
-                console.log(result);
-            }
-        });
+        this.pushService.send(subscription, payload);
     }
 }
 

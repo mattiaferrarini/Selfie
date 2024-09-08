@@ -3,7 +3,7 @@ import { Activity } from '@/models/Activity';
 import eventService from './eventService';
 import timeService from './timeService';
 
-const API_URL = process.env.VUE_APP_API_URL + '/activity'; // Change this URL to match your backend API
+const API_URL = process.env.VUE_APP_API_URL + '/activity';
 
 const getActivitiesByUser = async (username: string, start?: Date, end?: Date) => {
     try {
@@ -14,7 +14,6 @@ const getActivitiesByUser = async (username: string, start?: Date, end?: Date) =
         const response = await axios.get(url, { withCredentials: true });
         return response.data.map((activity: any) => formatActivity(activity));
     } catch (error: any) {
-        console.log(error);
         throw error.response.data;
     }
 }
@@ -33,13 +32,13 @@ const getActivityById = async (id: string) => {
         const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
-        throw error.response.data;
+        return null;
     }
 }
 
 const addActivity = async (activity: Activity) => {
     try {
-        const response = await axios.post(`${API_URL}`, activity, { withCredentials: true });
+        const response = await axios.put(`${API_URL}`, activity, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -48,7 +47,7 @@ const addActivity = async (activity: Activity) => {
 
 const modifyActivity = async (activity: Partial<Activity>) => {
     try {
-        const response = await axios.put(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/${activity.id}`, activity, { withCredentials: true });
         return formatActivity(response.data);
     } catch (error: any) {
         throw error.response.data;
@@ -66,7 +65,8 @@ const deleteActivity = async (activity: Activity) => {
 const formatActivity = (activity: any) => {
     return {
         ...activity,
-        deadline: new Date(activity.deadline)
+        deadline: new Date(activity.deadline),
+        start: activity.start ? new Date(activity.start) : undefined,
     }
 }
 
@@ -80,6 +80,15 @@ const convertICalendarToActivity = async (icalStr: string) : Promise<Activity> =
     return activity;
 }
 
+const removeParticipantFromActivity = async (activity: Activity, username: string) => {
+    try {
+        await axios.post(`${API_URL}/removeParticipant/${activity.id}`, {}, { withCredentials: true });
+    }
+    catch (error: any) {
+        return;
+    }
+}
+
 export default {
     getActivitiesByUser,
     getPomodoroStats,
@@ -87,5 +96,6 @@ export default {
     addActivity,
     modifyActivity,
     deleteActivity,
-    convertICalendarToActivity
+    convertICalendarToActivity,
+    removeParticipantFromActivity
 }

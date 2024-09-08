@@ -1,5 +1,8 @@
-import Resource from "../models/Resource";
-import User from "../models/User";
+import Resource, { IResource } from "../models/Resource";
+import { getUserByUsername } from "./userController";
+import timeService from "../services/timeService";
+import { getEventsByUserAndDate } from "./eventController";
+import notificationController from "./notificationController";
 
 const formatResource = (resource: any) => {
     return {
@@ -36,10 +39,7 @@ export const getResource = async (req: any, res: any) => {
 export const addResource = async (req: any, res: any) => {
     const name = req.body.name, username = req.body.username;
 
-    const resMatch = await Resource.findOne({ username });
-    const userMatch = await User.findOne({ username });
-
-    if (resMatch || userMatch)
+    if (await Resource.findOne({ username }) || await getUserByUsername(username))
         res.status(409).send({ error: 'The username is already taken.' });
     else {
         const newResource = new Resource({ name: name, username: username });
@@ -57,17 +57,56 @@ export const addResource = async (req: any, res: any) => {
 export const deleteResource = async (req: any, res: any) => {
     const { id } = req.params;
     try {
-        await Resource.findByIdAndDelete(id);
+        const resource = await Resource.findById(id);
+
+        if (resource) {
+            await Resource.findByIdAndDelete(id);
+            await notifyOfDeletion(resource);
+        }
+
         res.status(204).send();
     } catch (error) {
         res.status(404).send({ error: "Resource doesn't exist!" });
     }
 }
 
+const notifyOfDeletion = async (Resource: IResource) => {
+    const username = Resource.username;
+    const now = new Date();
+    const farFuture = timeService.moveAheadByYears(now, 1);
+
+    // get future events that the resource is part of
+    const events = await getEventsByUserAndDate(username, now, farFuture);
+
+    events.forEach(async (event: any) => {
+        // remove the resource from the event
+        event.participants = event.participants.filter((participant: any) => participant.username !== username);
+        await event.save();
+
+        // send notification to all participants
+        const title = `Resource ${Resource.name} has been deleted`;
+        const body = `The resource ${Resource.name} has been deleted and won't be available for ${event.title} anymore.`;
+
+        event.participants.forEach(async (participant: any) => {
+            if (participant.status === "accepted") {
+                const user = await getUserByUsername(participant.username);
+                if (user)
+                    notificationController.sendNotification(user, { title, body });
+            }
+        });
+    });
+}
+
 export const isResource = async (username: string) => {
     const resource = await Resource.findOne({ username });
-    if (resource) 
-        return true;
-    else
-        return false;
+    return !!resource;
+}
+
+export const getResourcesByUsername = async (username: string) => {
+    try{
+        return await Resource.findOne({ username });
+    }
+    catch{
+        return null;
+    }
 }

@@ -1,11 +1,17 @@
 import User from "../models/User";
 import passport from "passport";
+import {getResourcesByUsername} from "./resourceController";
+import {getUserByUsername} from "./userController";
+
 
 const default_preferences = {
     home: {
         calendarWeekly: false,
-        notesDescription: false,
-        pomodoroType: "stats"
+        calendarContent: "all",
+        notesCategory: false,
+        noteNumber: 5,
+        pomodoroType: "stats",
+        onlyAssigned: false
     },
     notificationType: "email",
     notes: {},
@@ -19,18 +25,30 @@ const default_preferences = {
 export const register = async (req: any, res: any, next: any) => {
     const {username, realName, email, password, birthday} = req.body;
     try {
-        const newUser = new User({username, realName, email, password, birthday, preferences: default_preferences});
-        await newUser.save();
-        passport.authenticate('local')(req, res, next);
-        // TODO: handling di campi duplicati (se vogliamo distinguere), eventi annessi (compleanno)
+        if (await getResourcesByUsername(username) || await getUserByUsername(username)) {
+            res.status(400).send('Username not available');
+            return;
+        } else {
+            const newUser = new User({username, realName, email, password, birthday, preferences: default_preferences});
+            await newUser.save();
+            passport.authenticate('local')(req, res, next);
+        }
     } catch (err) {
-        console.log(err)
         res.status(400).send('Error registering user');
     }
 }
 
 export const login = (req: any, res: any) => {
-    res.json({user: {"username": req.user.username, "realName": req.user.realName, isAdmin: req.user.isAdmin, email:req.user.email,  birthday: req.user.birthday, "preferences": req.user.preferences}});
+    res.json({
+        user: {
+            "username": req.user.username,
+            "realName": req.user.realName,
+            isAdmin: req.user.isAdmin,
+            email: req.user.email,
+            birthday: req.user.birthday,
+            "preferences": req.user.preferences
+        }
+    });
 };
 
 export const logout = (req: any, res: any, next: any) => {
@@ -43,8 +61,7 @@ export const logout = (req: any, res: any, next: any) => {
                 return next(err);
             }
             res.clearCookie('connect.sid');
-
-            // TODO: close websocket connections?
+            res.status(200).send('Logged out');
         });
     });
 };

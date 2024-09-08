@@ -2,7 +2,10 @@ import { model, Schema, Document } from 'mongoose';
 
 export interface IActivity extends Document{
     title: string;
+    owners: string[];
     done: boolean;
+    start?: Date;
+    projectId?: string;
     deadline: Date;
     notification: {
         method: string[];
@@ -16,8 +19,12 @@ export interface IActivity extends Document{
     }[];
     subActivitiesIDs: string[];
     pomodoro?: {
-        cycles: number;
-        completedCycles: number;
+        options: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
+        completedCycles: Map<string, number>
     };
 }
 
@@ -26,9 +33,19 @@ const ActivitySchema = new Schema({
         type: String,
         required: true
     },
+    owners: {
+        type: [String],
+        required: false
+    },
     done: {
         type: Boolean,
-        required: true
+        required: false
+    },
+    start: {
+        type: Date
+    },
+    projectId: {
+        type: String,
     },
     deadline: {
         type: Date,
@@ -37,11 +54,13 @@ const ActivitySchema = new Schema({
     notification: {
         method: {
             type: [String],
-            required: true
+            required: true,
+            default: [],
+            enum: ['push', 'email']
         },
         when: {
             type: String,
-            required: true
+            required: false,
         },
         repeat: {
             type: String,
@@ -67,16 +86,31 @@ const ActivitySchema = new Schema({
     },
     subActivitiesIDs: {
         type: [String],
-        required: true
+        required: false
     },
     pomodoro: {
         type: {
-            cycles: {
-                type: Number,
+            options: {
+                type: {
+                    workDuration: {
+                        type: Number,
+                        required: true
+                    },
+                    pauseDuration: {
+                        type: Number,
+                        required: true
+                    },
+                    numberOfCycles: {
+                        type: Number,
+                        required: true
+                    }
+                },
                 required: true
             },
             completedCycles: {
-                type: Number,
+                type: Map,
+                of: Number,
+                default: 0,
                 required: true
             },
         },

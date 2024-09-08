@@ -1,24 +1,18 @@
-/*
-text content
-title 
-category
-creation date
-last modified date 
-can view user list
-can modified user list
-list item ??
-*/
-
-import { model, Schema, Document } from 'mongoose'
+import {Document, model, Schema} from 'mongoose'
 import User from './User'
 
 export interface INote extends Document {
-    content:    string;
-    title:      string;
+    content: string;
+    title: string;
     creation: Date;
     lastmodify: Date;
-    category:   string;
-    owners:     string[];
+    category: string;
+    owners: string[];
+    todoList: {
+        title: string;
+        done: boolean;
+        activityID?: string;
+    }[];
 }
 
 const NoteSchema: Schema = new Schema<INote>({
@@ -48,7 +42,7 @@ const NoteSchema: Schema = new Schema<INote>({
         validate: {
             validator: (v: string[]) => {
                 for (const username in v) {
-                    const user = User.findOne({ username: username })
+                    const user = User.findOne({username: username})
                     if (!user) {
                         return false
                     }
@@ -56,8 +50,25 @@ const NoteSchema: Schema = new Schema<INote>({
             },
             message: 'at least one user is not valid'
         }
+    },
+    todoList: {
+        type: [{
+            title: {
+                type: String,
+                required: true
+            },
+            done: {
+                type: Boolean,
+                required: true
+            },
+            activityID: {
+                type: String,
+                required: false
+            }
+        }],
+        required: false
     }
 });
 
-
-export default model('Note', NoteSchema);
+const Note = model<INote>('Note', NoteSchema);
+export default Note;

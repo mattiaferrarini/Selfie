@@ -2,16 +2,16 @@
     <div class="invite-list">
         <ul>
             <li v-for="(invInf, index) in inviteInfos" :key="index" class="mb-3">
-                <div class="p-2 rounded-lg bg-slate-100">
+                <div class="p-2 rounded-lg bg-slate-200">
                     <div>
-                        <h3 class="font-semibold mb-2">{{ inviteInfos[index].title }}</h3>
+                        <h3 class="font-semibold mb-2 text-gray-700">{{ inviteInfos[index].title }}</h3>
                         <div v-html="formattedDescription(inviteInfos[index].description)"></div>
                     </div>
-                    <div class="flex gap-x-1 mt-4">
-                        <button @click="declineInvite(invInf.invite)" class="flex-1 bg-red-500 action-button">Decline</button>
+                    <div class="flex gap-x-1 mt-4 mb-1">
+                        <button @click="declineInvite(invInf.invite)" class="flex-1 bg-red-600 action-button">Decline</button>
                         <button @click="postponeInvite(invInf.invite)"
                             class="flex-1 bg-gray-400 action-button">Postpone</button>
-                        <button @click="acceptInvite(invInf.invite)" class="flex-1 bg-green-600 action-button">Accept</button>
+                        <button @click="acceptInvite(invInf.invite)" class="flex-1 bg-emerald-600 action-button">Accept</button>
                     </div>
                 </div>
             </li>
@@ -48,17 +48,18 @@ export default defineComponent({
     },
     watch: {
         username: {
-            handler: 'onUsernameChange',
+            handler: 'fetchInviteInfos',
+            immediate: true
+        },
+        currentDate: {
+            handler: 'fetchInviteInfos',
             immediate: true
         }
     },
-    emits: ['no-invites'],
+    emits: ['no-invites', 'accept-invite', 'decline-invite', 'postpone-invite'],
     methods: {
         formattedDescription(description: string) :string {
         return description.replace(/\n/g, '<br>');
-        },
-        onUsernameChange() {
-            this.fetchInviteInfos();
         },
         async fetchInviteInfos() {
             try {
@@ -68,31 +69,35 @@ export default defineComponent({
                 for (let invite of invites) {
                     if (invite.eventId) {
                         const event = await eventService.getEventById(invite.eventId)
-                        newInfos.push(this.formatEventInvite(invite, event));
+                        if(event)
+                            newInfos.push(this.formatEventInvite(invite, event));
                     }
                     else if (invite.activityId) {
                         const activity = await activityService.getActivityById(invite.activityId)
-                        newInfos.push(this.formatActivityInvite(invite, activity));
+                        if(activity)
+                            newInfos.push(this.formatActivityInvite(invite, activity));
                     }
                 }
-
                 this.inviteInfos = newInfos;
             }
             catch {
-                console.log('Error fetching invite infos');
+                return;
             }
         },
-        acceptInvite(invite: Invite) {
-            inviteService.acceptInvite(invite);
+        async acceptInvite(invite: Invite) {
+            await inviteService.acceptInvite(invite);
             this.removeInvite(invite);
+            this.$emit('accept-invite', invite);
         },
-        declineInvite(invite: Invite) {
-            inviteService.declineInvite(invite);
+        async declineInvite(invite: Invite) {
+            await inviteService.declineInvite(invite);
             this.removeInvite(invite);
+            this.$emit('decline-invite', invite);
         },
-        postponeInvite(invite: Invite) {
-            inviteService.postponeInvite(invite);
+        async postponeInvite(invite: Invite) {
+            await inviteService.postponeInvite(invite);
             this.removeInvite(invite);
+            this.$emit('postpone-invite', invite);
         },
         removeInvite(invite: Invite) {
             this.inviteInfos = this.inviteInfos.filter(inviteInfo => inviteInfo.invite.id !== invite.id);
@@ -142,7 +147,7 @@ export default defineComponent({
 <style scoped>
 .action-button {
     padding: 0.3rem 0.3rem;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     color: white;
 }
 div {

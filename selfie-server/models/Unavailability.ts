@@ -5,6 +5,7 @@ interface IUnavailability extends Document {
     allDay: boolean;
     start: Date;
     end: Date;
+    timezone: string;
     repetition: {
         frequency: string;
         until: string;
@@ -31,6 +32,11 @@ const UnavailabilitySchema = new Schema({
         type: Date,
         required: true
     },
+    timezone: {
+        type: String,
+        required: true,
+        default: 'UTC'
+    },
     repetition: {
         frequency: {
             type: String,
@@ -55,4 +61,5 @@ const UnavailabilitySchema = new Schema({
     }
 });
 
-export default model<IUnavailability>('Unavailability', UnavailabilitySchema);
+const Unavailability = model<IUnavailability>('Unavailability', UnavailabilitySchema);
+export default Unavailability;

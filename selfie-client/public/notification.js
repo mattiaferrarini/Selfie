@@ -1,4 +1,4 @@
-const publicVapidKey = "BH6-3vcDUAyaI-JYDuT1jTfn7XL3SfcjMHhuU4PSjwZTdy03yCTI66sWcVTLRo65r5JdIu61IzpxAtmmEewG-i4"; // REPLACE_WITH_YOUR_KEY
+const publicVapidKey = "BH6-3vcDUAyaI-JYDuT1jTfn7XL3SfcjMHhuU4PSjwZTdy03yCTI66sWcVTLRo65r5JdIu61IzpxAtmmEewG-i4";
 
 // Check for service worker
 if ("serviceWorker" in navigator) {
@@ -8,25 +8,23 @@ if ("serviceWorker" in navigator) {
 // Register SW, Register Push, Send Push
 async function send() {
     // Register Service Worker
-    console.log("Registering service worker...");
     const register = await navigator.serviceWorker.register("./sw.js", {
         scope: "/",
     });
-    console.log("Service Worker Registered...");
+
+    await navigator.serviceWorker.ready;
 
     // Register Push
-    console.log("Registering Push...");
-    const subscription = await register.pushManager.subscribe({
+    await register.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
     });
-    console.log("Push Registered...");
 }
 
 function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-        .replace(/\-/g, "+")
+        .replace(/-/g, "+")
         .replace(/_/g, "/");
 
     const rawData = window.atob(base64);

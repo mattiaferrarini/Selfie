@@ -25,7 +25,7 @@ const getPendingInvitesByUser = async (username: string, date?: Date) => {
 
 const acceptInvite = async (invite: Invite) => {
     try{
-        await axios.post(`${API_URL}/accept/${invite.id}`, {invite}, { withCredentials: true });
+        await axios.post(`${API_URL}/accepted/${invite.id}`, {invite}, { withCredentials: true });
     }
     catch(error:any){
         throw error.response.data;
@@ -34,7 +34,7 @@ const acceptInvite = async (invite: Invite) => {
 
 const declineInvite = async (invite: Invite) => {
     try{
-        await axios.post(`${API_URL}/decline/${invite.id}`, {invite}, { withCredentials: true });
+        await axios.post(`${API_URL}/declined/${invite.id}`, {invite}, { withCredentials: true });
     }
     catch(error:any){
         throw error.response.data;
@@ -43,7 +43,7 @@ const declineInvite = async (invite: Invite) => {
 
 const postponeInvite = async (invite: Invite) => {
     try{
-        await axios.post(`${API_URL}/postpone/${invite.id}`, {invite}, { withCredentials: true });
+        await axios.post(`${API_URL}/postponed/${invite.id}`, {invite}, { withCredentials: true });
     }
     catch(error:any){
         throw error.response.data;

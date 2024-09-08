@@ -2,7 +2,7 @@
   <div class="max-h-screen h-screen flex sm:flex-row flex-col items-center justify-center bg-emerald-400">
     <div class="sm:h-full relative">
       <div class="aspect-square w-full sm:h-full sm:w-min">
-        <img src="@/assets/sloth_timer.png" alt="A sloth holding a timer in his paws"/>
+        <img alt="A sloth holding a timer in his paws" src="@/assets/sloth_timer.png"/>
         <div
             :class="['absolute top-[54.4%] clock overflow-hidden left-[32.5%] border-4 border-emerald-900 rounded-full bg-emerald-50 w-[23.5%] h-[23.5%]', timing && pauseOrWork == 'Pause'  ? 'animate-timer' : '']">
           <div class="font-bold w-full h-full content-center text-center relative">
@@ -11,83 +11,83 @@
             <p class="text-sm sm:text-2xl relative">{{ pauseOrWork }}</p>
             <div class="sm:text-4xl flex items-center justify-center relative">
               {{ formattedCounter }}
-              <v-icon name="md-modeeditoutline" @click.stop="openEditModal"
-                      class="relative z-20 ml-0.5 sm:ml-1 w-3.5 h-3.5 sm:w-7 sm:h-7 cursor-pointer"/>
+              <v-icon class="relative z-20 ml-0.5 sm:ml-1 w-3.5 h-3.5 sm:w-7 sm:h-7 cursor-pointer" name="md-modeeditoutline"
+                      @click.stop="openEditModal"/>
             </div>
             <p class="text-sm sm:text-2xl relative">{{ formattedCycle }}</p>
           </div>
         </div>
         <div class="sm:flex absolute gap-[4%] justify-center bottom-[2%] w-full hidden">
           <div
-              @click.stop="toggleYoutubeModal"
-              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-            <v-icon name="md-queuemusic" class="w-full h-full"/>
+              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+              @click.stop="toggleYoutubeModal">
+            <v-icon class="w-full h-full" name="md-queuemusic"/>
           </div>
           <div
-              @click.stop="toggleModal"
-              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-            <v-icon name="md-modeeditoutline" class="w-full h-full p-0.5"/>
+              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+              @click.stop="toggleModal">
+            <v-icon class="w-full h-full p-0.5" name="md-modeeditoutline"/>
           </div>
           <div
-              @click="playOrPause"
-              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-            <v-icon v-if="timing" name="md-pause-round" class="w-full h-full"/>
-            <v-icon v-else name="md-playarrow-outlined" class="w-full h-full"/>
+              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+              @click="playOrPause">
+            <v-icon v-if="timing" class="w-full h-full" name="md-pause-round"/>
+            <v-icon v-else class="w-full h-full" name="md-playarrow-outlined"/>
           </div>
           <div
-              @click="skipCycle"
-              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-            <v-icon name="md-skipnext" class="w-full h-full"/>
+              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+              @click="skipCycle">
+            <v-icon class="w-full h-full" name="md-skipnext"/>
           </div>
           <div
-              @click="restartCycle"
-              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-            <v-icon name="md-restartalt" class="w-full h-full"/>
+              class="border-2 flex border-emerald-900 rounded-full p-1 w-1/12 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+              @click="restartCycle">
+            <v-icon class="w-full h-full" name="md-restartalt"/>
           </div>
         </div>
       </div>
     </div>
     <div class="flex justify-center gap-[4%] pt-12 w-full sm:hidden px-1">
       <div
-          @click.stop="toggleYoutubeModal"
-          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-        <v-icon name="md-queuemusic" class="w-full h-full"/>
+          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+          @click.stop="toggleYoutubeModal">
+        <v-icon class="w-full h-full" name="md-queuemusic"/>
       </div>
       <div
-          @click.stop="toggleModal"
-          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-        <v-icon name="md-modeeditoutline" class="w-full h-full p-0.5"/>
+          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+          @click.stop="toggleModal">
+        <v-icon class="w-full h-full p-0.5" name="md-modeeditoutline"/>
       </div>
       <div
-          @click="playOrPause"
-          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-        <v-icon v-if="timing" name="md-pause-round" class="w-full h-full"/>
-        <v-icon v-else name="md-playarrow-outlined" class="w-full h-full"/>
+          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+          @click="playOrPause">
+        <v-icon v-if="timing" class="w-full h-full" name="md-pause-round"/>
+        <v-icon v-else class="w-full h-full" name="md-playarrow-outlined"/>
       </div>
       <div
-          @click="skipCycle"
-          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square">
-        <v-icon name="md-skipnext" class="w-full h-full"/>
+          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 hover:text-emerald-50 aspect-square"
+          @click="skipCycle">
+        <v-icon class="w-full h-full" name="md-skipnext"/>
       </div>
       <div
-          @click="restartCycle"
-          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 aspect-square">
-        <v-icon name="md-restartalt" class="w-full h-full"/>
+          class="border-2 flex border-emerald-900 rounded-full p-1 w-1/6 bg-emerald-200 hover:bg-emerald-700 aspect-square"
+          @click="restartCycle">
+        <v-icon class="w-full h-full" name="md-restartalt"/>
       </div>
     </div>
     <div v-click-outside="closeYoutubeModal"
          :class="['fixed top-[15%] h-min p-2 w-min mx-auto sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white', showYoutubeModal ? '' : 'hidden']">
-      <button @click="closeYoutubeModal"
-              class="absolute top-1 right-1 text-red-500 rounded-full hover:bg-red-300">
-        <v-icon name="md-close" class="w-5 h-5"/>
+      <button class="absolute top-1 right-1 text-red-500 rounded-full hover:bg-red-300"
+              @click="closeYoutubeModal">
+        <v-icon class="w-5 h-5" name="md-close"/>
       </button>
       <iframe :src="videoUrl" allow="autoplay; encrypted-media" allowfullscreen
               class="w-full h-auto mb-2 bg-green-100"></iframe>
       <div class="inline-flex w-max items-center">
-        <input type="text" v-model="inputVideoUrl" placeholder="Youtube URL"
-               class="p-2 border border-gray-300 rounded-md">
-        <v-icon @click="setVideo" name="md-playarrow-outlined"
-                class="w-10 ml-0.5 h-10 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"/>
+        <input v-model="inputVideoUrl" class="p-2 border border-gray-300 rounded-md" placeholder="Youtube URL"
+               type="text">
+        <v-icon class="w-10 ml-0.5 h-10 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700" name="md-playarrow-outlined"
+                @click="setVideo"/>
       </div>
     </div>
     <div v-if="showEditModal"
@@ -97,14 +97,14 @@
           class="relative mx-auto p-2 w-fit sm:p-5 border-2 shadow-2xl border-emerald-900 rounded-md bg-white">
         <form class="mt-3 text-center" @submit.stop="saveEditChanges">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Current Time</h3>
-          <label for="setCycleNumber" class="font-semibold">Numero Ciclo</label>
+          <label class="font-semibold" for="setCycleNumber">Numero Ciclo</label>
           <br/>
-          <input type="number" v-model.number="setCycleNumber" min="1" :max="numberOfCycles" id="setCycleNumber"
-                 class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="3">
+          <input id="setCycleNumber" v-model.number="setCycleNumber" :max="numberOfCycles" class="my-2 px-3 py-2 border border-gray-300 rounded-md" min="1"
+                 placeholder="3" type="number">
           <br/>
-          <label for="setWork" class="font-semibold">Lavoro o Pausa</label>
+          <label class="font-semibold" for="setWork">Lavoro o Pausa</label>
           <br/>
-          <select v-model="setWork" class="border rounded" id="setWork">
+          <select id="setWork" v-model="setWork" class="border rounded">
             <option value="true">Lavoro</option>
             <option value="false">Pausa</option>
           </select>
@@ -115,21 +115,21 @@
           </div>
           <br/>
           <div class="inline-flex items-center">
-            <input type="number" v-model.number="setMinutes" min="0"
-                   :max="[setWork == 'true' ? workDuration : pauseDuration]" id="setMinutes"
-                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="23">
+            <input id="setMinutes" v-model.number="setMinutes" :max="[setWork == 'true' ? workDuration : pauseDuration]"
+                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" min="0"
+                   placeholder="23" type="number">
             <span class="text-2xl font-semibold mx-1 pb-1">:</span>
-            <input type="number" v-model.number="setSeconds" min="0"
-                   :max="[setWork == 'true' ? (setMinutes == workDuration ? 0 : 59) : (setMinutes == pauseDuration ? 0 : 59)]"
-                   id="setSeconds"
-                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="59">
+            <input id="setSeconds" v-model.number="setSeconds" :max="[setWork == 'true' ? (setMinutes == workDuration ? 0 : 59) : (setMinutes == pauseDuration ? 0 : 59)]"
+                   class="my-2 px-3 py-2 border border-gray-300 rounded-md"
+                   min="0"
+                   placeholder="59" type="number">
           </div>
           <div class="items-center w-full px-4 py-3">
-            <input type="submit"
-                   class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"
+            <input class="px-3 py-1 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"
+                   type="submit"
                    value="Save"/>
-            <button @click="showEditModal = false"
-                    class="ml-3 px-3 py-1 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
+            <button class="ml-3 px-3 py-1 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300"
+                    @click="showEditModal = false">
               Cancel
             </button>
           </div>
@@ -144,35 +144,35 @@
         <div class="mt-3 text-center">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Timer Settings</h3>
           <div class="mt-2 px-7 py-3">
-            <label for="workDuration" class="font-semibold">Work Duration (minutes)</label>
-            <input type="number" v-model.number="workDuration" @change="calculateNumber" id="workDuration"
-                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Work Duration">
+            <label class="font-semibold" for="workDuration">Work Duration (minutes)</label>
+            <input id="workDuration" v-model.number="workDuration" class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Work Duration"
+                   type="number" @change="calculateNumber">
             <br/>
-            <label for="pauseDuration" class="font-semibold">Pause Duration (minutes)</label>
-            <input type="number" v-model.number="pauseDuration" @change="calculateNumber" id="pauseDuration"
-                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Pause Duration">
+            <label class="font-semibold" for="pauseDuration">Pause Duration (minutes)</label>
+            <input id="pauseDuration" v-model.number="pauseDuration" class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Pause Duration"
+                   type="number" @change="calculateNumber">
             <br/>
-            <label for="numberOfCycles" class="font-semibold">Number of Cycles</label>
-            <input type="number" v-model.number="numberOfCycles" @change=calculateNumber id="numberOfCycles"
-                   class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Number of Cycles">
+            <label class="font-semibold" for="numberOfCycles">Number of Cycles</label>
+            <input id="numberOfCycles" v-model.number="numberOfCycles" class="my-2 px-3 py-2 border border-gray-300 rounded-md" placeholder="Number of Cycles"
+                   type="number" @change=calculateNumber>
             <br/>
-            <label for="numberOfCycles" class="font-semibold">Inserisci Manualmente</label>
+            <label class="font-semibold" for="numberOfCycles">Inserisci Manualmente</label>
             <div class="inline-flex">
-              <input type="number" v-model.number="computedNumber" @change="calculateCycles" id="numberOfCycles"
-                     class="my-2 px-3 w-28 py-2 border border-gray-300 rounded-md" placeholder="Number of Cycles">
-              <select v-model="selectingHours" @change="calculateCycles"
-                      class="my-2 ml-1 px-3 py-2 border border-gray-300 rounded-md">
+              <input id="numberOfCycles" v-model.number="computedNumber" class="my-2 px-3 w-28 py-2 border border-gray-300 rounded-md" placeholder="Number of Cycles"
+                     type="number" @change="calculateCycles">
+              <select v-model="selectingHours" class="my-2 ml-1 px-3 py-2 border border-gray-300 rounded-md"
+                      @change="calculateCycles">
                 <option value="true">Ore</option>
                 <option value="false">Minuti</option>
               </select>
             </div>
           </div>
           <div class="items-center px-4 py-3">
-            <button @click="saveChanges"
-                    class="px-4 py-2 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700">Save
+            <button class="px-4 py-2 bg-green-500 border border-emerald-800 text-white rounded hover:bg-green-700"
+                    @click="saveChanges">Save
             </button>
-            <button @click="toggleModal"
-                    class="ml-3 px-4 py-2 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300">
+            <button class="ml-3 px-4 py-2 bg-gray-200 text-gray-900 border border-emerald-800 rounded hover:bg-gray-300"
+                    @click="toggleModal">
               Cancel
             </button>
           </div>
@@ -183,15 +183,17 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, watch} from 'vue';
 import {useAuthStore} from "@/stores/authStore";
 import profileService from "@/services/profileService";
 import router from "@/router";
 import activityService from "@/services/activityService";
+import {useDateStore} from "@/stores/dateStore";
 
 export default defineComponent({
   data() {
     return {
+      username: useAuthStore().user.username,
       timing: false,
       showModal: false,
       showYoutubeModal: false,
@@ -214,27 +216,52 @@ export default defineComponent({
   },
   created() {
     const pomodoroPreferences = useAuthStore().user.preferences.pomodoro;
-    if (pomodoroPreferences) {
+    if (router.currentRoute.value.params.activityId) {
+      this.activityId = router.currentRoute.value.params.activityId as string;
+      activityService.getActivityById(this.activityId).then((activity) => {
+        this.workDuration = activity.pomodoro.options.workDuration;
+        this.pauseDuration = activity.pomodoro.options.pauseDuration;
+        this.numberOfCycles = activity.pomodoro.options.numberOfCycles;
+        this.counter = (activity.pomodoro.options.numberOfCycles - activity.pomodoro.completedCycles[this.username]) * 60 * (this.workDuration + this.pauseDuration)
+      });
+    } else if (pomodoroPreferences) {
       this.workDuration = pomodoroPreferences.workDuration;
       this.pauseDuration = pomodoroPreferences.pauseDuration;
       this.numberOfCycles = pomodoroPreferences.numberOfCycles;
       this.counter = this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)
     }
-    if (router.currentRoute.value.params.activityId) {
-      this.activityId = router.currentRoute.value.params.activityId as string;
-      activityService.getActivityById(this.activityId).then((activity) => {
-        this.numberOfCycles = activity.pomodoro.cycles;
-        this.counter = (activity.pomodoro.cycles - activity.pomodoro.completedCycles) * 60 * (this.workDuration + this.pauseDuration)
-      });
-    }
+    const dateStore = useDateStore();
+    watch(
+        () => dateStore.timeDiff,
+        (newTimeDiff) => {
+          if (this.timing) {
+            this.counter = Math.trunc(Math.min(Math.max(this.counter - newTimeDiff / 1000, 0), this.numberOfCycles * 60 * (this.workDuration + this.pauseDuration)));
+            if (this.activityId)
+              activityService.modifyActivity({
+                id: this.activityId,
+                pomodoro: {
+                  options: {
+                    workDuration: this.workDuration,
+                    pauseDuration: this.pauseDuration,
+                    numberOfCycles: this.numberOfCycles,
+                  },
+                  completedCycles: {
+                    [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                  }
+                }
+              });
+          }
+        },
+        {immediate: true}
+    );
   },
   computed: {
     formattedCounter(): string {
       let cycle_time = this.counter % ((this.workDuration + this.pauseDuration) * 60);
       let minutes = Math.floor((cycle_time - (cycle_time > this.pauseDuration * 60 ? this.pauseDuration * 60 : 0)) / 60)
       let seconds = cycle_time % 60;
-      // pad seconds and if minutes == 0 set it to workDuration
-      !minutes && (minutes = this.workDuration);
+      // set minutes if it's the start of a cycle and pad seconds
+      (this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) && (minutes = this.workDuration);
       return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     },
     pauseOrWork(): string {
@@ -248,29 +275,42 @@ export default defineComponent({
     },
   },
   methods: {
-    // TODO: update database in relevant methods?
     playOrPause() {
       if (this.timing) {
         clearInterval(this.intervalRef);
       } else {
         this.intervalRef = setInterval(() => {
           this.counter--;
-          if (this.activityId && this.counter % ((this.workDuration + this.pauseDuration) * 60) == 0) {
-            activityService.modifyActivity({id: this.activityId,
+          let remainingCycleTime = this.counter % ((this.workDuration + this.pauseDuration) * 60);
+          if (this.activityId && remainingCycleTime == 0) {
+            activityService.modifyActivity({
+              id: this.activityId,
               pomodoro: {
-                cycles: this.numberOfCycles,
-                completedCycles: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                options: {
+                  workDuration: this.workDuration,
+                  pauseDuration: this.pauseDuration,
+                  numberOfCycles: this.numberOfCycles,
+                },
+                completedCycles: {
+                  [this.username]: this.numberOfCycles - Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60))
+                }
               }
             });
           }
-          // TODO: check and notify the user
-          if (this.counter <= 0) {
+          if ((remainingCycleTime == this.pauseDuration * 60 || remainingCycleTime == 0) && this.counter > 0) {
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: remainingCycleTime == 0 ? 'Pause time is over!' : 'Work time is over!',
+            });
+          } else if (this.counter <= 0) {
             clearInterval(this.intervalRef);
             this.counter = 0;
             this.timing = false;
             if (this.activityId) {
               activityService.modifyActivity({id: this.activityId, done: true});
             }
+            Notification.permission === 'granted' && new Notification('Pomodoro', {
+              body: 'Pomodoro is over!',
+            });
           }
         }, 1000);
       }
@@ -279,10 +319,17 @@ export default defineComponent({
     skipCycle() {
       let cycle = Math.floor(this.counter / ((this.workDuration + this.pauseDuration) * 60));
       this.counter = cycle * (this.workDuration + this.pauseDuration) * 60;
-      activityService.modifyActivity({id: this.activityId,
+      this.activityId && activityService.modifyActivity({
+        id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
-          completedCycles: this.numberOfCycles - cycle
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles,
+          },
+          completedCycles: {
+            [this.username]: this.numberOfCycles - cycle
+          }
         }
       });
     },
@@ -301,7 +348,27 @@ export default defineComponent({
       this.showYoutubeModal = !this.showYoutubeModal;
     },
     saveChanges() {
-      profileService.updatePomodoroPreferences(this.workDuration, this.pauseDuration, this.numberOfCycles);
+      if (this.activityId) {
+        activityService.modifyActivity({
+          id: this.activityId,
+          pomodoro: {
+            options: {
+              workDuration: this.workDuration,
+              pauseDuration: this.pauseDuration,
+              numberOfCycles: this.numberOfCycles
+            },
+            completedCycles: {}
+          }
+        });
+      } else {
+        profileService.updatePreferences({
+          pomodoro: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          }
+        });
+      }
       this.showModal = false;
     },
     openEditModal() {
@@ -313,10 +380,15 @@ export default defineComponent({
     },
     saveEditChanges() {
       this.counter = (this.numberOfCycles - this.setCycleNumber) * 60 * (this.workDuration + this.pauseDuration) + (this.setWork == 'true' ? this.pauseDuration * 60 : 0) + this.setMinutes * 60 + this.setSeconds;
-      activityService.modifyActivity({id: this.activityId,
+      this.activityId && activityService.modifyActivity({
+        id: this.activityId,
         pomodoro: {
-          cycles: this.numberOfCycles,
-          completedCycles: this.setCycleNumber - 1
+          options: {
+            workDuration: this.workDuration,
+            pauseDuration: this.pauseDuration,
+            numberOfCycles: this.numberOfCycles
+          },
+          completedCycles: {[this.username]: this.setCycleNumber - 1}
         }
       });
       this.showEditModal = false;

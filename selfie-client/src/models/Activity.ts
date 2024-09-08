@@ -1,7 +1,10 @@
 export class Activity {
     title: string;
+    owners: string[];
     id: string | undefined;
+    projectId: string | undefined;
     done: boolean;
+    start: Date | undefined;
     deadline: Date;
     notification: {
         method: string[];
@@ -15,12 +18,19 @@ export class Activity {
     }[];
     subActivitiesIDs: string[];
     pomodoro: null | undefined | {
-        cycles: number;
-        completedCycles: number;
+        options: {
+            workDuration: number;
+            pauseDuration: number;
+            numberOfCycles: number;
+        };
+        completedCycles: {
+            [username: string]: number
+        };
     };
 
     constructor(
         title = '',
+        owners: string[] = [],
         done = false,
         deadline: Date = new Date(),
         notification: {
@@ -30,7 +40,7 @@ export class Activity {
         } = {
             method: [],
             when: 'atEvent',
-            repeat: 'never'
+            repeat: 'daily'
         },
         participants: {
             username: string;
@@ -41,6 +51,7 @@ export class Activity {
         pomodoro = null
     ) {
         this.title = title;
+        this.owners = owners;
         this.done = done;
         this.deadline = deadline;
         this.notification = notification;

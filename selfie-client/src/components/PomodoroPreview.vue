@@ -1,22 +1,22 @@
 <template>
-  <div class="p-4 bg-white rounded-lg shadow border m-4 text-gray-600">
+  <div class="p-4 bg-white rounded-lg shadow border text-gray-600">
     <h3 class="text-lg font-semibold text-gray-800">Pomodoro</h3>
     <div v-if="type === 'settings'">
-      <h4 class="font-semibold text-gray-800">Impostazioni di default </h4>
-      <p>Tempo di lavoro: {{ settings.workDuration }} minuti</p>
-      <p>Tempo di pausa: {{ settings.pauseDuration }} minuti</p>
-      <p>Cicli completati: {{ settings.numberOfCycles }}</p>
-      <router-link to="/pomodoro" class="text-blue-500">Modifica</router-link>
+      <h4 class="font-semibold text-gray-800">Default settings </h4>
+      <p>Work duration: {{ settings.workDuration }} minutes</p>
+      <p>Pause duration: {{ settings.pauseDuration }} minutes</p>
+      <p>Completed cycles: {{ settings.numberOfCycles }}</p>
+      <router-link class="text-blue-500" :to="{name: 'pomodoro'}">Edit</router-link>
     </div>
     <div v-else>
-      <h4 class="font-semibold text-gray-800">Statistiche</h4>
-      <p>Attività completate: {{ stats.completed }}</p>
-      <p>Cicli completati: {{ stats.completedCycles }}</p>
+      <h4 class="font-semibold text-gray-800">Stats</h4>
+      <p>Completed activities: {{ stats.completed }}</p>
+      <p>Completed cycles: {{ stats.completedCycles }}</p>
       <hr/>
-      <p>Attività mancanti ad oggi: {{ stats.missing }}</p>
-      <p>Cicli totali: {{ stats.missingTotalCycles }}</p>
-      <p>Completati: {{ stats.missingCompletedCycles }}</p>
-      <p>Mancanti: {{ stats.missingTotalCycles - stats.missingCompletedCycles }}</p>
+      <p>Missing activities: {{ stats.missing }}</p>
+      <p>Total cycles: {{ stats.missingTotalCycles }}</p>
+      <p>Completed: {{ stats.missingCompletedCycles }}</p>
+      <p>Missing: {{ stats.missingTotalCycles - stats.missingCompletedCycles }}</p>
     </div>
     <router-link v-if="stats.oldestActivityId != ''" :to="'/pomodoro/' + stats.oldestActivityId" class="text-blue-500">
       <hr/>
@@ -43,7 +43,6 @@ export default defineComponent({
   },
   data() {
     return {
-      // Example events, replace with your actual events source
       settings: {
         workDuration: 25,
         pauseDuration: 5,
@@ -66,6 +65,14 @@ export default defineComponent({
       this.settings = pomodoroPreferences;
     }
     this.stats = await activityService.getPomodoroStats();
+  },
+  watch: {
+    date: {
+      immediate: true,
+      async handler() {
+        this.stats = await activityService.getPomodoroStats();
+      }
+    }
   }
 });
 </script>

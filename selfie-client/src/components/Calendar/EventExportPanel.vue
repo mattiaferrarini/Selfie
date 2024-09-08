@@ -1,17 +1,17 @@
 <template>
     <div class="absolute inset-0 bg-white rounded-lg w-full h-full overflow-scroll">
+        <div class="p-4 flex flex-col justify-between w-full h-full">
+            <div class="flex flex-col justify-stretch text-center mt-4 mb-4">
+                <h2 class="text-lg font-semibold mb-4">Export Options</h2>
+                <button @click.stop="downloadICalendar" class="export-option">Download iCalendar File</button>
+                <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
+                <a :href="googleLink" target="_blank" class="export-option">Open in Google Calendar</a>
+                <a :href="outlookLink" target="_blank" class="export-option">Open in Outlook Web Calendar</a>
+                <button v-if="!emailSent" @click.stop="sendAllToEmail" class="export-option">Send All to Email</button>
+                <div v-if="emailSent" class="export-option">{{ emailSentResult }}</div>
+            </div>
 
-        <div class="p-4 flex flex-col justify-center">
-            <div class="flex flex-col justify-stretch text-center mb-4">
-            <button @click="downloadICalendar" class="export-option">Download iCalendar File</button>
-            <a :href="yahooLink" target="_blank" class="export-option">Open in Yahoo! Calendar</a>
-            <a :href="googleLink" target="_blank" class="export-option">Open in Google Calendar</a>
-            <a :href="outlookLink" target="_blank" class="export-option">Open in Outlook Web Calendar</a>
-            <button v-if="!emailSent" @click="sendAllToEmail" class="export-option">Send All to Email</button>
-            <div v-if="emailSent" class="export-option">{{ emailSentResult }}</div>
-        </div>
-
-        <button @click="closePanel" class="w-full p-1 rounded-lg bg-gray-300">Done</button>
+            <button @click.stop="closePanel" class="w-full p-2 rounded-lg bg-gray-400 text-white">Done</button>
         </div>
     </div>
 </template>
@@ -20,7 +20,7 @@
 import { defineComponent } from 'vue';
 import eventService from '@/services/eventService';
 import { CalendarEvent } from '@/models/Event';
-import { CalendarOptions } from 'datebook';
+import { CalendarOptions, ICSAlarm } from 'datebook';
 import FileSaver from 'file-saver';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -35,6 +35,7 @@ export default defineComponent({
     data() {
         return {
             iCalendarOptions: {} as CalendarOptions,
+            iCalendarAlarms: [] as ICSAlarm[],
             iCalendarFile: '',
             yahooLink: '',
             googleLink: '',
@@ -46,7 +47,7 @@ export default defineComponent({
     },
     methods: {
         downloadICalendar() {
-            const blob = new Blob([this.iCalendarFile], {type: 'text/calendar'});
+            const blob = new Blob([this.iCalendarFile], { type: 'text/calendar' });
             FileSaver.saveAs(blob, `${this.event.title}.ics`);
         },
         closePanel() {
@@ -79,7 +80,9 @@ export default defineComponent({
     },
     mounted() {
         this.iCalendarOptions = eventService.generateOptionsForEvent(this.event);
-        this.iCalendarFile = eventService.convertOptionsToICalendar(this.iCalendarOptions);
+        this.iCalendarAlarms = eventService.generateAlarmsForEvent(this.event);
+
+        this.iCalendarFile = eventService.convertOptionsToICalendar(this.iCalendarOptions, this.iCalendarAlarms);
         this.yahooLink = eventService.convertOptionsToYahoo(this.iCalendarOptions);
         this.googleLink = eventService.convertOptionsToGoogle(this.iCalendarOptions);
         this.outlookLink = eventService.convertOptionsToOutlook(this.iCalendarOptions);
@@ -88,12 +91,15 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
-.export-option{
+.export-option {
     padding: 0.5rem;
     border: 1px solid #ccc;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     margin-bottom: 0.5rem;
     cursor: pointer;
+}
+
+.export-option:hover {
+    background-color: #e5e5e5;
 }
 </style>

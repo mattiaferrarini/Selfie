@@ -15,9 +15,20 @@ enum NotificationType {
     BOTH = "both"
 }
 
+enum CalendarContent {
+    ALL = "all",
+    EVENTS = "events",
+    ACTIVITIES = "activities"
+}
+
 enum PomodoroType {
     SETTINGS = "settings",
     STATS = "stats"
+}
+
+enum ProjectsView {
+    LIST = "list",
+    GANTT = "gantt"
 }
 
 export interface IUser extends Document {
@@ -31,16 +42,20 @@ export interface IUser extends Document {
     preferences: {
         home: {
             calendarWeekly: boolean;
-            notesDescription: boolean;
+            calendarContent: CalendarContent;
+            notesCategory: boolean;
+            noteNumber: number;
             pomodoroType: PomodoroType;
+            onlyAssigned: boolean;
         };
         notificationType: NotificationType;
-        notes: Object; // Adjust the type based on your requirements
+        notes: Object;
         pomodoro: {
             workDuration: number;
             pauseDuration: number;
             numberOfCycles: number;
         };
+        projectsView: ProjectsView;
     };
 }
 
@@ -56,7 +71,8 @@ const UserSchema: Schema = new Schema<IUser>({
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: /^[a-zA-Z0-9_]*$/ // Only letters, numbers and underscores
     },
     email: {
         type: String,
@@ -91,14 +107,32 @@ const UserSchema: Schema = new Schema<IUser>({
                 type: Boolean,
                 required: true
             },
-            notesDescription: {
+            calendarContent: {
+                type: String,
+                required: true,
+                enum: ['all', 'events', 'activities', 'projects'],
+                default: 'all'
+            },
+            notesCategory: {
                 type: Boolean,
-                required: true
+                required: true,
+                default: false
+            },
+            noteNumber: {
+                type: Number,
+                required: true,
+                default: 5
             },
             pomodoroType: {
                 type: String,
                 required: true,
-                enum: ['settings', 'stats']
+                enum: ['settings', 'stats'],
+                default: 'stats'
+            },
+            onlyAssigned: {
+                type: Boolean,
+                required: true,
+                default: false
             }
         },
         notificationType: {
@@ -123,6 +157,12 @@ const UserSchema: Schema = new Schema<IUser>({
                 type: Number,
                 required: true
             }
+        },
+        projectsView: {
+            type: String,
+            required: true,
+            default: 'list',
+            enum: ['list', 'gantt']
         }
     }
 });

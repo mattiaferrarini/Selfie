@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import User, { IUser } from "../models/User";
+import User, {IUser} from "../models/User";
 import chatController from "../controllers/chatController";
 import {pushNotificationService} from "../services/pushNotificationService";
 
@@ -25,25 +25,30 @@ const handleDisconnection = (ws: WebSocket, userConnections: Map<string, WebSock
     }
 };
 
-const handleMessage = (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
-    try {
-        const parsedMessage = JSON.parse(message);
-        chatController.sendMessage(user.username, parsedMessage.to, parsedMessage.text).then(() => {
-            const connections = userConnections.get(parsedMessage.to);
-            // TODO: email?
-            if (connections) {
-                connections.forEach((cws) => cws.send(JSON.stringify({
-                    from: user.username,
-                    text: parsedMessage.text
-                })));
-            }
-            User.findOne({username: parsedMessage.to}).then((user: any) => {
-                user?.pushSubscriptions.forEach((pushSubscription: any) => {
-                    pushNotificationService.sendNotification(pushSubscription, {title: user.username, body: parsedMessage.text});
-                });
-            });
-        }).catch((err) => ws.send('Error sending message', err));
-    } catch (error) {
-        ws.send('Error parsing message');
+const handleMessage = async (message: string, ws: WebSocket, userConnections: Map<string, WebSocket[]>, user: IUser) => {
+        try {
+            const parsedMessage = JSON.parse(message);
+            const userTo = await User.findOne({username: parsedMessage.to});
+            if (!userTo)
+                return ws.send('User not found');
+            chatController.sendMessage(user.username, parsedMessage.to, parsedMessage.text).then(() => {
+                    const connections = userConnections.get(parsedMessage.to);
+                    if (connections) {
+                        connections.forEach((cws) => cws.send(JSON.stringify({
+                            from: user.username,
+                            text: parsedMessage.text
+                        })));
+                    }
+                    userTo.pushSubscriptions.forEach((pushSubscription: any) => {
+                        pushNotificationService.sendNotification(pushSubscription, {
+                            title: userTo.username,
+                            body: parsedMessage.text
+                        });
+                    });
+                }
+            ).catch((err) => ws.send('Error sending message', err));
+        } catch (error) {
+            ws.send('Error parsing message');
+        }
     }
-};
+;

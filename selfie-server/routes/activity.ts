@@ -6,8 +6,9 @@ const router = Router();
 router.get('/user/:username', activityController.getActivitiesByUser);
 router.get('/pomodoro/stats', activityController.getPomodoroStats);
 router.get('/:id', activityController.getActivityById);
-router.post('/', activityController.addActivity);
-router.put('/:id', activityController.modifyActivity);
+router.put('/', activityController.addActivity);
+router.post('/:id', activityController.modifyActivity);
 router.delete('/:id', activityController.deleteActivity);
+router.post('/removeParticipant/:id', activityController.removeParticipant);
 
 export default router;
