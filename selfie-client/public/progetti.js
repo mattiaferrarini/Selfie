@@ -457,9 +457,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.hasOwnProperty("error"))
                     showError(data.error);
                 else {
-                    projects[projects.findIndex(project => project._id === currentProjectId)] = data;
-                    displayProject(data);
+                    const project = formatProject(data);
+                    projects[projects.findIndex(project => project._id === currentProjectId)] = project;
                     showProjects();
+                    displayProject(project);
                     closeModal();
                 }
             })
@@ -475,8 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.hasOwnProperty("error"))
                     showError(data.error);
                 else {
-                    projects.push(data);
+                    const project = formatProject(data);
+                    projects.push(project);
                     showProjects();
+                    displayProject(project);
                     closeModal();
                 }
             })
@@ -501,12 +504,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const displayProject = (project) => {
+        showHeader(project);
         auth.user.preferences.projectsView === 'gantt' ? showGantt(project) : showList(project);
+        projectSelector.value = project._id;
+    }
+
+    const showHeader = (project) => {
+        const header = document.getElementById('projectHeader');
+
+        const actionOptions = project.owner === auth.user.username ? `
+            <div class="flex gap-1 font-semibold">
+                <button type="button" class="edit-project-button bg-emerald-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-pencil-fill mr-2"></i> Edit
+                </button>
+                <button type="button" class="delete-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                    <i class="bi bi-trash-fill mr-2"></i> Delete
+                </button>
+            </div class="font-semibold">`
+            : `<button type="button" class="leave-project-button bg-red-500 text-white px-3 py-2 rounded-md">
+                <i class="bi bi-x-circle-fill mr-2"></i>Leave
+            </button>`;
+
+        header.innerHTML = `
+            <h3 class="text-3xl font-bold text-gray-800 p-2 mr-4">${project.title}</h3>
+            ${actionOptions}`;
+
+        if (project.owner === auth.user.username) {
+            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
+            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}`,
+                { method: 'DELETE' }
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                projectSelector.selectedIndex = 0;
+                displayProject(projects[0]);
+            }));
+        } else {
+            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
+                `${API_URL}/project/${project._id}/leave`,
+                { method: 'POST' }
+            ).then(() => {
+                projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                showProjects();
+                projectSelector.selectedIndex = 0;
+                displayProject(projects[0]);
+            }));
+        }
     }
 
     projectSelector.addEventListener('change', () => {
         const project = projects.find(project => project._id === projectSelector.value);
-        auth.user.preferences.projectsView === 'gantt' ? showGantt(project) : showList(project);
+        displayProject(project);
     });
 
     const listView = document.getElementById('listView');
@@ -534,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return a.activity.participants.map(participant => participant.username).includes(auth.user.username) ? -1 : 1;
         });
 
-        const activityList = activities.map(activity => {
+        const activityList = activities.map((activity, index) => {
             const status = getStatusFromActivity(activity, activities);
             const participants = activity.activity?.participants.map(participant => participant.username);
             const startingDate = activity.linkedActivityId !== null ?
@@ -542,49 +591,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 :
                 new Date(activity.activity?.start).toLocaleDateString();
             return `
-        <li class="activity-item border p-4 mb-4 rounded-lg shadow-lg">
-            <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
-            <div><strong>Title:</strong>${activity.activity?.title}</div> 
-            <div><strong>Id: #</strong>${activity.localId}</div> 
-            <div><strong>Actor:</strong> ${participants.join('')}</div>
-            <div><strong>Starting Date:</strong> ${startingDate}</div>
-            <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
-            <div><strong>Status:</strong> ${status}</div>
-            <div><strong>Input:</strong> ${activity.input}</div>
-            <div><strong>Output:</strong> ${activity.output}</div>
-            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+        <li class="activity-item border p-4 bg-white rounded-lg shadow-lg">
+            <div class="flex w-full items-center justify-between mb-3">
+                <h4 class="text-xl font-semibold">${activity.activity?.title}</h4>
+                <div class="size-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-bold">${index+1}</div>
+            </div>
+            <div class="text-gray-700">
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Phase</strong> ${activity.phaseTitle}</div>
+                <div class="flex items-center justify-between"><strong>Id</strong>#${activity.localId}</div> 
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Actors</strong> ${participants.join(', ')}</div>
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Starting Date</strong> ${startingDate}</div>
+                <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''} flex items-center justify-between"><strong>Ending Date</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
+                <hr class="my-1">
+                <div class="flex items-center justify-between"><strong>Status</strong> ${status}</div>
+                <div class="flex items-center justify-between"><strong>Input</strong> ${activity.input}</div>
+                <div class="flex items-center justify-between"><strong>Output</strong> ${activity.output}</div>
+                <hr class="my-1">
+                <button type="button" class="edit-activity-button bg-emerald-500 text-white font-bold p-2 rounded-md w-full mt-4" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+            </div>
         </li>
     `
         }).join('');
 
-        listView.innerHTML = `
-            <div class="inline-flex items-center mb-2">
-                Project: <h3 class="text-2xl p-2">${project.title}</h3>
-                ${project.owner === auth.user.username
-            ? '<button type="button" class="edit-project-button bg-emerald-500 text-white p-2 rounded-md">Edit Project</button><button type="button" class="delete-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Delete Project</button>'
-            : '<button type="button" class="leave-project-button bg-red-500 text-white ml-2 p-2 rounded-md">Leave Project</button>'}</div>
-            <ul class="activity-list list-none p-0">${activityList}</ul>`;
+        listView.innerHTML = `<ul class="activity-list list-none p-0 sm:grid md:grid-cols-2 lg:grid-cols-3 flex flex-col gap-2">${activityList}</ul>`;
 
-        if (project.owner === auth.user.username) {
-            document.querySelector('.edit-project-button').addEventListener('click', () => openModal(project));
-            document.querySelector('.delete-project-button').addEventListener('click', () => fetchWithMiddleware(
-                `${API_URL}/project/${project._id}`,
-                {method: 'DELETE'}
-            ).then(() => {
-                projects.splice(projects.findIndex(p => p._id === project._id), 1);
-                showProjects();
-                showList(projects[0]);
-            }));
-        } else {
-            document.querySelector('.leave-project-button').addEventListener('click', () => fetchWithMiddleware(
-                `${API_URL}/project/${project._id}/leave`,
-                {method: 'POST'}
-            ).then(() => {
-                projects.splice(projects.findIndex(p => p._id === project._id), 1);
-                showProjects();
-                showList(projects[0]);
-            }));
-        }
         document.querySelectorAll('.edit-activity-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 openEditActivityModal(activities.find(activity => activity.activityId === event.target.dataset.activityId));
@@ -612,6 +645,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelProjectEditButton = document.getElementById('cancelProjectEditButton');
     const participantsContainer = editActivityModal.querySelector('#actParticipantsContainer');
     const usernameInput = editActivityModal.querySelector('#actNewParticipantUsername');
+
+    editStartDate.addEventListener('change', () => {
+        editEndDate.min = editStartDate.value;
+    });
+
+    editEndDate.addEventListener('change', () => {
+        editStartDate.max = editEndDate.value;
+    });
 
     const openEditActivityModal = (activity) => {
         editProjectActivityId.value = activity.activityId;
@@ -649,6 +690,10 @@ document.addEventListener('DOMContentLoaded', () => {
         editNotifyEmail.checked = activityDiv.activity.notification.method?.includes('email');
         editRepeatNotify.value = activityDiv.activity.notification.repeat;
 
+        // add limits
+        editStartDate.max = editEndDate.value;
+        editEndDate.min = editStartDate.value;
+
         // populate the participants list
         participantsContainer.innerHTML = '';
         activityDiv.activity.participants.forEach(participant => {
@@ -662,6 +707,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedActivityDiv = activityDiv;
         selectedPhaseDiv = phaseDiv;
         modifyingActivity = false;
+
+        // add default dates
+        const now = new Date(localStorage.getItem('date') ? JSON.parse(localStorage.getItem('date')).currentDate : new Date());
+        editStartDate.value = now.toISOString().split('T')[0];
+        const oneWeekLater = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        editEndDate.value = oneWeekLater.toISOString().split('T')[0];
+
+        // add limits
+        editStartDate.max = editEndDate.value;
+        editEndDate.min = editStartDate.value;
+
         editActivityModal.show();
     };
 
@@ -757,8 +813,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.hasOwnProperty("error"))
                 editErrorMessage.innerText = data.error;
             else {
-                project = data;
-                showList(project);
+                project = formatProject(data);
+                displayProject(project);
             }
         });
         closeProjectEditActivityModal();
@@ -768,7 +824,14 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelProjectEditButton.addEventListener('click', closeProjectEditActivityModal);
 
     fetchWithMiddleware(`${API_URL}/project/all`, {}).then(response => response.json()).then(data => {
-        projects = data.map(project => ({
+        projects = data.map(project => formatProject(project));
+        showProjects();
+        projectSelector.selectedIndex = 0;
+        displayProject(projects[0]);
+    });
+
+    const formatProject = (project) => {
+        return {
             ...project,
             phases: project.phases.map(phase => ({
                 ...phase,
@@ -781,11 +844,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     } : null
                 }))
             }))
-        }));
-        showProjects();
-        projectSelector.selectedIndex = 0;
-        displayProject(projects[0]);
-    });
+        };
+    };
 
     document.querySelector("#logout").addEventListener("click", logout);
 });
