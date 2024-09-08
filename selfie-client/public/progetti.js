@@ -1,4 +1,4 @@
-import {API_URL, fetchWithMiddleware, logout, getTimeMachineDate, getStatusFromActivity} from "./utilities.js";
+import {API_URL, fetchWithMiddleware, getStatusFromActivity, getTimeMachineDate, logout} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -460,10 +460,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     projects[projects.findIndex(project => project._id === currentProjectId)] = data;
                     displayProject(data);
                     showProjects();
+                    auth.user.preferences.projectsView === 'gantt' ? showGantt(data) : showList(data);
                     closeModal();
                 }
             })
-            console.log('Updating project:', currentProjectId, projectData);
         } else {
             fetchWithMiddleware(`${API_URL}/project/`, {
                 method: 'PUT',
@@ -477,10 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 else {
                     projects.push(data);
                     showProjects();
+                    projectSelector.value = data._id;
+                    auth.user.preferences.projectsView === 'gantt' ? showGantt(data) : showList(data);
                     closeModal();
                 }
             })
-            console.log('Adding new project:', projectData);
         }
     });
 
@@ -510,14 +511,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const listView = document.getElementById('listView');
+    const gantt = document.querySelector("gantt-component");
 
     const showGantt = (project) => {
-        const gantt = document.querySelector("gantt-component");
-        gantt.project = [project, getTimeMachineDate()];
+        if (project)
+            gantt.project = [project, getTimeMachineDate()];
     };
 
     const showList = (project) => {
         listView.innerHTML = '';
+
+        if (!project) // no project exists
+            return;
 
         const activities = project.phases.flatMap(phase =>
             phase.activities.map(activity => ({
@@ -538,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = getStatusFromActivity(activity, activities);
             const participants = activity.activity?.participants.map(participant => participant.username);
             const startingDate = activity.linkedActivityId !== null ?
-                "End of #" +activities.find(act => act.localId === activity.linkedActivityId).localId
+                "End of #" + activities.find(act => act.localId === activity.linkedActivityId).localId
                 :
                 new Date(activity.activity?.start).toLocaleDateString();
             return `
@@ -546,13 +551,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div><strong>Phase:</strong> ${activity.phaseTitle}</div>
             <div><strong>Title:</strong>${activity.activity?.title}</div> 
             <div><strong>Id: #</strong>${activity.localId}</div> 
-            <div><strong>Actor:</strong> ${participants.join('')}</div>
+            <div><strong>Actor:</strong> ${participants?.join('')}</div>
             <div><strong>Starting Date:</strong> ${startingDate}</div>
             <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''}"><strong>Ending Date:</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
             <div><strong>Status:</strong> ${status}</div>
             <div><strong>Input:</strong> ${activity.input}</div>
             <div><strong>Output:</strong> ${activity.output}</div>
-            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+            <button type="button" class="edit-activity-button bg-yellow-500 text-white p-2 rounded-md" data-activity-id="${activity.activityId}" ${participants?.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
         </li>
     `
         }).join('');
@@ -572,6 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 {method: 'DELETE'}
             ).then(() => {
                 projects.splice(projects.findIndex(p => p._id === project._id), 1);
+                projectSelector.value = projects[0]?._id
                 showProjects();
                 showList(projects[0]);
             }));
@@ -677,8 +683,6 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedPhaseDiv.activityCounter -= 1;
         }
 
-        console.log(selectedPhaseDiv.activityIds, selectedPhaseDiv.activityCounter);
-
         selectedActivityDiv = null;
         selectedPhaseDiv = null;
 
@@ -740,13 +744,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     editProjectActivityForm.addEventListener('submit', (event) => {
         event.preventDefault();
+        const projectId = projectSelector.value;
         const updatedActivity = {
             activityId: editProjectActivityId.value,
             input: editInput.value,
             output: editOutput.value,
             status: editStatus.value
         };
-        let project = projects.find(project => project._id === projectSelector.value);
+        let project = projects.find(project => project._id === projectId);
         fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
             method: 'POST',
             headers: {
@@ -758,6 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editErrorMessage.innerText = data.error;
             else {
                 project = data;
+                projects[projects.findIndex(project => project._id === projectId)] = data
                 showList(project);
             }
         });
