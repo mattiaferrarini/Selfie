@@ -114,7 +114,7 @@ class GanttComponent extends HTMLElement {
                         ${info}
                     </div>
                 </div>
-                <div style="grid-column: 2; overflow-x: scroll;">
+                <div style="grid-column: 2; overflow-x: auto;" class="mb-3">
                     <div class="gantt">
                         <!-- bar -->
                         ${bar}
@@ -202,7 +202,7 @@ class GanttComponent extends HTMLElement {
         .gantt {
             display: grid;
             grid-template-columns: repeat(${numOfCol}, minmax(2em, 1fr));
-            overflow-x: scroll;
+            overflow-x: auto;
         }
 
         .gantt div { 
@@ -391,7 +391,7 @@ class GanttComponent extends HTMLElement {
     getStartEndDates(activity, activities) {
         let prevActivity = this.getPrevActivity(activity, activities);
 
-        let startDate = null;
+        let startDate;
         if (activity.linkedActivityId) {
             startDate = prevActivity.activity.deadline;
         }
@@ -427,8 +427,8 @@ class GanttComponent extends HTMLElement {
         const oldEndDate = this.getActivitybyId(activity.activity._id, this._untoachedProject).activity.deadline;
         this._row++;
 
-        let [rstartcol, rspannum] = this.getStartColSpanNum(startDate, endDate);
-        let colorStyle = '';
+        let [, rspannum] = this.getStartColSpanNum(startDate, endDate);
+        let colorStyle;
 
         // Abandoned Late Not activatable Activatable Reactivated Concluded Active
         switch (activity.newStatus) {
