@@ -13,14 +13,11 @@ A website to help students manage their private, social and academic life.
 
 ## Project Structure
 
-The project is divided into 2 main parts: the frontend and the backend. The frontend is built using Vue.js and vanilla
-javascript, while the backend is built using Node.js.
+The project is divided into 2 main parts: the frontend and the backend. The frontend is built using Vue.js and vanilla JavaScript, while the backend is built using Node.js.
 
 ### Frontend
 
-The main part of the frontend is built using Vue.js. The frontend is responsible for the user interface of the website. It is responsible
-for rendering the pages, handling user interactions and making requests to the backend.  
-A part of the frontend (the project one) is built using only vanilla javascript and HTML Components.
+The main part of the frontend is built using Vue.js with Typescript. The frontend is responsible for the user interface of the website. It is responsible for rendering the pages, handling user interactions, and making requests to the backend. A part of the frontend (the project one) is built using only vanilla JavaScript and HTML Components.
 
 
 #### Folder Structure
@@ -44,7 +41,7 @@ env.local
 ```
 - **index.html** : The main page of the website.
 - **projects.html** : The page where students can see their projects.
-- **.js** : The javascript files used by projects.html, mainly HTMLComponents or modules.
+- **.js** : The javascript files used by projects.html, mainly HTML Components or modules.
 ----------------
 - **assets**: Contains static files like images, fonts etc.
 - **components**: Contains the components used in the website. A component is a reusable piece of code that can be used
@@ -89,8 +86,7 @@ env.local
 - **models**: Contains the code for the data models used in the website.
 - **routes**: Contains the code for routing in the backend. The routes are responsible for mapping the URL to the
   controllers that should be called.
-- **services**: Contains the code for the services used in the website. A service is a class that contains the business
-  logic of the website.
+- **services**: Contains the code for the services used in the website. A service contains part of the business logic of the website.
 - **ws**: Contains the code for the WebSocket server.
 - **server.ts**: The entry point of the backend.
 - **env.local**: Contains the environment variables used in the backend.
