@@ -126,10 +126,10 @@ env.local
   sending emails and push notifications to the users.
 
 ## Use of AI
-Github Copilot was used an assistant for the project. It helped with the code completion and the code suggestions on repetitive tasks, such as completing the navbar for all the routes.  
+Github Copilot was used as an assistant for the project. It helped with the code completion and the code suggestions on repetitive tasks, such as completing the navbar for all the routes, writing simple functions for services and controllers, and performing manipulation tasks on arrays.  
 It wasn't used on all the functions that required knowledge of the project or data structures, such as the scheduling of the tasks, as it would not have been able to understand the logic behind the scheduling.
 We also did not use it for any graphic task, as graphic design is not its strong suit.  
-This documentation, especially the "Project Structure" part, was partly generated with AI.
+This documentation, especially the "Project Structure" part, was partly generated with AI for best clarity.
 
 ## Project Setup
 
