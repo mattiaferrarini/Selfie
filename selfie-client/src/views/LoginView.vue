@@ -4,9 +4,9 @@
           @submit.stop="login">
       <img alt="bradipo che si fa un selfie" src="@/assets/selfie.jpeg"/>
       <input v-model="username" aria-label="Username"
-             class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" required/>
+             class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" required autocomplete="username"/>
       <input v-model="password" aria-label="Password" class="w-full px-3 py-2 mb-3 border rounded"
-             placeholder="Password" required type="password"/>
+             placeholder="Password" required type="password" autocomplete="current-password"/>
       <input aria-label="Login" class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded cursor-pointer" type="submit"
              value="Login">
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
