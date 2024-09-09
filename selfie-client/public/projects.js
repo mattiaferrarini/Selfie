@@ -1,4 +1,4 @@
-import {API_URL, fetchWithMiddleware, logout, getTimeMachineDate, getStatusFromActivity} from "./utilities.js";
+import {API_URL, fetchWithMiddleware, getStatusFromActivity, getTimeMachineDate, logout} from "./utilities.js";
 
 class ConditionalRender extends HTMLElement {
     constructor() {
@@ -464,7 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     closeModal();
                 }
             })
-            console.log('Updating project:', currentProjectId, projectData);
         } else {
             fetchWithMiddleware(`${API_URL}/project/`, {
                 method: 'PUT',
@@ -479,11 +478,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const project = formatProject(data);
                     projects.push(project);
                     showProjects();
+                    projectSelector.value = data._id;
                     displayProject(project);
                     closeModal();
                 }
             })
-            console.log('Adding new project:', projectData);
         }
     });
 
@@ -559,15 +558,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const listView = document.getElementById('listView');
+    const gantt = document.querySelector("gantt-component");
 
     const showGantt = (project) => {
-        const gantt = document.querySelector("gantt-component");
-        gantt.project = [project, getTimeMachineDate()];
+        if (project)
+            gantt.project = [project, getTimeMachineDate()];
     };
 
     const showList = (project) => {
         listView.innerHTML = '';
 
+        if (!project) // no project exists
+            return;
+      
         const activities = project.phases.flatMap(phase =>
             phase.activities.map(activity => ({
                 ...activity,
@@ -587,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = getStatusFromActivity(activity, activities);
             const participants = activity.activity?.participants.map(participant => participant.username);
             const startingDate = activity.linkedActivityId !== null ?
-                "End of #" +activities.find(act => act.localId === activity.linkedActivityId).localId
+                "End of #" + activities.find(act => act.localId === activity.linkedActivityId).localId
                 :
                 new Date(activity.activity?.start).toLocaleDateString();
             return `
@@ -601,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center justify-between"><strong>Phase</strong> ${activity.phaseTitle}</div>
                 <div class="flex items-center justify-between"><strong>Id</strong>#${activity.localId}</div> 
                 <hr class="my-1">
-                <div class="flex items-center justify-between"><strong>Actors</strong> ${participants.join(', ')}</div>
+                <div class="flex items-center justify-between"><strong>Actors</strong> ${participants?.join(', ')}</div>
                 <hr class="my-1">
                 <div class="flex items-center justify-between"><strong>Starting Date</strong> ${startingDate}</div>
                 <div class="${status === "Abbandoned" || status === "Late" ? 'text-red-500' : ''} flex items-center justify-between"><strong>Ending Date</strong> ${new Date(activity.activity?.deadline).toLocaleDateString()}</div>
@@ -610,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center justify-between"><strong>Input</strong> ${activity.input}</div>
                 <div class="flex items-center justify-between"><strong>Output</strong> ${activity.output}</div>
                 <hr class="my-1">
-                <button type="button" class="edit-activity-button bg-emerald-500 text-white font-bold p-2 rounded-md w-full mt-4" data-activity-id="${activity.activityId}" ${participants.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
+                <button type="button" class="edit-activity-button bg-emerald-500 text-white font-bold p-2 rounded-md w-full mt-4" data-activity-id="${activity.activityId}" ${participants?.includes(auth.user.username) || project.owner === auth.user.username ? '' : 'disabled'}>Edit</button>
             </div>
         </li>
     `
@@ -733,8 +736,6 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedPhaseDiv.activityCounter -= 1;
         }
 
-        console.log(selectedPhaseDiv.activityIds, selectedPhaseDiv.activityCounter);
-
         selectedActivityDiv = null;
         selectedPhaseDiv = null;
 
@@ -796,13 +797,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     editProjectActivityForm.addEventListener('submit', (event) => {
         event.preventDefault();
+        const projectId = projectSelector.value;
         const updatedActivity = {
             activityId: editProjectActivityId.value,
             input: editInput.value,
             output: editOutput.value,
             status: editStatus.value
         };
-        let project = projects.find(project => project._id === projectSelector.value);
+        let project = projects.find(project => project._id === projectId);
         fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
             method: 'POST',
             headers: {

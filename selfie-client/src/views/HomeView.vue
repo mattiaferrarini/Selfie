@@ -16,71 +16,74 @@
       <h3 class="mt-2 sm:text-xl text-gray-700"> Manage your private, social and academic life with Selfie.</h3>
     </div>
     <div class="animate-fade-in w-full sm:w-11/12 p-4 sm:mt-3 sm:p-5 rounded-lg shadow-2xl shadow-emerald-600 bg-white">
-      <div>{{ date }}</div>
       <div class="flex mt-4 flex-col sm:flex-row gap-4">
-        <div v-click-outside="() => closeTooltip(refs.showCalendarTooltip)" class="w-full flex-1 relative">
-          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showCalendarTooltip)">
-            <v-icon :class="['h-5 w-5 m-1 duration-500',
-              showCalendarTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
-          </div>
-          <CalendarPreview :content="calendarContent" :date="new Date(date)" :weekly="calendarWeekly"/>
-          <div v-if="showCalendarTooltip"
-               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
-            <label class="font-semibold" for="weekly">Weekly
-              <input id="weekly" v-model="calendarWeekly" class="ml-2" type="checkbox" @change="updatePreferences"/>
-            </label>
-            <select v-model="calendarContent" class="mt-2 p-1 rounded-md border" @change="updatePreferences">
-              <option value="all">All</option>
-              <option value="events">Events</option>
-              <option value="activities">Activities</option>
-              <option value="projects">Projects</option>
-            </select>
-          </div>
-        </div>
-        <div v-click-outside="() => closeTooltip(refs.showNotesTooltip)" class="w-full flex-1 relative">
-          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showNotesTooltip)">
-            <v-icon :class="['h-5 w-5 m-1 duration-500',
-              showNotesTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
-          </div>
-          <NotesPreview :category="notesCategory" :date="new Date(date)" :number="noteNumber"/>
-          <div v-if="showNotesTooltip"
-               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
-            <div>
-              <label class="font-semibold mr-2" for="description">Category</label>
-              <input id="description" v-model="notesCategory" type="checkbox" @change="updatePreferences"/>
+        <div class="flex flex-col md:flex-row gap-4 w-full self-start">
+          <div v-click-outside="() => closeTooltip(refs.showCalendarTooltip)" class="w-full flex-1 relative">
+            <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showCalendarTooltip)">
+              <v-icon :class="['h-5 w-5 m-1 duration-500',
+                showCalendarTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
             </div>
-            <div class="w-min">
-              <label class="font-semibold" for="number">Number:</label>
-              <input id="number" v-model="noteNumber" class="border rounded" min="1" type="number"
-                     @change="updatePreferences"/>
+            <CalendarPreview :content="calendarContent" :date="new Date(date)" :weekly="calendarWeekly"/>
+            <div v-if="showCalendarTooltip"
+                 class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
+              <label class="font-semibold" for="weekly">Weekly
+                <input id="weekly" v-model="calendarWeekly" class="ml-2" type="checkbox" @change="updatePreferences"/>
+              </label>
+              <select v-model="calendarContent" class="mt-2 p-1 rounded-md border" @change="updatePreferences">
+                <option value="all">All</option>
+                <option value="events">Events</option>
+                <option value="activities">Activities</option>
+                <option value="projects">Projects</option>
+              </select>
             </div>
           </div>
+          <div v-click-outside="() => closeTooltip(refs.showNotesTooltip)" class="w-full flex-1 relative">
+            <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showNotesTooltip)">
+              <v-icon :class="['h-5 w-5 m-1 duration-500',
+                showNotesTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
+            </div>
+            <NotesPreview :category="notesCategory" :date="new Date(date)" :number="noteNumber"/>
+            <div v-if="showNotesTooltip"
+                 class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10 flex flex-col">
+              <div>
+                <label class="font-semibold mr-2" for="description">Category</label>
+                <input id="description" v-model="notesCategory" type="checkbox" @change="updatePreferences"/>
+              </div>
+              <div class="w-min">
+                <label class="font-semibold" for="number">Number:</label>
+                <input id="number" v-model="noteNumber" class="border rounded" min="1" type="number"
+                       @change="updatePreferences"/>
+              </div>
+            </div>
+          </div>
         </div>
-        <div v-click-outside="() => closeTooltip(refs.showPomodoroTooltip)" class="w-full flex-1 relative">
-          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showPomodoroTooltip)">
-            <v-icon :class="['h-5 w-5 m-1 duration-500',
-              showPomodoroTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
+        <div class="flex flex-col md:flex-row gap-4 w-full self-start">
+          <div v-click-outside="() => closeTooltip(refs.showPomodoroTooltip)" class="w-full flex-1 relative">
+            <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showPomodoroTooltip)">
+              <v-icon :class="['h-5 w-5 m-1 duration-500',
+                showPomodoroTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
+            </div>
+            <PomodoroPreview :date="new Date(date)" :type="pomodoroType"/>
+            <div v-if="showPomodoroTooltip"
+                 class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
+              <select v-model="pomodoroType" class="p-1 rounded-md" @change="updatePreferences">
+                <option value="settings">Settings</option>
+                <option value="stats">Stats</option>
+              </select>
+            </div>
           </div>
-          <PomodoroPreview :date="new Date(date)" :type="pomodoroType"/>
-          <div v-if="showPomodoroTooltip"
-               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
-            <select v-model="pomodoroType" class="p-1 rounded-md" @change="updatePreferences">
-              <option value="settings">Settings</option>
-              <option value="stats">Stats</option>
-            </select>
-          </div>
-        </div>
-        <div v-click-outside="() => closeTooltip(refs.showProjectsTooltip)" class="w-full flex-1 relative">
-          <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showProjectsTooltip)">
-            <v-icon :class="['h-5 w-5 m-1 duration-500',
-              showProjectsTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
-          </div>
-          <PorjectPreview :assigned="onlyAssigned" :date="new Date(date)"/>
-          <div v-if="showProjectsTooltip"
-               class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
-            <div>
-              <label class="font-semibold mr-2" for="onlyAssigned">Only assigned</label>
-              <input id="onlyAssigned" v-model="onlyAssigned" type="checkbox" @change="updatePreferences"/>
+          <div v-click-outside="() => closeTooltip(refs.showProjectsTooltip)" class="w-full flex-1 relative">
+            <div class="cursor-pointer absolute top-2 right-2" @click.stop="toggleTooltip(refs.showProjectsTooltip)">
+              <v-icon :class="['h-5 w-5 m-1 duration-500',
+                showProjectsTooltip ? ' rotate-180' : '']" name="md-settings-round"/>
+            </div>
+            <PorjectPreview :assigned="onlyAssigned" :date="new Date(date)"/>
+            <div v-if="showProjectsTooltip"
+                 class="absolute top-9 right-2 bg-white border border-emerald-900 p-2 rounded-lg shadow z-10">
+              <div>
+                <label class="font-semibold mr-2" for="onlyAssigned">Only assigned</label>
+                <input id="onlyAssigned" v-model="onlyAssigned" type="checkbox" @change="updatePreferences"/>
+              </div>
             </div>
           </div>
         </div>
