@@ -98,7 +98,6 @@ export const addInvite = async (inviteeUsername: string, answerDate: Date, title
 
     try {
         await newInvite.save();
-
         const user = await getUserByUsername(inviteeUsername);
         const notificationTitle = `Invite to join ${title}`;
         const body = `${inviters.join(', ')} invited you to join ${newInvite.eventId ? 'event' : 'activity'} ${title}. You can accept, decline or postpone the invite from the Calendar.`;

@@ -133,6 +133,7 @@ export const addEvent = async (req: any, res: any) => {
         });
 
         await newEvent.save();
+        await automaticallyAnswerInvites(newEvent);
         await inviteController.createInvitesForEvent(newEvent);
         await jobSchedulerService.scheduleEventNotification(newEvent);
 
