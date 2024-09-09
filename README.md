@@ -7,6 +7,7 @@ A website to help students manage their private, social and academic life.
   - [Frontend](#frontend)
   - [Backend](#backend)
 - [Choice of Technology](#choice-of-technology)
+- [Use of AI](#use-of-ai)
 - [Project Setup](#project-setup)
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
@@ -123,6 +124,12 @@ env.local
 - **fake-timers**: Fake Timers is a library that is used for mocking timers. We mainly used it with the time machine.
 - **nodmailer** and **node-pushnotifications**: Nodemailer and node-pushnotifications are libraries that are used for
   sending emails and push notifications to the users.
+
+## Use of AI
+Github Copilot was used an assistant for the project. It helped with the code completion and the code suggestions on repetitive tasks, such as completing the navbar for all the routes.  
+It wasn't used on all the functions that required knowledge of the project or data structures, such as the scheduling of the tasks, as it would not have been able to understand the logic behind the scheduling.
+We also did not use it for any graphic task, as graphic design is not its strong suit.  
+This documentation, especially the "Project Structure" part, was partly generated with AI.
 
 ## Project Setup
 
