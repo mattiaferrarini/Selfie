@@ -20,7 +20,7 @@
         <form @submit.stop="changeNotificationType">
           <label class="block text-sm font-medium text-gray-700" for="notification_mode">Notification Type</label>
           <select id="notification_mode" v-model="notificationType" class="w-full px-3 py-2 mb-3 border rounded"
-                  required type="password">
+                  required>
             <option value="email">Email</option>
             <option value="push">Web Push</option>
             <option value="both">Both</option>
@@ -33,17 +33,19 @@
       <fieldset class="border-2 rounded-xl border-emerald-500 mt-2 p-2 sm:p-4">
         <legend class="text-center text-2xl px-0.5">Change Password</legend>
         <form @submit.stop="changePassword">
+          <!-- username field for accessibility -->
+          <input autocomplete="username" type="text" class="hidden" value="{{user?.username}}">
           <label class="block text-sm font-medium text-gray-700" for="old_password">Old Password</label>
-          <input id="old_password" v-model="old_password" class="w-full px-3 py-2 mb-3 border rounded"
-                 placeholder="Old Password" required
+          <input id="old_password" v-model="old_password" autocomplete="current-password"
+                 class="w-full px-3 py-2 mb-3 border rounded" placeholder="Old Password" required
                  type="password"/>
           <label class="block text-sm font-medium text-gray-700" for="new_password">New Password</label>
-          <input id="new_password" v-model="new_password" class="w-full px-3 py-2 mb-3 border rounded"
-                 placeholder="New Password" required
+          <input id="new_password" v-model="new_password" autocomplete="new-password"
+                 class="w-full px-3 py-2 mb-3 border rounded" placeholder="New Password" required
                  type="password"/>
           <label class="block text-sm font-medium text-gray-700" for="new_password_r">Repeat New Password</label>
-          <input id="new_password_r" v-model="new_password_r" class="w-full px-3 py-2 mb-3 border rounded"
-                 placeholder="Repeat New Password" required
+          <input id="new_password_r" v-model="new_password_r" autocomplete="new-password"
+                 class="w-full px-3 py-2 mb-3 border rounded" placeholder="Repeat New Password" required
                  type="password"/>
           <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
                  value="Change Password"/>
@@ -54,7 +56,8 @@
         <legend class="text-center text-2xl px-0.5">Change Birthday</legend>
         <form @submit.stop="changeBirthday">
           <label class="block text-sm font-medium text-gray-700" for="birthday">Birthday</label>
-          <input id="birthday" v-model="birthday" :max="(new Date()).toISOString().substring(0,10)" class="w-full px-3 py-2 mb-3 border rounded"
+          <input id="birthday" v-model="birthday" :max="(new Date()).toISOString().substring(0,10)"
+                 class="w-full px-3 py-2 mb-3 border rounded"
                  min="1900-01-01" required type="date"/>
           <input class="w-full px-3 py-2 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
                  value="Change Birthday"/>

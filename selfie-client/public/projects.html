@@ -12,7 +12,7 @@
     <script type="module" src="modalComponent.js"></script>
     <script type="module" src="clickOutsideComponent.js"></script>
     <script type="module" src="ganttComponent.js"></script>
-    <script type="module" src="progetti.js" defer></script>
+    <script type="module" src="projects.js" defer></script>
     <link rel="stylesheet" type="text/css" href="./tailwind.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
@@ -85,7 +85,7 @@
                         </svg>
                     </div>
                 </a>
-                <a href="/progetti.html"
+                <a href="/projects.html"
                    class="font-semibold sm:p-1 sm:border-2 hover:border-emerald-500 rounded-xl text-emerald-700 sm:border-teal-500">
                     <span class="hidden sm:block">Project</span>
                     <div class="block sm:hidden h-7 w-7">
@@ -184,17 +184,23 @@
         </div>
     </nav>
     <div class="flex flex-col min-h-screen p-3 pt-14 sm:pt-20">
-        <div class="w-full h-full mb-3">
-            <label for="visualType">Visualization:</label>
-            <select id="visualType" class="p-1 ml-1 mr-4">
-                <option value="list">List</option>
-                <option value="gantt">Gantt</option>
-            </select>
-            <label for="selectedProject">Progetto:
-                <select id="selectedProject" class="p-1 ml-1">
+        <div class="w-full h-full mb-3 flex sm:gap-2 gap-1">
+            <div class="flex items-center px-2 py-2 rounded-md bg-slate-200 gap-2">
+                <label for="visualType" class="font-semibold text-gray-700 hidden sm:block">Visualization</label>
+                <select id="visualType" class="py-1 px-2 rounded-md bg-gray-100">
+                    <option value="list">List</option>
+                    <option value="gantt">Gantt</option>
                 </select>
-            </label>
+            </div>
+            <div class="flex items-center px-2 py-2 rounded-md bg-slate-200 gap-2">
+                <label for="selectedProject" class="font-semibold text-gray-700 hidden sm:block">Project</label>
+                <select id="selectedProject" class="py-1 px-2 rounded-md bg-gray-100">
+                </select>
+            </div>
         </div>
+        <header id="projectHeader" class="inline-flex items-center flex-wrap w-full justify-between mt-2 mb-8">
+            <!-- Project title and action buttons -->
+        </header>
         <div id="listView">
         </div>
         <div id="ganttView" class="hidden">
@@ -216,7 +222,7 @@
             <h2 id="modalTitle" class="text-xl font-bold mb-4">Add/Edit Project</h2>
             <div id="errorMessage" class="hidden text-red-500"></div>
             <form id="projectForm" class="flex flex-col gap-y-2">
-                <div class="overflow-y-auto max-h-[75vh]">
+                <div class="overflow-y-auto max-h-[75vh] p-1">
                     <div class="border border-gray-300 rounded-md mb-2 flex gap-8 p-2 items-center shadow-md">
                         <label for="projectTitle" class="text-lg font-semibold">Title</label>
                         <input type="text" id="projectTitle" placeholder="Project Title" required
@@ -233,7 +239,7 @@
                     </div>
                     <div class="border rounded-md p-2 mt-2 border-gray-300 shadow-md">
                         <h3 class="text-lg font-semibold mb-1">Phases</h3>
-                        <div id="phasesContainer">
+                        <div id="phasesContainer" class="overflow-x-auto">
                             <!-- Phases and activities will be dynamically added here -->
                         </div>
                         <button type="button" id="addPhase"
@@ -254,11 +260,11 @@
             <div id="editErrorMessage" class="hidden text-red-500"></div>
             <form id="editProjectActivityForm" class="flex flex-col gap-y-2">
                 <input type="hidden" id="editProjectActivityId">
-                <label for="editInput">Input:</label>
-                <input type="text" id="editInput" class="p-2 border border-gray-300 rounded-md">
-                <label for="editOutput">Output:</label>
-                <input type="text" id="editOutput" class="p-2 border border-gray-300 rounded-md">
-                <label for="editStatus">Status:</label>
+                <label for="editInput" class="font-semibold">Input</label>
+                <input type="text" id="editInput" class="p-2 border border-gray-300 rounded-md mb-1">
+                <label for="editOutput" class="font-semibold">Output</label>
+                <input type="text" id="editOutput" class="p-2 border border-gray-300 rounded-md mb-1">
+                <label for="editStatus" class="font-semibold">Status</label>
                 <select id="editStatus" class="p-2 border border-gray-300 rounded-md" required>
                     <option value="NotStarted">Not Started</option>
                     <option value="Started">Started</option>
@@ -266,10 +272,10 @@
                     <option value="Rejected">Rejected</option>
                     <option value="Abandoned">Abandoned</option>
                 </select>
-                <div class="flex justify-end gap-x-2">
-                    <button type="button" id="cancelProjectEditButton" class="bg-gray-500 text-white p-2 rounded-md">Cancel
+                <div class="flex justify-end gap-x-1 mt-4">
+                    <button type="button" id="cancelProjectEditButton" class="bg-gray-500 text-white py-2 px-8 rounded-md">Cancel
                     </button>
-                    <button type="submit" class="bg-emerald-500 text-white p-2 rounded-md">Save</button>
+                    <button type="submit" class="bg-emerald-500 text-white py-2 px-8 rounded-md">Save</button>
                 </div>
             </form>
         </modal-component>

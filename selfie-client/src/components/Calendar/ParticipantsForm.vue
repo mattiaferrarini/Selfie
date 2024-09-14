@@ -97,46 +97,43 @@ export default defineComponent({
             this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
         },
         async addParticipant() {
-            try{
+            try {
                 const userData = await userService.getUserBasicInfo(this.newUsername);
-            if (userData) {
-                if (!this.userAlreadyAdded(userData.username)) {
-                    if(this.event){
-                        // event case: check if user is available
-                        const unavailabilities = await unavailabilityService.getOverlappingUnavailabilities(userData.username, this.event);
-                        if(unavailabilities.length > 0){
-                            this.onUnavailableUser();
+                if (userData) {
+                    if (userData.isResource) {
+                        if (this.event) {
+                            this.newParticipants.push({ username: userData.username, status: 'pending' });
+                            this.onAddSuccess();
                         }
-                        else{
-                            this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
+                        else {
+                            // resources can only be added to events
+                            this.onResourceActivityError();
+                        }
+                    }
+                    else {
+                        if (this.event) {
+                            // event case: check if user is available
+                            const unavailabilities = await unavailabilityService.getOverlappingUnavailabilities(userData.username, this.event);
+                            if (unavailabilities.length > 0) {
+                                this.onUnavailableUser();
+                            }
+                            else {
+                                this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending' });
+                                this.onAddSuccess();
+                            }
+                        }
+                        else {
+                            // activity case: add user
+                            this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending' });
                             this.onAddSuccess();
                         }
                     }
-                    else{
-                        // activity case: add user
-                        this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
-                        this.onAddSuccess();
-                    }
-                }
-                else
-                    this.onAddSuccess();
-            } 
-            else if(this.event){
-                //check if user is a resource
-                const resource = await resourceService.getResource(this.newUsername);
-                if(resource){
-                    this.newParticipants.push({ username: resource.username, status: 'pending'});
-                    this.onAddSuccess();
                 }
                 else {
                     this.onUserNotExisting();
                 }
             }
-            else {
-                this.onUserNotExisting();
-            }
-            }
-            catch(error){
+            catch (error) {
                 this.onUserAddError();
             }
             this.newUsername = '';
@@ -162,6 +159,10 @@ export default defineComponent({
         },
         onUserAddError() {
             this.failureText = `An error occurred while adding ${this.newUsername}.`;
+            this.onAddFailure();
+        },
+        onResourceActivityError() {
+            this.failureText = `Resources can only be added to events.`;
             this.onAddFailure();
         },
         onAddFailure() {
