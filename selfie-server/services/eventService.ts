@@ -75,7 +75,7 @@ const yearlyOverlap = (event1: any, event2: any) => {
     return firstRepetitionOverlap(event1, event2);
 }
 
-// Chekcs if the first (relative) repetition of event1 overlaps with the first (relative) repetition of event2.
+// Checks if the first (relative) repetition of event1 overlaps with the first (relative) repetition of event2.
 // It can be used for cases where to overlap will not happen unless it also happen on the first (relative) repetition
 const firstRepetitionOverlap = (event1: any, event2: any) => {
     const {start: nextStart2, end: nextEnd2} = getNextRepetition(event2, event1.start);
