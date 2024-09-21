@@ -68,7 +68,7 @@ export const createInvitesForEvent = async (event: IEvent) => {
             }
         }
         catch {
-            console.log("Error creating invite");
+            console.error(`Error creating invite for ${participant.username} for event ID ${eventId}`);
         }
     }
 }
@@ -86,7 +86,9 @@ export const createInvitesForActivity = async (activity: IActivity) => {
                 await addInvite(participant.username, answerDate, activity.title, activity.owners, undefined, activityId);
             }
         }
-        catch { }
+        catch {
+            console.error(`Error creating invite for ${participant.username} for activity ID ${activityId}`);
+        }
     }
 }
 
@@ -110,7 +112,6 @@ export const addInvite = async (inviteeUsername: string, answerDate: Date, title
             await notificationController.sendNotification(user, { title: notificationTitle, body: body });
     }
     catch (error) {
-        console.log(error);
         throw new Error("Error creating invite");
     }
 }

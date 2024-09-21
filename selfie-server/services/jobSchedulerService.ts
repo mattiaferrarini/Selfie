@@ -31,7 +31,6 @@ const scheduleEventNotification = async (event: IEvent, referenceDate?: Date) =>
 // Schedules the START of event notification for a specific event's repetition
 const scheduleEventNotificationStart = async (event: IEvent, eventRepStart: Date, eventRepEnd: Date) => {
     try {
-        console.log('scheduling event notification start for event', event.title);
         const jobName = jobs.eventNotificationStartJobName;
 
         // determine when notification should begin
@@ -86,8 +85,6 @@ const updateUpcomingEventNotification = async (event: IEvent) => {
 
 // Deletes the current notification jobs for an event
 const clearEventNotifications = async (event: IEvent) => {
-    console.log('clearing existing event notifications for event', event.title);
-
     const eventId = event._id;
     let deletedCount = await agenda.cancel({ name: jobs.eventNotificationStartJobName, 'data.eventId': eventId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.eventNotificationJobName, 'data.eventId': eventId }) || 0;
@@ -179,7 +176,6 @@ const notifyActivityToday = async (activity: IActivity) => {
 
         let notificationStart = timeService.getStartOfDay(now);
         const numberOfReps = getNumberOfActivityNotifications(activity, now);
-        console.log('now:', now, 'numberOfReps:', numberOfReps);
         const frequency = Math.ceil(24 * 60 / numberOfReps);
 
         for(let i = 0; i < numberOfReps; i++){
@@ -206,8 +202,6 @@ const updateLateActivityNotification = async (activity: IActivity) => {
 
 // Deletes the current notification jobs for an activity
 const clearActivityNotifications = async (activity: IActivity) => {
-    console.log('clearing existing activity notifications for activity', activity.title);
-
     const activityId = activity._id;
     let deletedCount = await agenda.cancel({ name: jobs.activityNotificationStartJobName, 'data.activityId': activityId }) || 0;
     deletedCount += await agenda.cancel({ name: jobs.activityNotificationJobName, 'data.activityId': activityId }) || 0;
