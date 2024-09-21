@@ -5,6 +5,7 @@ import jobSchedulerService from "../services/jobSchedulerService";
 import notificationController from "./notificationController";
 import _ from 'lodash';
 
+// Format an activity for response
 const formatActivity = (activity: any) => {
     return {
         id: activity._id,
@@ -21,15 +22,18 @@ const formatActivity = (activity: any) => {
     };
 }
 
+// Get all accepted activities for a user
 export const getActivitiesByUser = async (req: any, res: any) => {
     const {username} = req.params;
     const {start, end} = req.query;
     const authUsername = req.user.username;
 
+    // check if the user is allowed to access the activities
     if(!authUsername || username !== authUsername)
         return res.status(403).send({error: "You are not allowed to access this user's activities!"});
 
     try {
+        // get all activities where the user is a participant
         let activities = await Activity.find({
             participants: {
                 $elemMatch: {
@@ -82,10 +86,12 @@ export const getPomodoroStats = async (req: any, res: any) => {
     }
 }
 
+// Get the activity with the given ID
 export const getActivityById = async (req: any, res: any) => {
     const {id} = req.params;
     const authUsername = req.user.username;
 
+    // check if the user is allowed to access the activity
     if(!authUsername || !await accessAllowed(id, authUsername))
         return res.status(403).send({error: "You are not allowed to access this activity!"});
 
@@ -97,16 +103,7 @@ export const getActivityById = async (req: any, res: any) => {
     }
 }
 
-export const deleteActivityById = async (id: any) => {
-    const activity = await Activity.findById(id);
-
-    if (activity) {
-        await jobSchedulerService.clearActivityNotifications(activity);
-        await Activity.findByIdAndDelete(id);
-        await inviteController.deleteActivityInvites(id);
-    }
-}
-
+// Delete an activity
 export const deleteActivity = async (req: any, res: any) => {
     const {id} = req.params;
     const authUsername = req.user.username;
@@ -122,6 +119,7 @@ export const deleteActivity = async (req: any, res: any) => {
     }
 }
 
+// Delete an activity and all its sub-activities
 export const recursiveDeleteActivity = async (id: string) => {
     const activity = await Activity.findById(id);
 
@@ -136,21 +134,18 @@ export const recursiveDeleteActivity = async (id: string) => {
         }
 }
 
-export const createActivity = async (newActivity: any, req: any) => {
-    if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
-        const completedCycles = newActivity.pomodoro.completedCycles;
-        const participants = newActivity.participants.map((participant: any) => participant.username);
+// Delete an activity by ID
+export const deleteActivityById = async (id: any) => {
+    const activity = await Activity.findById(id);
 
-        participants.forEach((username: string) => {
-            if (username !== req.user.username)
-                completedCycles.set(username, 0);
-        });
-
-        newActivity.pomodoro.completedCycles = completedCycles;
+    if (activity) {
+        await jobSchedulerService.clearActivityNotifications(activity);
+        await Activity.findByIdAndDelete(id);
+        await inviteController.deleteActivityInvites(id);
     }
-    await newActivity.save();
 }
 
+// Add an activity
 export const addActivity = async (req: any, res: any) => {
     const newActivity = new Activity({
         title: req.body.title,
@@ -175,11 +170,29 @@ export const addActivity = async (req: any, res: any) => {
     }
 }
 
+// Create an activity
+export const createActivity = async (newActivity: any, req: any) => {
+    if (newActivity.pomodoro && newActivity.pomodoro.completedCycles) {
+        const completedCycles = newActivity.pomodoro.completedCycles;
+        const participants = newActivity.participants.map((participant: any) => participant.username);
+
+        participants.forEach((username: string) => {
+            if (username !== req.user.username)
+                completedCycles.set(username, 0);
+        });
+
+        newActivity.pomodoro.completedCycles = completedCycles;
+    }
+    await newActivity.save();
+}
+
+// Modify an activity
 export const modifyActivity = async (req: any, res: any) => {
     const {id} = req.params;
     const authUsername = req.user.username;
 
-    if(!authUsername || !await modificationAllowed(id, authUsername))
+    // check permissions
+    if(!authUsername || !(await modificationAllowed(id, authUsername) || (await accessAllowed(id, authUsername) && await onlyChangingDoneValue(id, authUsername, req.body))))
         return res.status(403).send({error: "You are not allowed to modify this activity!"});
 
     try {
@@ -232,6 +245,7 @@ export const modifyActivity = async (req: any, res: any) => {
     }
 }
 
+// Notify all participants of an activity that it has been updated
 const notifyOfChanges = async(activity: IActivity, committer: string) => {
     activity.participants.forEach((participant: any) => {
         if(participant.status === 'accepted' && participant.username !== committer){
@@ -240,6 +254,7 @@ const notifyOfChanges = async(activity: IActivity, committer: string) => {
     });
 }
 
+// Change the status of a participant in an activity
 export const changeParticipantStatus = async (id: string, username: string, newStatus: string) => {
     try {
         const activity = await Activity.findById(id);
@@ -258,6 +273,7 @@ export const changeParticipantStatus = async (id: string, username: string, newS
     }
 }
 
+// Remove a participant from an activity
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
     const authUsername = req.user.username;
@@ -270,6 +286,7 @@ export const removeParticipant = async (req: any, res: any) => {
     }
 }
 
+// Return true if the user is allowed to access the activity, false otherwise
 const accessAllowed = async (activityId: string, authUsername: string) => {
     try {
         const activity = await Activity.findById(activityId);
@@ -284,6 +301,7 @@ const accessAllowed = async (activityId: string, authUsername: string) => {
 
 }
 
+// Return true if the user is allowed to modify the activity, false otherwise
 const modificationAllowed = async (activityId: string, authUsername: string) => {
     try {
         const activity = await Activity.findById(activityId);
@@ -293,6 +311,31 @@ const modificationAllowed = async (activityId: string, authUsername: string) => 
             return false;
     }
     catch{
+        return false;
+    }
+}
+
+// Return true if the only changing value is done, false otherwise
+const onlyChangingDoneValue = async (activityId: string, authUsername: string, newActivity: any) => {
+    try {
+        const activity = await Activity.findById(activityId);
+        if (activity) {
+            const activityCopy = _.cloneDeep(activity.toObject());
+            const newActivityCopy = _.cloneDeep(new Activity(newActivity).toObject());
+
+            activityCopy.done = newActivityCopy.done;
+            activityCopy._id = undefined;
+            activityCopy.id = undefined;
+            activityCopy.__v = undefined;
+            newActivityCopy._id = undefined;
+            newActivityCopy.id = undefined;
+            newActivityCopy.__v = undefined;
+
+            return _.isEqual(activityCopy, newActivityCopy);
+        }
+        return false;
+    }
+    catch {
         return false;
     }
 }

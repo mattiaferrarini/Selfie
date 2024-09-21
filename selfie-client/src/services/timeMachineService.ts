@@ -11,7 +11,7 @@ const setGlobalClock = async (date: Date) => {
         const response = await axios.post(`${API_URL}/setGlobalClock`, {date}, {withCredentials: true});
         setLocalGlobalClock(date);
     } catch (error: any) {
-        console.log(error.response.data);
+        throw new Error(error.response.data);
     }
 }
 
@@ -33,7 +33,7 @@ const restoreGlobalClock = async () => {
             clock = undefined;
         }
     } catch (error: any) {
-        console.log(error.response.data);
+        throw new Error(error.response.data);
     }
 }
 

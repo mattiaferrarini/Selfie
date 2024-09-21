@@ -1,6 +1,7 @@
 import timeService from "./timeService";
 import Event from "../models/Event";
 
+// Checks if an event overlaps with a period of time
 const eventInRange = (event: any, start: Date, end: Date): boolean => {
     // the event representing the selected period of time
     const periodEvent = new Event();
@@ -10,6 +11,7 @@ const eventInRange = (event: any, start: Date, end: Date): boolean => {
     return eventsOverlap(event, periodEvent);
 }
 
+// Check if two events overlap
 const eventsOverlap = (event1: any, event2: any) => {
     if (event1.repetition.frequency === 'never')
         return noRepOverlap(event1, event2);
@@ -68,13 +70,13 @@ const monthlyOverlap = (event1: any, event2: any) => {
     }
 }
 
-// both events must have yearly repetition
+// Both events must have yearly repetition
 const yearlyOverlap = (event1: any, event2: any) => {
     return firstRepetitionOverlap(event1, event2);
 }
 
-// to check if the first (relative) repetition of event1 overlaps with the first (relative) repetition of event2
-// it can be used for cases where to overlap will not happen unless it also happen on the first (relative) repetition
+// Chekcs if the first (relative) repetition of event1 overlaps with the first (relative) repetition of event2.
+// It can be used for cases where to overlap will not happen unless it also happen on the first (relative) repetition
 const firstRepetitionOverlap = (event1: any, event2: any) => {
     const {start: nextStart2, end: nextEnd2} = getNextRepetition(event2, event1.start);
 
@@ -89,7 +91,7 @@ const firstRepetitionOverlap = (event1: any, event2: any) => {
         return false;
 }
 
-// check if an overlap happens in the next maxReps (relative) repetitions of event1 and event2
+// Check if an overlap happens in the next maxReps (relative) repetitions of event1 and event2
 const overlapInNextRepetitions = (event1: any, event2: any, maxReps: number) => {
     let {start: nextStart2, end: nextEnd2} = getNextRepetition(event2, event1.start);
     let nextStart1 = new Date(event1.start), nextEnd1 = new Date(event1.end);
@@ -114,7 +116,9 @@ const overlapInNextRepetitions = (event1: any, event2: any, maxReps: number) => 
     return false;
 }
 
-// get the next (relative) repetition of an event after a reference date
+// Get the next (relative) repetition of an event after the START (00:00) of reference date.
+// Recurrence limits are ignored.
+// If the event is not repeated, the start and end dates are returned as they are.
 const getNextRepetition = (event: any, referenceDate: Date): { start: Date, end: Date } => {
     if (event.repetition.frequency === 'never' || event.start > timeService.getEndOfDay(referenceDate))
         return {start: event.start, end: event.end};
@@ -168,7 +172,8 @@ const getNextRepetition = (event: any, referenceDate: Date): { start: Date, end:
     return {start: nextRepetition, end: nextRepetitionEnd};
 }
 
-// this assumes that the provided dates were obtained from the getNextRepetition method
+// Check if a repetition is valid.
+// It assumes that the provided dates were obtained from the getNextRepetition method.
 const isValidRepetition = (event: any, repStart: Date, repEnd: Date): boolean => {
     if (event.repetition.frequency === 'never' || event.repetition.until === 'infinity')
         return true;
@@ -189,11 +194,21 @@ const isValidRepetition = (event: any, repStart: Date, repEnd: Date): boolean =>
         return false;
 }
 
+// Get the next valid repetition of an event after the reference date.
 const getNextValidRepetition = (event: any, referenceDate: Date): { start: Date | null, end: Date | null } => {
     let {start, end} = getNextRepetition(event, referenceDate);
 
-    if (isValidRepetition(event, start, end) && referenceDate < end)
-        return {start, end};
+    if (isValidRepetition(event, start, end)){
+        if (referenceDate < end)
+            return {start, end};
+        else{
+            let {start, end} = getNextRepetition(event, timeService.moveAheadByDays(referenceDate, 1));
+            if (isValidRepetition(event, start, end) && referenceDate < end)
+                return {start, end};
+            else
+                return {start: null, end: null};
+        }
+    } 
     else
         return {start: null, end: null};
 }

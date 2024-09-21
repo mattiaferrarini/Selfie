@@ -9,8 +9,10 @@ import * as resourceController from './resourceController';
 import * as unavailabilityController from './unavailabilityController';
 import jobSchedulerService from '../services/jobSchedulerService';
 import notificationController from './notificationController';
+import { getUserByUsername } from './userController';
 import _ from 'lodash';
 
+// Format an event for response
 const formatEvent = (event: any) => {
     return {
         id: event._id,
@@ -27,13 +29,14 @@ const formatEvent = (event: any) => {
     };
 }
 
-// Function to get all events with a specified user as a participant
+// Get all events with a specified user as a participant
 export const getEventsByUser = async (req: any, res: any) => {
     const { username } = req.params;
     const { start, end } = req.query;
 
     const authUsername = req.user.username;
 
+    // Check if the user is allowed to view the events
     if(!authUsername || authUsername !== username && !isResource(username))
         return res.status(403).send({ error: "You are not allowed to view this user's events!" });
     
@@ -44,12 +47,12 @@ export const getEventsByUser = async (req: any, res: any) => {
         let events = await getEventsByUserAndDate(username, startDate, endDate);
         let formattedEvents = events.map((event: any) => formatEvent(event));
         res.status(200).send(formattedEvents);
-        //res.status(200).send(events);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving events' });
     }
 }
 
+// Get all events with a specified user as a participant within a specified date range
 export const getEventsByUserAndDate = async (username: string, start?: Date, end?: Date) => {
     try {
         let events = await getAcceptedEventsByUser(username);
@@ -64,6 +67,7 @@ export const getEventsByUserAndDate = async (username: string, start?: Date, end
     }
 }
 
+// Get all events with a specified user as an accepted participant
 export const getAcceptedEventsByUser = async (username: string) => {
     try {
         let events = await Event.find({
@@ -80,6 +84,7 @@ export const getAcceptedEventsByUser = async (username: string) => {
     }
 }
 
+// Get an event by ID
 export const getEventById = async (req: any, res: any) => {
     const { id } = req.params;
 
@@ -94,7 +99,7 @@ export const getEventById = async (req: any, res: any) => {
     }
 }
 
-// Function to delete an event by ID
+// Delete an event
 export const deleteEvent = async (req: any, res: any) => {
     const { id } = req.params;
 
@@ -116,7 +121,7 @@ export const deleteEvent = async (req: any, res: any) => {
     }
 }
 
-// Function to add a new event
+// Add a new event
 export const addEvent = async (req: any, res: any) => {
     try {
         const newEvent = new Event({
@@ -143,11 +148,12 @@ export const addEvent = async (req: any, res: any) => {
     }
 }
 
-// Function to modify an existing event by ID
+// Modify an event
 export const modifyEvent = async (req: any, res: any) => {
     const { id } = req.params;
     const authUsername = req.user.username;
 
+    // check permissions
     if(!authUsername || !await modificationAllowed(id, authUsername, req.user.isAdmin))
         return res.status(403).send({ error: "You are not allowed to modify this event!" });
 
@@ -189,8 +195,8 @@ export const modifyEvent = async (req: any, res: any) => {
     }
 }
 
-// automatically add participant if it's a free resource
-// automatically decline if it's an unavailable user
+// Automatically add participant if it's a free resource
+// Automatically decline if it's an unavailable user
 const automaticallyAnswerInvites = async (event: IEvent) => {
     const participants = event.participants;
     for(let i = 0; i < participants.length; i++){
@@ -205,7 +211,7 @@ const automaticallyAnswerInvites = async (event: IEvent) => {
                     participant.status = 'pending';
                 }
             }
-            else{
+            else if(await getUserByUsername(participant.username)){
                 try{
                     if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
                         participant.status = 'declined';
@@ -214,11 +220,16 @@ const automaticallyAnswerInvites = async (event: IEvent) => {
                     participant.status = 'pending';
                 }
             }
+            else{
+                // username doesn't exist
+                participant.status = 'declined';
+            }
         }
     }
     await event.save();
 }
 
+// Notify all participants of an event that it has been updated
 const notifyOfChanges = async(event: IEvent, committer: string) => {
     event.participants.forEach((participant: any) => {
         if(participant.status === 'accepted' && participant.username !== committer){
@@ -227,6 +238,7 @@ const notifyOfChanges = async(event: IEvent, committer: string) => {
     });
 }
 
+// Import an iCalendar file
 export const importICalendar = async (req: any, res: any) => {
     const { icalStr } = req.body;
     try {
@@ -237,6 +249,7 @@ export const importICalendar = async (req: any, res: any) => {
     }
 }
 
+// Send all event export data via email
 export const sendExportViaEmail = async (req: any, res: any) => {
     const file = req.file;
     const {to, eventName, yahooLink, googleLink, outlookLink} = req.body;
@@ -259,6 +272,7 @@ export const sendExportViaEmail = async (req: any, res: any) => {
     }
 }
 
+// Change the status of a participant in an event
 export const changeParticipantStatus = async (id: string, username:string, newStatus: string) => {
     try {
         const event = await Event.findById(id);
@@ -266,7 +280,6 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
             event.participants.forEach((participant: any) => {
                 if (participant.username === username) {
                     participant.status = newStatus;
-                    console.log("Participant status changed");
                 }
             });
             await event.save();
@@ -279,6 +292,7 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
     }
 }
 
+// Check if an event overlaps with other events of a user
 export const otherEventsOverlap = async (username: string, event: IEvent) => {
     try{
         let events = await getAcceptedEventsByUser(username);
@@ -290,6 +304,7 @@ export const otherEventsOverlap = async (username: string, event: IEvent) => {
     }
 }
 
+// Remove a participant from an event
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
     const authUsername = req.user.username;
@@ -302,6 +317,7 @@ export const removeParticipant = async (req: any, res: any) => {
     }
 }
 
+// Return true if the user is allowed to access the event, false otherwise
 const accessAllowed = async (id: string, authUsername: string) => {
     try {
         const event = await Event.findById(id);
@@ -316,6 +332,7 @@ const accessAllowed = async (id: string, authUsername: string) => {
     }
 }
 
+// Return true if the user is allowed to modify the event, false otherwise
 const modificationAllowed = async (id: string, authUsername: string, isAdmin: boolean) => {
     try {
         const event = await Event.findById(id);

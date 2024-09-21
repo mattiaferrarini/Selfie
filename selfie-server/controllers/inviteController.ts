@@ -5,10 +5,10 @@ import timeService from "../services/timeService";
 import Event, { IEvent } from "../models/Event";
 import Activity, { IActivity } from "../models/Activity";
 import * as resourceController from "./resourceController";
-import * as unavailabilityController from "./unavailabilityController";
 import notificationController from "./notificationController";
 import { getUserByUsername } from "./userController";
 
+// Format an invite for response
 const formatInvite = (invite: IInvite) => {
     return {
         id: invite._id,
@@ -19,6 +19,7 @@ const formatInvite = (invite: IInvite) => {
     }
 }
 
+// Get all pending invites for a user
 export const getPendingInvitesByUser = async (req: any, res: any) => {
     const authUsername = req.user?.username;
     const authIsAdmin = req.user?.isAdmin;
@@ -46,6 +47,7 @@ export const getPendingInvitesByUser = async (req: any, res: any) => {
     }
 }
 
+// Create invites for an event
 export const createInvitesForEvent = async (event: IEvent) => {
     const participants = event.participants;
     const answerDate = new Date();
@@ -71,6 +73,7 @@ export const createInvitesForEvent = async (event: IEvent) => {
     }
 }
 
+// Create invites for an activity
 export const createInvitesForActivity = async (activity: IActivity) => {
     const participants = activity.participants;
     const answerDate = new Date();
@@ -87,6 +90,7 @@ export const createInvitesForActivity = async (activity: IActivity) => {
     }
 }
 
+// Create a single invite
 export const addInvite = async (inviteeUsername: string, answerDate: Date, title: string, inviters: string[], eventId?: string, activityId?: string) => {
     const newInvite = new Invite({
         inviters: inviters,
@@ -111,6 +115,7 @@ export const addInvite = async (inviteeUsername: string, answerDate: Date, title
     }
 }
 
+// Check if an invite already exists
 export const inviteAlreadyExists = async (inviteeUsername: string, eventId?: string, activityId?: string) => {
     try {
         const invite = await Invite.findOne({ inviteeUsername: inviteeUsername, eventId: eventId, activityId: activityId });
@@ -120,7 +125,8 @@ export const inviteAlreadyExists = async (inviteeUsername: string, eventId?: str
     }
 }
 
-export const deleteEventInvites = async (eventId: string,) => {
+// Delete all invites for an event
+export const deleteEventInvites = async (eventId: string) => {
     try {
         await Invite.deleteMany({ eventId: eventId });
     } catch (error) {
@@ -128,6 +134,7 @@ export const deleteEventInvites = async (eventId: string,) => {
     }
 }
 
+// Delete all invites for an activity
 export const deleteActivityInvites = async (activityId: string) => {
     try {
         await Invite.deleteMany({ activityId: activityId });
@@ -136,6 +143,7 @@ export const deleteActivityInvites = async (activityId: string) => {
     }
 }
 
+// Delete all event invites for specific users
 export const deleteEventParticipantsInvites = async (eventId: string, usernames: string[]) => {
     try {
         await Invite.deleteMany({ eventId: eventId, inviteeUsername: { $in: usernames } });
@@ -144,6 +152,7 @@ export const deleteEventParticipantsInvites = async (eventId: string, usernames:
     }
 }
 
+// Delete all activity invites for specific users
 export const deleteActivityParticipantsInvites = async (activityId: string, usernames: string[]) => {
     try {
         await Invite.deleteMany({ activityId: activityId, inviteeUsername: { $in: usernames } });
@@ -152,6 +161,7 @@ export const deleteActivityParticipantsInvites = async (activityId: string, user
     }
 }
 
+// Delete an invite by ID
 export const deleteInvite = async (id: string) => {
     try {
         await Invite.findByIdAndDelete(id);
@@ -160,14 +170,17 @@ export const deleteInvite = async (id: string) => {
     }
 }
 
+// Accept an invite
 export const acceptInvite = async (req: any, res: any) => {
     await actOnInvite(req, res, 'accepted');
 }
 
+// Decline an invite
 export const declineInvite = async (req: any, res: any) => {
     await actOnInvite(req, res, 'declined');
 }
 
+// Postpone an invite
 export const postponeInvite = async (req: any, res: any) => {
     const { id } = req.params;
     const authUsername = req.user?.username;
@@ -194,6 +207,7 @@ export const postponeInvite = async (req: any, res: any) => {
     }
 }
 
+// Act on an invite (accept or decline)
 const actOnInvite = async (req: any, res: any, response: string) => {
     const { id } = req.params;
     const authUsername = req.user?.username;
@@ -203,14 +217,10 @@ const actOnInvite = async (req: any, res: any, response: string) => {
         const invite = await Invite.findById(id);
         if (invite) {
             if (await accessAllowed(authUsername, authIsAdmin, invite.inviteeUsername)) {
-                if (invite.eventId)
-                    await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
-                else if (invite.activityId)
-                    await activityController.changeParticipantStatus(invite.activityId as string, invite.inviteeUsername, response);
-
                 let inviters = [];
                 let title = '';
 
+                // change the participant status in the event/activity
                 if (invite.eventId) {
                     await eventController.changeParticipantStatus(invite.eventId as string, invite.inviteeUsername, response);
                     const event = await Event.findById(invite.eventId);
@@ -228,6 +238,7 @@ const actOnInvite = async (req: any, res: any, response: string) => {
                     }
                 }
 
+                // send notifications to the inviters
                 for (let i = 0; i < inviters.length; i++) {
                     const inviter = invite.inviters[i];
                     const user = await getUserByUsername(inviter);
@@ -254,6 +265,7 @@ const actOnInvite = async (req: any, res: any, response: string) => {
     }
 }
 
+// Check if the user has access to the invite
 const accessAllowed = async (authUsername: string, isAdmin: boolean, inviteeUsername: string) => {
     return authUsername === inviteeUsername || isAdmin && await resourceController.isResource(inviteeUsername);
 }

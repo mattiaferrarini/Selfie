@@ -1,11 +1,12 @@
 <script lang="ts">
-import { ref, computed, defineComponent, onMounted, watch } from 'vue';
+import { ref, computed, defineComponent, onMounted, watch, onErrorCaptured } from 'vue';
 import EventForm from "@/components/Calendar/EventForm.vue";
 import ActivitiesList from "@/components/Calendar/ActivitiesList.vue";
 import AppointmentsCalendar from "@/components/Calendar/AppointmentsCalendar.vue";
 import ActivityForm from "@/components/Calendar/ActivityForm.vue";
 import UnavailabilityForm from '@/components/Calendar/UnavailabilityForm.vue';
 import InvitesList from '@/components/Calendar/InvitesList.vue';
+import ErrorModal from '@/components/ErrorModal.vue';
 import timeMethods from '@/services/timeService';
 import { CalendarEvent } from '@/models/Event';
 import { Activity } from '@/models/Activity';
@@ -29,7 +30,8 @@ export default defineComponent({
     ActivitiesList,
     ActivityForm,
     UnavailabilityForm,
-    InvitesList
+    InvitesList,
+    ErrorModal
   },
   setup() {
     /* store instances */
@@ -68,27 +70,54 @@ export default defineComponent({
 
     /* Fetch content of the view */
     const fetchUserEvents = async () => {
-      rangeUserEvents.value = await eventService.getEventsByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
-      if (content.value === 'appointments' || content.value === 'events')
-        rangeEvents.value = rangeUserEvents.value;
+      try {
+        rangeUserEvents.value = await eventService.getEventsByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+        if (content.value === 'appointments' || content.value === 'events')
+          rangeEvents.value = rangeUserEvents.value;
+      }
+      catch {
+        displayError('Failed to fetch events.');
+      }
     };
     const fetchActivities = async () => {
-      rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      try{
+        rangeActivities.value = await activityService.getActivitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      }
+      catch {
+        displayError('Failed to fetch activities.');
+      }
     };
     const fetchUnavailabilities = async () => {
-      rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      try{
+        rangeUnavailabilities.value = await unavailabilityService.getUnavailabilitiesByUser(authStore.user.username, rangeStartDate.value, rangeEndDate.value);
+      }
+      catch {
+        displayError('Failed to fetch unavailabilities.');
+      }
     };
     const fetchResources = async () => {
-      allResources.value = await resourceService.getAllResources();
-      if (allResources.value.length > 0)
-        selectedResourceName.value = allResources.value[0].name;
+      try {
+        allResources.value = await resourceService.getAllResources();
+        if (allResources.value.length > 0)
+          selectedResourceName.value = allResources.value[0].name;
+      }
+      catch {
+        displayError('Failed to fetch resources.');
+      }
     };
     const fetchResourceEvents = async () => {
       const resourceUsername = allResources.value.find(res => res.name === selectedResourceName.value)?.username;
       if (!resourceUsername) 
         return [];
-      else
-        return await eventService.getEventsByUser(resourceUsername, rangeStartDate.value, rangeEndDate.value);
+      else{
+        try{
+          return await eventService.getEventsByUser(resourceUsername, rangeStartDate.value, rangeEndDate.value);
+        }
+        catch {
+          displayError('Failed to fetch resource events.');
+          return [];
+        }
+      }
     };
     const reFetchCalendarContent = async () => {
       await fetchUserEvents();
@@ -209,7 +238,13 @@ export default defineComponent({
         const index = rangeEvents.value.findIndex(event => event.id === newEvent.id);
         rangeEvents.value[index] = newEvent;
       } else {
-        rangeEvents.value.push(newEvent);
+        rangeUserEvents.value.push(newEvent);
+
+        if (content.value === 'resources'){
+          const resourceUsername = allResources.value.find(res => res.name === selectedResourceName.value)?.username;
+          if(resourceUsername && newEvent.participants.some(p => p.username === resourceUsername && p.status === 'accepted'))
+            rangeEvents.value.push(newEvent);
+        }
       }
       hideAllForms();
     };
@@ -225,12 +260,21 @@ export default defineComponent({
       hideAllForms();
     };
     const markAsDone = async (activity: Activity) => {
-      activity.done = true;
-      await activityService.modifyActivity(activity);
+      setDoneActivity(activity, true);
     };
     const undoActivity = async (activity: Activity) => {
-      activity.done = false;
-      await activityService.modifyActivity(activity);
+      setDoneActivity(activity, false);
+    };
+    const setDoneActivity = async (activity: Activity, done: boolean) => {
+      const origianlDone = activity.done;
+      try{
+        activity.done = done;
+        await activityService.modifyActivity(activity);
+      }
+      catch{
+        activity.done = origianlDone;
+        displayError('Failed to update activity.');
+      }
     };
     const deleteActivity = (activity: Activity) => {
       fetchActivities();
@@ -265,20 +309,30 @@ export default defineComponent({
       showInviteList.value = false;
     }
     const acceptInvite = async (invite: Invite) => {
-      if (invite.eventId) {
-        const event = await eventService.getEventById(invite.eventId);
-        if (event)
-          rangeUserEvents.value.push(event);
+      try {
+        if (invite.eventId) {
+          const event = await eventService.getEventById(invite.eventId);
+          if (event)
+            rangeUserEvents.value.push(event);
+        }
+        else if (invite.activityId) {
+          const activity = await activityService.getActivityById(invite.activityId);
+          if (activity)
+            rangeActivities.value.push(activity);
+        }
       }
-      else if (invite.activityId) {
-        const activity = await activityService.getActivityById(invite.activityId);
-        if (activity)
-          rangeActivities.value.push(activity);
+      catch {
+        displayError('Failed to accept invite.');
       }
     }
     const checkInvites = async () => {
-      const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
-      hasPendingInvites.value = invites.length > 0;
+      try{
+        const invites = await inviteService.getPendingInvitesByUser(authStore.user.username, focusDate.value);
+        hasPendingInvites.value = invites.length > 0;
+      }
+      catch {
+        displayError('Failed to fetch invites.');
+      }
     };
 
     /* Computed properties */
@@ -298,8 +352,18 @@ export default defineComponent({
       return content.value === 'resources';
     });
 
+    /* Error handling */
+    const errorMessages = ref<string[]>([]);
+    const displayError = (message: string) => {
+      errorMessages.value.push(message);
+    };
+    const closeErrorModal = () => {
+      errorMessages.value = [];
+    };
+
     /* Lifecycle hooks */
     onMounted(async () => {
+      
       // Set the time range for the current period
       const [start, end] = getRangeDates();
       rangeStartDate.value = start;
@@ -332,14 +396,14 @@ export default defineComponent({
     });
 
     return {
-      next: nextPeriod, prev: prevPeriod, resetCalendar, closeAddForms, view, content, onViewChange, showEventForm,
-      showActivityForm, showUnavailabilityForm, currentDate: focusDate, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
+      nextPeriod, prevPeriod, resetCalendar, closeAddForms, view, content, onViewChange, showEventForm,
+      showActivityForm, showUnavailabilityForm, focusDate, saveEvent, showForm, saveActivity, rangeEvents, showAppointments,
       modifyEvent, rangeActivities, modifyActivity, markAsDone, undoActivity, rangeUnavailabilities, saveUnavailability,
       showAddOptions, openAddOptions, closeAddOptions, currentDisplayedPeriodString, modifyUnavailability,
       selectedEvent, selectedActivity, selectedUnavailability, openAddEventForm, openAddActivityForm, openUnavailabilityForm,
-      modifying, deleteEvent, deleteActivity, deleteUnavailability, resource: selectedResourceName, onResourceChange, allResources, onContentChange,
+      modifying, deleteEvent, deleteActivity, deleteUnavailability, selectedResourceName, onResourceChange, allResources, onContentChange,
       showInviteList, openInviteList, closeInviteList, noInvites, authStore, hasPendingInvites, showAddButton,
-      eventAdminOnlyModification, acceptInvite
+      eventAdminOnlyModification, acceptInvite, errorMessages, closeErrorModal, displayError
     };
   },
 });
@@ -350,12 +414,12 @@ export default defineComponent({
     <nav class="text-gray-700 py-4 px-2 sm:px-4">
       <div class="flex justify-between items-center h-full">
         <div class="h-full flex gap-0.5 flex-wrap">
-          <select id="view" name="view" v-model="view" class="mr-0.5 px-1 py-1.5 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onViewChange">
+          <select id="view" name="view" v-model="view" class="mr-0.5 px-1 py-2 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onViewChange">
             <option value="day">Day</option>
             <option value="week">Week</option>
             <option value="month">Month</option>
           </select>
-          <select id="content" name="content" v-model="content" class="px-1 py-1.5 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onContentChange">
+          <select id="content" name="content" v-model="content" class="px-1 py-2 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onContentChange">
             <option value="appointments">Appointments</option>
             <option value="events">Events</option>
             <option value="activities">Activities</option>
@@ -369,17 +433,17 @@ export default defineComponent({
             <button @click="resetCalendar" class="bg-gray-400 rounded-full size-8 sm:size-10 flex justify-center items-center">
               <v-icon name="fa-undo" class="text-white w-full h-full p-2 sm:p-2.5"></v-icon>
             </button>
-            <button @click="prev" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
+            <button @click="prevPeriod" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
               <v-icon name="md-arrowbackiosnew" class="text-white w-full h-full mr-0.5 p-1.5 sm:p-2"></v-icon>
             </button>
-            <button @click="next" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
+            <button @click="nextPeriod" class="bg-emerald-600 rounded-full size-8 sm:size-10 flex justify-center items-center">
               <v-icon name="md-arrowforwardios" class="text-white w-full h-full ml-0.5 p-1.5 sm:p-2"></v-icon>
             </button>
           </div>
         </div>
       </div>
       <div v-if="content === 'resources'" class="mt-1">
-        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource"
+        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="selectedResourceName"
           class="mr-2 p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
@@ -389,7 +453,7 @@ export default defineComponent({
 
     <main class="animate-fade-in">
       <div class="w-full flex justify-center items-center">
-      <VueDatePicker v-model="currentDate" :auto-apply="true" :enableTimePicker="false"
+      <VueDatePicker v-model="focusDate" :auto-apply="true" :enableTimePicker="false"
         class="cursor-pointer z-10 max-w-[250px]">
         <template #trigger>
           <div class="clickable-text flex items-center justify-center">
@@ -402,14 +466,14 @@ export default defineComponent({
 
     <AppointmentsCalendar v-if="showAppointments" @modifyEvent="modifyEvent" @modifyActivity="modifyActivity"
       @undoActivity="undoActivity" @markAsDone="markAsDone" @modify-unavailability="modifyUnavailability"
-      :currentDate="currentDate" :view="view" :allEvents="rangeEvents"
+      :currentDate="focusDate" :view="view" :allEvents="rangeEvents"
       :include-events="content === 'appointments' || content === 'events' || content === 'resources'"
       :includeActivities="content === 'appointments'" :allActivities="rangeActivities"
       :include-projects="content === 'appointments' || content === 'activities'"
       :all-unavailabilities="rangeUnavailabilities" :include-unavailable="content === 'unavailabilities'"/>
 
     <ActivitiesList v-if="content === 'activities' || content === 'projects'" @modify-activity="modifyActivity" @mark-as-done="markAsDone"
-      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="currentDate" :view="view"
+      @undo-activity="undoActivity" :activities="rangeActivities" :current-date="focusDate" :view="view"
       :include-ordinary-activities="content === 'activities'" :include-project-activities="content === 'projects'"/>
     </main>
 
@@ -430,21 +494,21 @@ export default defineComponent({
 
     <div v-if="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <EventForm v-if="showEventForm" @close-form="closeAddForms" @save-event="saveEvent" @delete-event="deleteEvent"
-        :event="selectedEvent" :modifying="modifying" :current-date="currentDate"
-        :admin-only-modification="eventAdminOnlyModification" />
+        :event="selectedEvent" :modifying="modifying" :current-date="focusDate"
+        :admin-only-modification="eventAdminOnlyModification" @error="displayError"/>
       <ActivityForm v-if="showActivityForm" @close-form="closeAddForms" @save-activity="saveActivity"
         @delete-activity="deleteActivity" :activity="selectedActivity" :modifying="modifying"
-        :current-date="currentDate" class="m-4" />
+        :current-date="focusDate" class="m-4" @error="displayError"/>
       <UnavailabilityForm v-if="showUnavailabilityForm" @close-form="closeAddForms"
         @delete-unavailability="deleteUnavailability" @save-unavailability="saveUnavailability"
-        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="currentDate"/>
+        :unavailability="selectedUnavailability" :modifying="modifying" :current-date="focusDate"/>
     </div>
 
     <div v-if="showInviteList" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div v-click-outside="closeInviteList" class="bg-white p-4 m-4 rounded-lg shadow-lg relative w-full max-w-[600px]">
         <h2 class="text-lg font-bold mb-4 text-gray-800">Pending invites</h2>
-        <InvitesList :username="authStore.user.username" :currentDate="currentDate" @no-invites="noInvites"
-          @accept-invite="acceptInvite" />
+        <InvitesList :username="authStore.user.username" :currentDate="focusDate" @no-invites="noInvites"
+          @accept-invite="acceptInvite" @error="displayError"/>
       </div>
     </div>
 
@@ -455,6 +519,7 @@ export default defineComponent({
       </button>
     </div>
 
+    <ErrorModal v-if="errorMessages.length > 0" :messages="errorMessages" @close="closeErrorModal" />
   </div>
 </template>
 

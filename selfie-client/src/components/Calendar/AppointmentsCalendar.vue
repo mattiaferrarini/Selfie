@@ -66,7 +66,7 @@
                                         <div v-if="activity.start && timeMethods.sameDate(activity.start, date)" class="bg-blue-500 px-1 rounded-md text-white">
                                             Start
                                         </div>
-                                        <div v-else class="bg-orange-500 px-1 rounded-md text-white">
+                                        <div v-else class="bg-orange-400 px-1 rounded-md text-white">
                                             Deadline
                                         </div>
                                         <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
@@ -279,8 +279,7 @@ export default defineComponent({
             return eventRecurrenceService.isValidRepetition(event, repStart, repEnd);
         },
         isLateActivity(activity: Activity, date: Date): boolean {
-            const startOfDay = timeMethods.getStartOfDay(date);
-            return !activity.done && activity.deadline < timeMethods.getEndOfDay(this.today);
+            return !activity.done && activity.deadline < timeMethods.getStartOfDay(this.today);
         }
     },
     computed: {

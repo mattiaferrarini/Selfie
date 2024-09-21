@@ -5,6 +5,7 @@ import jobSchedulerService from "../services/jobSchedulerService";
 import timeService from "../services/timeService";
 import notificationController from "../controllers/notificationController";
 import {getUserByUsername} from "../controllers/userController";
+import eventService from "../services/eventService";
 
 
 const eventNotificationStartJobName = 'event notification start';
@@ -76,13 +77,14 @@ const defineEventNotification = async (agenda: Agenda) => {
 const sendNotificationsForEvent = async (event: IEvent) => {
 
     const title = `Event ${event.title} is starting soon!`;
-    const body = `You have an event at ${event.start}. Don't miss it!`;
+    const {start: repStart, end: repEnd} = eventService.getNextValidRepetition(event, timeService.getStartOfDay(new Date()));
+    const body = `You have an event at ${repStart}. Don't miss it!`;
 
     for (const participant of event.participants) {
         if (participant.status === 'accepted' && participant.email) {
             if (event.notification.method.includes('email')) {
                 try {
-                    notificationController.sendEmailNotification(participant.email, title, body);
+                    await notificationController.sendEmailNotification(participant.email, title, body);
                 } catch (error) {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
@@ -91,7 +93,7 @@ const sendNotificationsForEvent = async (event: IEvent) => {
                 try {
                     const user = await getUserByUsername(participant.username);
                     if (user)
-                        notificationController.sendPushNotification(user, {title: title, body: body});
+                        await notificationController.sendPushNotification(user, {title: title, body: body});
                     else
                         console.error(`Failed to send push notification to ${participant.email}: User not found`);
                 } catch {
@@ -164,7 +166,7 @@ const sendNotificationsForActivity = async (activity: IActivity) => {
         if (participant.status === 'accepted') {
             if (activity.notification.method.includes('email')) {
                 try {
-                    notificationController.sendEmailNotification(participant.email, title, body);
+                    await notificationController.sendEmailNotification(participant.email, title, body);
                 } catch (error) {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
@@ -173,7 +175,7 @@ const sendNotificationsForActivity = async (activity: IActivity) => {
                 try {
                     const user = await getUserByUsername(participant.username);
                     if (user)
-                        notificationController.sendPushNotification(user, {title: title, body: body});
+                        await notificationController.sendPushNotification(user, {title: title, body: body});
                     else
                         console.error(`Failed to send push notification to ${participant.email}: User not found`);
                 } catch (error) {
