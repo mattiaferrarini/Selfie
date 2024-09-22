@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!project) // no project exists
             return;
-
+      
         const activities = project.phases.flatMap(phase =>
             phase.activities.map(activity => ({
                 ...activity,
