@@ -8,25 +8,25 @@
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
         <label><input type="text" placeholder="Untitled Unavailability" required class="w-full"
-            v-model="newUnavailability.title"></label><br>
+            v-model="newUnavailability.title" aria-label="Unavailability title"></label><br>
       </div>
       <hr>
       <div>
         <label><input type="checkbox" v-model="newUnavailability.allDay"> All-day</label><br>
 
         <div class="flex items-center justify-between w-full gap-4 mt-3">
-          <label> Start </label>
+          <label id="start-label"> Start </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedStartDate">
-            <input type="time" v-if="!newUnavailability.allDay" v-model="newStartTime">
+            <input type="date" v-model="formattedStartDate" aria-labelledby="start-label">
+            <input type="time" v-if="!newUnavailability.allDay" v-model="newStartTime" aria-labelledby="start-label">
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full gap-4 mb-3">
-          <label> End </label>
+        <div class="flex items-center justify-between w-full gap-4 mt-1 mb-3">
+          <label id="end-label"> End </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedEndDate" :min="minEndDate">
-            <input type="time" v-if="!newUnavailability.allDay" v-model="newEndTime" :min="minEndTime">
+            <input type="date" v-model="formattedEndDate" :min="minEndDate" aria-labelledby="end-label">
+            <input type="time" v-if="!newUnavailability.allDay" v-model="newEndTime" :min="minEndTime" aria-labelledby="end-label">
           </div>
         </div>
 
@@ -75,7 +75,7 @@
       </div>
     </form>
 
-    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+    <ConfirmationModal v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
       @confirm="deleteUnavailability" />
 
   </div>
@@ -86,13 +86,13 @@ import { defineComponent } from 'vue';
 import { Unavailability } from '@/models/Unavailability';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
-import ConfirmationPanel from './ConfirmationPanel.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 import moment from 'moment-timezone';
 import unavailabilityService from '@/services/unavailabilityService';
 
 export default defineComponent({
   components: {
-    ConfirmationPanel
+    ConfirmationModal
   },
   props: {
     unavailability: {
@@ -108,7 +108,7 @@ export default defineComponent({
       required: true
     }
   },
-  emits: ['closeForm', 'saveUnavailability', 'deleteUnavailability'],
+  emits: ['closeForm', 'saveUnavailability', 'deleteUnavailability', 'error'],
   data() {
     return {
       authStore: useAuthStore(),
@@ -160,7 +160,8 @@ export default defineComponent({
     },
     async saveUnavailability(unav: Unavailability) {
 
-      let res: Unavailability;
+      try{
+        let res: Unavailability;
       
       if(this.modifying)
         res = await unavailabilityService.modifyUnavailability(unav);
@@ -168,6 +169,10 @@ export default defineComponent({
         res = await unavailabilityService.addUnavailability(unav);
 
       this.$emit('saveUnavailability', res);
+      }
+      catch{
+        this.$emit('error', 'Failed to save unavailability');
+      }
     },
     handleDeleteRequest() {
       this.confirmationMessage = "Are you sure you want to delete this unavailability?";
@@ -177,8 +182,13 @@ export default defineComponent({
     },
     async deleteUnavailability() {
       this.confirmationMessage = "";
-      await unavailabilityService.deleteUnavailability(this.newUnavailability);
+      try{
+        await unavailabilityService.deleteUnavailability(this.newUnavailability);
       this.$emit('deleteUnavailability', this.newUnavailability);
+      }
+      catch{
+        this.$emit('error', 'Failed to delete unavailability');
+      }
     },
     enforceTemporalCoherence() {
       if (this.newUnavailability.start > this.newUnavailability.end) {

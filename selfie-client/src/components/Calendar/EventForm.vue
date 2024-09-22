@@ -8,26 +8,26 @@
     <form class="flex flex-col" @submit="handleSubmit">
       <div>
         <label><input type="text" placeholder="Untitled Event" required v-model="newEvent.title" class="w-full"
-            :disabled="!modificationAllowed"></label>
+            :disabled="!modificationAllowed" aria-label="Event title"></label>
       </div>
       <hr>
       <div>
         <label><input type="checkbox" v-model="newEvent.allDay" :disabled="!modificationAllowed"> All-day</label><br>
 
         <div class="flex items-center justify-between w-full gap-4 mt-3">
-          <label> Start </label>
+          <label id="start-label"> Start </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
-            <input type="time" v-if="!newEvent.allDay" v-model="newStartTime" :disabled="!modificationAllowed">
+            <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed" aria-labelledby="start-label">
+            <input type="time" v-if="!newEvent.allDay" v-model="newStartTime" :disabled="!modificationAllowed" aria-labelledby="start-label">
           </div>
         </div>
 
-        <div class="flex items-center justify-between w-full gap-4 mb-3">
-          <label> End </label>
+        <div class="flex items-center justify-between w-full gap-4 mt-1 mb-3">
+          <label id="end-label"> End </label>
           <div class="flex gap-1">
-            <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed" :min="minEndDate">
+            <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed" :min="minEndDate" aria-labelledby="end-label">
             <input type="time" v-if="!newEvent.allDay" v-model="newEndTime" :disabled="!modificationAllowed"
-              :min="minEndTime">
+              :min="minEndTime" aria-labelledby="end-label">
           </div>
         </div>
 
@@ -79,7 +79,7 @@
       <div>
         <div class="flex items-center justify-between w-full gap-4">
           Participants
-          <button type="button" @click="openParticipantsForm" @click.stop>
+          <button type="button" @click="openParticipantsForm" @click.stop aria-label="Open participant panel">
             {{ newEvent.participants.length }}
             <v-icon name="md-navigatenext" />
           </button>
@@ -150,7 +150,7 @@
 
     <EventExportPanel v-if="showExportPanel" :event="newEvent" @closePanel="closeExportPanel" />
 
-    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+    <ConfirmationModal v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
       @confirm="deleteEvent" />
 
   </div>
@@ -164,14 +164,14 @@ import { CalendarEvent } from '@/models/Event';
 import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import eventService from '@/services/eventService';
-import ConfirmationPanel from './ConfirmationPanel.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 import moment from 'moment-timezone';
 
 export default defineComponent({
   components: {
     ParticipantsForm,
     EventExportPanel,
-    ConfirmationPanel
+    ConfirmationModal
   },
   props: {
     event: {
@@ -191,7 +191,7 @@ export default defineComponent({
       default: true
     }
   },
-  emits: ['closeForm', 'saveEvent', 'deleteEvent'],
+  emits: ['closeForm', 'saveEvent', 'deleteEvent', 'error'],
   data() {
     return {
       newEvent: { ...this.event },
@@ -264,14 +264,18 @@ export default defineComponent({
       this.newEvent.end = timeService.convertToTimezone(this.newEvent.end, this.newEvent.timezone);
     },
     async saveEvent(event: CalendarEvent) {
-      let res: CalendarEvent;
-      
-      if(this.modifying)
-        res = await eventService.modifyEvent(event);
-      else
-        res = await eventService.addEvent(event);
+      try {
+        let res: CalendarEvent;
+        if (this.modifying)
+          res = await eventService.modifyEvent(event);
+        else
+          res = await eventService.addEvent(event);
 
-      this.$emit('saveEvent', res);
+        this.$emit('saveEvent', res);
+      }
+      catch {
+        this.$emit('error', 'Failed to save event.');
+      }
     },
     openParticipantsForm() {
       this.updateTimesOfNewEvent();
@@ -293,14 +297,19 @@ export default defineComponent({
     async deleteEvent() {
       this.confirmationMessage = '';
 
-      if(this.modificationAllowed){
-        await eventService.deleteEvent(this.event);
-      }
-      else{
-        await eventService.removeParticipantFromEvent(this.event, this.authStore.user.username);
-      }
+      try {
+        if (this.modificationAllowed) {
+          await eventService.deleteEvent(this.event);
+        }
+        else {
+          await eventService.removeParticipantFromEvent(this.event, this.authStore.user.username);
+        }
 
-      this.$emit('deleteEvent', this.newEvent);
+        this.$emit('deleteEvent', this.newEvent);
+      }
+      catch {
+        this.$emit('error', 'Failed to delete event.');
+      }
     },
     openExportPanel() {
       this.showExportPanel = true;
@@ -324,7 +333,15 @@ export default defineComponent({
       }
     },
     async setUploadedFile(fileContent: string) {
-      this.newEvent = await eventService.convertICalendarToEvent(fileContent);
+      try{
+        this.newEvent = await eventService.convertICalendarToEvent(fileContent);
+        this.newEvent.owner = this.authStore.user.username;
+        this.newEvent.timezone = moment.tz.guess();
+        this.setTimes();
+      }
+      catch{
+        this.$emit('error', 'Failed to import event.');
+      }
     },
     enforceTemporalCoherence() {
       if (this.newEvent.start > this.newEvent.end) {

@@ -4,6 +4,7 @@ import timeService from "../services/timeService";
 import { getEventsByUserAndDate } from "./eventController";
 import notificationController from "./notificationController";
 
+// Format a resource for response
 const formatResource = (resource: any) => {
     return {
         id: resource._id,
@@ -12,7 +13,7 @@ const formatResource = (resource: any) => {
     };
 }
 
-// Function to get all resources
+// Get all resources
 export const getAllResources = async (req: any, res: any) => {
     try {
         const resources = await Resource.find();
@@ -23,7 +24,7 @@ export const getAllResources = async (req: any, res: any) => {
     }
 }
 
-// Function to get a resource by username
+// Get a resource by username
 export const getResource = async (req: any, res: any) => {
     const { username } = req.params;
     const resource = await Resource.findOne({ username });
@@ -35,7 +36,7 @@ export const getResource = async (req: any, res: any) => {
     }
 }
 
-// Function to add a new resource
+// Add a new resource
 export const addResource = async (req: any, res: any) => {
     const name = req.body.name, username = req.body.username;
 
@@ -53,7 +54,7 @@ export const addResource = async (req: any, res: any) => {
     }
 }
 
-// Function to delete a resource by ID
+// Delete a resource by ID
 export const deleteResource = async (req: any, res: any) => {
     const { id } = req.params;
     try {
@@ -70,10 +71,11 @@ export const deleteResource = async (req: any, res: any) => {
     }
 }
 
+// Notify all participants of an event that a resource has been deleted
 const notifyOfDeletion = async (Resource: IResource) => {
     const username = Resource.username;
     const now = new Date();
-    const farFuture = timeService.moveAheadByYears(now, 1);
+    const farFuture = timeService.moveAheadByYears(now, 10);
 
     // get future events that the resource is part of
     const events = await getEventsByUserAndDate(username, now, farFuture);
@@ -97,12 +99,14 @@ const notifyOfDeletion = async (Resource: IResource) => {
     });
 }
 
+// Check if a resource with the given username exists
 export const isResource = async (username: string) => {
     const resource = await Resource.findOne({ username });
     return !!resource;
 }
 
-export const getResourcesByUsername = async (username: string) => {
+// Find a resource by username
+export const getResourceByUsername = async (username: string) => {
     try{
         return await Resource.findOne({ username });
     }

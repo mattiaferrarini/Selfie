@@ -6,8 +6,8 @@
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
                     <input type="text" placeholder="Add username" v-model="newUsername" @keyup.enter="addParticipant"
-                        class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md">
-                    <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md"><v-icon name="md-add"></v-icon></button>
+                        class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md" aria-label="Insert participant username">
+                    <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md" aria-label="Add participant"><v-icon name="md-add"></v-icon></button>
                 </div>
                 <p v-if="noMessagesDisplayed" class="mt-2 text-gray-600">Save in calendar to invite all participants.</p>
                 <p v-if="successfulAdd" class="mt-2 text-gray-600">The user was added.</p>
@@ -48,7 +48,6 @@ import { defineComponent } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import userService from '@/services/userService';
 import unavailabilityService from '@/services/unavailabilityService';
-import resourceService from '@/services/resourceService';
 import { CalendarEvent } from '@/models/Event';
 
 export default defineComponent({

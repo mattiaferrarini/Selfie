@@ -35,7 +35,7 @@
             @click="goToCalendarActivity(pair.activity)">
             <div class="flex gap-2">
               <div v-if="pair.type === 'start'" class="bg-blue-500 px-1 rounded-md text-white">Start</div>
-              <div v-else class="bg-orange-500 px-1 rounded-md text-white">Deadline</div>
+              <div v-else class="bg-orange-400 px-1 rounded-md text-white">Deadline</div>
               <p :class="{ 'text-red-500': isLateActivity(pair.activity), 'text-gray-600': !isLateActivity(pair.activity) }">
                 {{ pair.activity.title }}
               </p>

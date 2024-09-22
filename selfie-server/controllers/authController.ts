@@ -1,6 +1,6 @@
 import User from "../models/User";
 import passport from "passport";
-import {getResourcesByUsername} from "./resourceController";
+import {getResourceByUsername} from "./resourceController";
 import {getUserByUsername} from "./userController";
 
 
@@ -25,7 +25,7 @@ const default_preferences = {
 export const register = async (req: any, res: any, next: any) => {
     const {username, realName, email, password, birthday} = req.body;
     try {
-        if (await getResourcesByUsername(username) || await getUserByUsername(username)) {
+        if (await getResourceByUsername(username) || await getUserByUsername(username)) {
             res.status(400).send('Username not available');
             return;
         } else {

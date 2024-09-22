@@ -61,7 +61,7 @@
               </span>
             </button>
             <div v-if="showTooltip"
-              class="absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
+              class="flex flex-col items-center absolute right-1 sm:right-10 md:right-20 top-12 sm:top-16 bg-white border-2 border-emerald-900 p-4 rounded-lg shadow shadow-emerald-800 z-10">
               <div class="flex">
                 <div class="flex flex-col">
                   <input v-model="selectedDate" class="p-2 mb-2 border border-gray-300 rounded-md" type="date">
@@ -74,7 +74,7 @@
                   </button>
                 </div>
               </div>
-              <p v-if="timeMachineMessage.length > 0" class="text-center mt-2" :class="{'text-red-500': isErrorMessage, 'text-gray-700': !isErrorMessage}">{{ timeMachineMessage }}</p>
+              <p v-if="timeMachineMessage.length > 0" class="text-center mt-2 max-w-48" :class="{'text-red-500': isErrorMessage, 'text-gray-700': !isErrorMessage}">{{ timeMachineMessage }}</p>
             </div>
           </div>
           <router-link v-if="isAdmin" active-class="text-emerald-700 sm:border-teal-500"
@@ -156,6 +156,8 @@ export default defineComponent({
     const setCurrentDate = async () => {
       const oldDate = new Date();
       const date = new Date(selectedDate.value);
+      date.setHours(Number(selectedTime.value.split(':')[0]), Number(selectedTime.value.split(':')[1]));
+
       try {
         await timeMachineService.setGlobalClock(date).then(() => {
           dateStore.setCurrentDate(date);
@@ -208,7 +210,8 @@ export default defineComponent({
         dateStore.setCurrentDate(date);
       }
       catch{
-        // TODO: handle error
+        toggleTooltip();
+        displayTimeMachineMessage('Failed to recover time.', true);
       }
     });
 

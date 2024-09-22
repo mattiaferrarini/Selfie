@@ -1,6 +1,6 @@
 import { model, Schema, Document } from 'mongoose';
 
-export interface IActivity extends Document{
+export interface IActivity extends Document {
     title: string;
     owners: string[];
     done: boolean;
@@ -67,23 +67,20 @@ const ActivitySchema = new Schema({
             required: true
         }
     },
-    participants: {
-        type: [{
-            username: {
-                type: String,
-                required: true
-            },
-            email: {
-                type: String,
-                required: false
-            },  
-            status: {
-                type: String,
-                required: true
-            }
-        }],
-        required: true
-    },
+    participants: [{
+        username: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: false
+        },
+        status: {
+            type: String,
+            required: true
+        }
+    }],
     subActivitiesIDs: {
         type: [String],
         required: false
