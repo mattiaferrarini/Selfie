@@ -134,7 +134,7 @@ This documentation, especially the "Project Structure" part, was partly generate
 
 ## Contributors
 - Mattia Ferrarini, mattia.ferrarini3@studio.unibo.it;
-  - Calendar, Actvites, Invites, Time Machine, Home View, Projects
+  - Calendar, Admin View, Job Scheduling, Time Machine, Home View, Projects
 - Fabio Murer, fabio.murer@studio.unibo.it;
   - Notes, Gantt, Deploy, Home View, Database, Tasks
 - Matteo Fornaini, matteo.fornaini@studio.unibo.it;
