@@ -18,12 +18,12 @@ import session from "express-session";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import strategy from "./config/passport";
-import { ensureAuthenticated } from "./middlewares/authMiddleware";
+import {ensureAuthenticated} from "./middlewares/authMiddleware";
 import * as http from "node:http";
-import { IUser } from "./models/User";
+import {IUser} from "./models/User";
 import WebSocket from 'ws';
-import { handleConnection } from "./ws/wsHandler";
-import { Agenda } from 'agenda';
+import {handleConnection} from "./ws/wsHandler";
+import {Agenda} from 'agenda';
 import jobs from './agenda/jobs';
 
 dotenv.config({path: __dirname + '/.env.local'});
@@ -79,8 +79,7 @@ const agenda = new Agenda({
         // Define jobs
         await jobs.defineJobs(agenda);
         console.log('Agenda started');
-    }
-    catch (error) {
+    } catch (error) {
         console.error('Failed to start agenda:', error);
     }
 })();
@@ -127,7 +126,7 @@ app.use('/project', ensureAuthenticated, projectRoutes);
 
 const server = http.createServer(app);
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({server});
 
 const userConnections = new Map<string, WebSocket[]>();
 wss.on('connection', (ws, req: any) => {
@@ -150,4 +149,4 @@ wss.on('connection', (ws, req: any) => {
 
 server.listen(PORT);
 
-export { agenda };
+export {agenda};
