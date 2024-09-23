@@ -443,7 +443,7 @@ export default defineComponent({
         </div>
       </div>
       <div v-if="content === 'resources'" class="mt-1">
-        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="resource"
+        <select v-if="allResources.length > 0" id="resource" name="resource" v-model="selectedResourceName"
           class="mr-2 p-1 sm:p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
