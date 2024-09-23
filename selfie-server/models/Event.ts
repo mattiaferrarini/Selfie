@@ -99,9 +99,18 @@ const EventSchema = new Schema({
         }
     },
     participants: [{
-        username: { type: String, required: true },
-        email: { type: String, required: false },
-        status: { type: String, required: true }
+        username: { 
+            type: String, 
+            required: true 
+        },
+        email: { 
+            type: String, 
+            required: false 
+        },
+        status: { 
+            type: String, 
+            required: true 
+        }
     }]
 });
 

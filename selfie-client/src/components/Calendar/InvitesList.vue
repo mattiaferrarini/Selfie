@@ -8,10 +8,12 @@
                         <div v-html="formattedDescription(inviteInfos[index].description)"></div>
                     </div>
                     <div class="flex gap-x-1 mt-4 mb-1">
-                        <button @click="declineInvite(invInf.invite)" class="flex-1 bg-red-600 action-button">Decline</button>
+                        <button @click="declineInvite(invInf.invite)"
+                            class="flex-1 bg-red-600 action-button">Decline</button>
                         <button @click="postponeInvite(invInf.invite)"
                             class="flex-1 bg-gray-400 action-button">Postpone</button>
-                        <button @click="acceptInvite(invInf.invite)" class="flex-1 bg-emerald-600 action-button">Accept</button>
+                        <button @click="acceptInvite(invInf.invite)"
+                            class="flex-1 bg-emerald-600 action-button">Accept</button>
                     </div>
                 </div>
             </li>
@@ -56,10 +58,10 @@ export default defineComponent({
             immediate: true
         }
     },
-    emits: ['no-invites', 'accept-invite', 'decline-invite', 'postpone-invite'],
+    emits: ['no-invites', 'accept-invite', 'decline-invite', 'postpone-invite', 'error'],
     methods: {
-        formattedDescription(description: string) :string {
-        return description.replace(/\n/g, '<br>');
+        formattedDescription(description: string): string {
+            return description.replace(/\n/g, '<br>');
         },
         async fetchInviteInfos() {
             try {
@@ -69,43 +71,58 @@ export default defineComponent({
                 for (let invite of invites) {
                     if (invite.eventId) {
                         const event = await eventService.getEventById(invite.eventId)
-                        if(event)
+                        if (event)
                             newInfos.push(this.formatEventInvite(invite, event));
                     }
                     else if (invite.activityId) {
                         const activity = await activityService.getActivityById(invite.activityId)
-                        if(activity)
+                        if (activity)
                             newInfos.push(this.formatActivityInvite(invite, activity));
                     }
                 }
                 this.inviteInfos = newInfos;
             }
             catch {
-                return;
+                this.$emit('error', 'Failed to fetch invites.');
             }
         },
         async acceptInvite(invite: Invite) {
-            await inviteService.acceptInvite(invite);
-            this.removeInvite(invite);
-            this.$emit('accept-invite', invite);
+            try {
+                await inviteService.acceptInvite(invite);
+                this.removeInvite(invite);
+                this.$emit('accept-invite', invite);
+            }
+            catch {
+                this.$emit('error', 'Failed to accept invite.');
+            }
         },
         async declineInvite(invite: Invite) {
-            await inviteService.declineInvite(invite);
-            this.removeInvite(invite);
-            this.$emit('decline-invite', invite);
+            try {
+                await inviteService.declineInvite(invite);
+                this.removeInvite(invite);
+                this.$emit('decline-invite', invite);
+            }
+            catch {
+                this.$emit('error', 'Failed to decline invite.');
+            }
         },
         async postponeInvite(invite: Invite) {
-            await inviteService.postponeInvite(invite);
-            this.removeInvite(invite);
-            this.$emit('postpone-invite', invite);
+            try {
+                await inviteService.postponeInvite(invite);
+                this.removeInvite(invite);
+                this.$emit('postpone-invite', invite);
+            }
+            catch {
+                this.$emit('error', 'Failed to postpone invite.');
+            }
         },
         removeInvite(invite: Invite) {
             this.inviteInfos = this.inviteInfos.filter(inviteInfo => inviteInfo.invite.id !== invite.id);
-            if(this.inviteInfos.length === 0) {
+            if (this.inviteInfos.length === 0) {
                 this.$emit('no-invites');
             }
         },
-        formatEventInvite(invite: Invite, event: CalendarEvent): {invite: Invite, title: string, description: string } {
+        formatEventInvite(invite: Invite, event: CalendarEvent): { invite: Invite, title: string, description: string } {
 
             let description = `When: ${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}`;
             if (event.repetition.frequency !== 'never') {
@@ -124,7 +141,7 @@ export default defineComponent({
                 description: description
             };
         },
-        formatActivityInvite(invite: Invite, activity: Activity): {invite: Invite, title: string, description: string } {
+        formatActivityInvite(invite: Invite, activity: Activity): { invite: Invite, title: string, description: string } {
             let description = `Deadline: ${activity.deadline.toLocaleDateString()}`;
             description += "\nInvited participants: " + activity.participants.map(participant => participant.username).join(', ');
 
@@ -150,7 +167,8 @@ export default defineComponent({
     border-radius: 0.375rem;
     color: white;
 }
+
 div {
-  white-space: pre-wrap;
+    white-space: pre-wrap;
 }
 </style>

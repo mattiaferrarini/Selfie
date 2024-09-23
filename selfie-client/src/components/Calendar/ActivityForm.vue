@@ -1,14 +1,14 @@
 <template>
     <div class="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[600px]" @click.stop v-click-outside="closeForm">
         <div class="flex justify-end">
-            <button @click="closeForm">
+            <button @click="closeForm" aria-label="Close form">
                 <v-icon name="md-close" />
             </button>
         </div>
         <form class="flex flex-col" @submit="handleSubmit">
             <div>
                 <label><input type="text" placeholder="Untitled Activity" required class="w-full"
-                        v-model="newActivity.title" :disabled="!modificationAllowed"></label>
+                        v-model="newActivity.title" :disabled="!modificationAllowed" aria-label="Activity title"></label>
             </div>
             <hr>
             <div class="mb-2">
@@ -16,15 +16,15 @@
             </div>
             <div>
                 <div class="flex items-center justify-between w-full gap-4" v-if="activity.start">
-                    <label> Start </label>
+                    <label for="start-date"> Start </label>
                     <div class="flex gap-1">
-                        <input type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
+                        <input id="start-date" type="date" v-model="formattedStartDate" :disabled="!modificationAllowed">
                     </div>
                 </div>
                 <div class="flex items-center justify-between w-full gap-4">
-                    <label> Deadline </label>
+                    <label for="deadline"> Deadline </label>
                     <div class="flex gap-1">
-                        <input type="date" v-model="formattedEndDate" :disabled="!modificationAllowed">
+                        <input id="deadline" type="date" v-model="formattedEndDate" :disabled="!modificationAllowed">
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
             <div>
                 <div class="flex items-center justify-between w-full gap-4">
                     Participants
-                    <button type="button" @click="openParticipantsForm" @click.stop>
+                    <button type="button" @click="openParticipantsForm" @click.stop aria-label="Open participant panel">
                         {{ newActivity.participants.length }}
                         <v-icon name="md-navigatenext" />
                     </button>
@@ -53,7 +53,7 @@
             <div v-if="!newActivity.pomodoro && subActivitiesAllowed && !activity.projectId">
                 <div class="flex items-center justify-between w-full gap-4">
                     Sub-activities
-                    <button type="button" @click="openSubActivitiesForm" @click.stop>
+                    <button type="button" @click="openSubActivitiesForm" @click.stop aria-label="Open sub-activity panel">
                         {{ subActivities.length }}
                         <v-icon name="md-navigatenext" />
                     </button>
@@ -99,17 +99,6 @@
                         <label> <input type="checkbox" v-model="newNotificationOptions.email" :disabled="!modificationAllowed"/> Email </label>
                     </div>
                 </div>
-                <label v-if="false" class="flex items-center justify-between w-full gap-4 mt-1">
-                    How long
-                    <select name="whenNotify" v-model="newActivity.notification.when" :disabled="!modificationAllowed">
-                        <option value="atEvent">Day of deadline</option>
-                        <option value="1day">1 day after</option>
-                        <option value="3days">3 days after</option>
-                        <option value="1week">1 week after</option>
-                        <option value="2weeks">2 weeks after</option>
-                        <option value="1month">1 month after</option>
-                    </select>
-                </label>
                 <label v-if="notifyAfterDeadline" class="flex items-center justify-between w-full gap-4 mt-1">
                     Frequency
                     <select name="repeatNotify" v-model="newActivity.notification.repeat" class="max-w-36" :disabled="!modificationAllowed">
@@ -152,7 +141,9 @@
                         <p>{{ sub.title }} </p>
                     </div>
                     <div class="flex items-center gap-1">
-                        <button v-if="modificationAllowed" @click="modifySubActivity(sub)"><v-icon name="md-modeeditoutline"></v-icon></button>
+                        <button v-if="modificationAllowed" @click="modifySubActivity(sub)" aria-label="Modify sub-activity">
+                            <v-icon name="md-modeeditoutline"></v-icon>
+                        </button>
                     </div>
                     </div>
                     <hr>
@@ -173,7 +164,7 @@
 
         <EventExportPanel v-if="showExportPanel" :event="associatedEvent" @closePanel="closeExportPanel" />
 
-        <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
+        <ConfirmationModal v-if="confirmationMessage.length > 0" :message="confirmationMessage" @cancel="cancelAction"
             @confirm="deleteActivity" />
 
         <div v-if="showSubForm" class="fixed inset-0 flex justify-center items-center">
@@ -194,7 +185,7 @@ import timeService from '@/services/timeService';
 import { useAuthStore } from '@/stores/authStore';
 import activityService from '@/services/activityService';
 import { CalendarEvent } from '@/models/Event';
-import ConfirmationPanel from './ConfirmationPanel.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 import projectService from '@/services/projectService';
 
 export default defineComponent({
@@ -202,7 +193,7 @@ export default defineComponent({
     components: {
         ParticipantsForm,
         EventExportPanel,
-        ConfirmationPanel
+        ConfirmationModal
     },
     props: {
         activity: {
@@ -222,7 +213,7 @@ export default defineComponent({
             default: true
         }
     },
-    emits: ['closeForm', 'saveActivity', 'deleteActivity'],
+    emits: ['closeForm', 'saveActivity', 'deleteActivity', 'error'],
     data() {
         return {
             authStore: useAuthStore(),
@@ -263,42 +254,29 @@ export default defineComponent({
             }
         },
         async fetchSubActivities() {
-            const fetched = await Promise.all(this.activity.subActivitiesIDs.map((id: string) => {
+            try {
+                const fetched = await Promise.all(this.activity.subActivitiesIDs.map((id: string) => {
                     return activityService.getActivityById(id);
                 }));
-            this.subActivities = fetched.filter((a) => a) as Activity[];
-            this.newSubActivities = [...this.subActivities];
-        },
-        async fetchAssociatedProject() {
-            if (this.activity.projectId) {
-                const project = await projectService.getProjectById(this.activity.projectId);
-                if(project) {
-                    this.projectName = project.title;
-                    this.phaseName = project.phases.find((p: any) => p.activities.some((a: any) => a.activityId === this.activity.id))?.title || '';    }
+                this.subActivities = fetched.filter((a) => a) as Activity[];
+                this.newSubActivities = [...this.subActivities];
+            }
+            catch (e) {
+                this.$emit('error', 'Failed to fetch subactivities.');
             }
         },
-        async closeForm() {
-            await this.handleSubActivitiesChanges();
-            this.$emit('closeForm');
-        },
-        async handleSubActivitiesChanges() {
-            // delete subactivities that were added but not saved
-            await Promise.all(this.newSubActivities.map(async (sub) => {
-                if (sub.id && !this.activity.subActivitiesIDs.some((s) => s === sub.id)) {
-                    await activityService.deleteActivity(sub);
+        async fetchAssociatedProject() {
+            try {
+                if (this.activity.projectId) {
+                    const project = await projectService.getProjectById(this.activity.projectId);
+                    if (project) {
+                        this.projectName = project.title;
+                        this.phaseName = project.phases.find((p: any) => p.activities.some((a: any) => a.activityId === this.activity.id))?.title || '';
+                    }
                 }
-            }));
-            
-            // remove the ids of subactivities that were deleted
-            if(this.modifying){
-                const newSubsIDs = this.activity.subActivitiesIDs.filter((id) => this.newSubActivities.some((s) => s.id === id));
-                const sameSubs = newSubsIDs.length === this.activity.subActivitiesIDs.length && newSubsIDs.every((id) => this.activity.subActivitiesIDs.includes(id));
-
-                if(!sameSubs){
-                    const updatedActivity = { ...this.activity };
-                    updatedActivity.subActivitiesIDs = newSubsIDs;
-                    await this.saveActivity(updatedActivity);
-                }
+            }
+            catch (e) {
+                this.$emit('error', 'Failed to fetch associated project.');
             }
         },
         async handleSubmit(event: Event) {
@@ -312,16 +290,22 @@ export default defineComponent({
                 this.newActivity.notification.method.push('email');
 
             this.newActivity.subActivitiesIDs = this.newSubActivities.map((s) => s.id).filter((id): id is string => id !== undefined);
+            this.newActivity.deadline.setHours(23, 59, 59, 59);
             this.saveActivity(this.newActivity);
         },
-        async saveActivity(activity: Activity) {            
-            let res;
-            if (this.modifying)
-                res = await activityService.modifyActivity(activity);
-            else
-                res = await activityService.addActivity(activity);
+        async saveActivity(activity: Activity) {
+            try {
+                let res;
+                if (this.modifying)
+                    res = await activityService.modifyActivity(activity);
+                else
+                    res = await activityService.addActivity(activity);
 
-            this.$emit('saveActivity', res);
+                this.$emit('saveActivity', res);
+            }
+            catch {
+                this.$emit('error', 'Failed to save activity.');
+            }
         },
         handleDeleteRequest() {
             this.confirmationMessage = 'Are you sure you want to delete this activity?';
@@ -331,12 +315,18 @@ export default defineComponent({
         },
         async deleteActivity() {
             this.confirmationMessage = '';
-            if(this.modificationAllowed)
+
+            try{
+                if(this.modificationAllowed)
                 await activityService.deleteActivity(this.activity);
             else
                 await activityService.removeParticipantFromActivity(this.activity, this.authStore.user.username);
 
             this.$emit('deleteActivity', this.activity);
+            }
+            catch{
+                this.$emit('error', 'Failed to delete activity.');
+            }
         },
         openParticipantsForm() {
             this.showParticipantsForm = true;
@@ -373,7 +363,13 @@ export default defineComponent({
             }
         },
         async setUploadedFile(fileContent: string) {
-            this.newActivity = await activityService.convertICalendarToActivity(fileContent);
+            try{
+                this.newActivity = await activityService.convertICalendarToActivity(fileContent);
+                this.newActivity.owners = [this.authStore.user.username];
+            }
+            catch{
+                this.$emit('error', 'Failed to import activity.');
+            }
         },
         modifySubActivity(sub: Activity) {
             this.selectedSub = sub;
@@ -409,13 +405,48 @@ export default defineComponent({
         async discardSubActivityChanges() {
             await Promise.all(this.newSubActivities.map(async (sub) => {
                 if (sub.id && !this.subActivities.some((s) => s.id === sub.id)) {
-                    await activityService.deleteActivity(sub);
+                    try{
+                        await activityService.deleteActivity(sub);
+                    }
+                    catch{
+                        // pass
+                    }
                 }
             }));
             
             this.newSubActivities = [...this.subActivities];
             this.showSubActivities = false;
-        }
+        },
+        async closeForm() {
+            await this.handleSubActivitiesChanges();
+            this.$emit('closeForm');
+        },
+        async handleSubActivitiesChanges() {
+            // delete subactivities that were added but not saved
+            await Promise.all(this.newSubActivities.map(async (sub) => {
+                if (sub.id && !this.activity.subActivitiesIDs.some((s) => s === sub.id)) {
+                    try{
+                        await activityService.deleteActivity(sub);
+                    }
+                    catch{ /* pass */ }
+                }
+            }));
+            
+            // remove the ids of subactivities that were deleted
+            if(this.modifying){
+                const newSubsIDs = this.activity.subActivitiesIDs.filter((id) => this.newSubActivities.some((s) => s.id === id));
+                const sameSubs = newSubsIDs.length === this.activity.subActivitiesIDs.length && newSubsIDs.every((id) => this.activity.subActivitiesIDs.includes(id));
+
+                if(!sameSubs){
+                    const updatedActivity = { ...this.activity };
+                    updatedActivity.subActivitiesIDs = newSubsIDs;
+                    try{
+                        await this.saveActivity(updatedActivity);
+                    }
+                    catch{ /* pass */ }
+                }
+            }
+        },
     },
     computed: {
         notifyAfterDeadline(): boolean {

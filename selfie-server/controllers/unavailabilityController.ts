@@ -1,9 +1,8 @@
 import Unavailability from "../models/Unavailability";
-import IUnavailability from "../models/Unavailability";
 import eventService from "../services/eventService";
 import Event, { IEvent } from "../models/Event";
-import timeService from "../services/timeService";
 
+// Format an unavailability for response
 const formatUnavailability = (unavailability: any) => {
     return {
         id: unavailability._id,
@@ -17,6 +16,7 @@ const formatUnavailability = (unavailability: any) => {
     };
 }
 
+// Get unavailabilities by user
 export const getUnavailabilitiesByUser = async (req: any, res: any) => {
     const { username } = req.params;
     const { start, end, frequency, until, numberOfRepetitions, endDate } = req.query;
@@ -48,6 +48,7 @@ export const getUnavailabilitiesByUser = async (req: any, res: any) => {
     }
 }
 
+// Delete an unavailability
 export const deleteUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
     const authUsername = req.user.username;
@@ -63,6 +64,7 @@ export const deleteUnavailability = async (req: any, res: any) => {
     }
 }
 
+// Add an unavailability
 export const addUnavailability = async (req: any, res: any) => {
     const newUnavailability = new Unavailability({
         title: req.body.title,
@@ -82,6 +84,7 @@ export const addUnavailability = async (req: any, res: any) => {
     }
 }
 
+// Modify an unavailability
 export const modifyUnavailability = async (req: any, res: any) => {
     const { id } = req.params;
     const { title, allDay, start, end, repetition, username } = req.body;
@@ -98,6 +101,7 @@ export const modifyUnavailability = async (req: any, res: any) => {
     }
 }
 
+// Check if a user is free for an event, i.e. if the user has no unavailability that overlaps with the event
 export const isUserFreeForEvent = async (username: string, event: IEvent) => {
     try{
         let unavailabilities = await Unavailability.find({ username: username });
@@ -109,6 +113,7 @@ export const isUserFreeForEvent = async (username: string, event: IEvent) => {
     }
 }
 
+// Check if user can modify an unavailability
 const modidicationAllowed = async (id: string, authUsername: string) => {
     try {
         const unavailability = await Unavailability.findById(id);

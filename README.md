@@ -132,6 +132,7 @@ It wasn't used on all the functions that required knowledge of the project or da
 We also did not use it for any graphic task, as graphic design is not its strong suit.  
 This documentation, especially the "Project Structure" part, was partly generated with AI for best clarity.
 
+
 ## Contributors
 - Mattia Ferrarini, mattia.ferrarini3@studio.unibo.it;
   - Calendar, Admin View, Job Scheduling, Time Machine, Home View, Projects
@@ -139,6 +140,7 @@ This documentation, especially the "Project Structure" part, was partly generate
   - Notes, Gantt, Deploy, Home View, Database, Tasks
 - Matteo Fornaini, matteo.fornaini@studio.unibo.it;
   - Projects, Chat, Home View, Profile, Pomodoro, Notifications
+
 
 ## Project Setup
 

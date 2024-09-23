@@ -6,8 +6,15 @@ export interface IResource extends Document {
 }
 
 const ResourceSchema = new Schema({
-    name: { type: String, required: true },
-    username: { type: String, required: true, unique: true }
+    name: { 
+        type: String, 
+        required: true 
+    },
+    username: { 
+        type: String, 
+        required: true, 
+        unique: true 
+    }
 });
 
 const Resource =  model<IResource>('Resource', ResourceSchema);
