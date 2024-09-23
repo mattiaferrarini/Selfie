@@ -6,8 +6,8 @@
                 <h3 class="font-semibold mb-1">Add participants</h3>
                 <div class="flex w-full">
                     <input type="text" placeholder="Add username" v-model="newUsername" @keyup.enter="addParticipant"
-                        class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md">
-                    <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md"><v-icon name="md-add"></v-icon></button>
+                        class="border border-gray-300 p-1 flex-grow rounded-bl-md rounded-tl-md" aria-label="Insert participant username">
+                    <button @click="addParticipant" class="px-2 bg-gray-300 rounded-tr-md rounded-br-md" aria-label="Add participant"><v-icon name="md-add"></v-icon></button>
                 </div>
                 <p v-if="noMessagesDisplayed" class="mt-2 text-gray-600">Save in calendar to invite all participants.</p>
                 <p v-if="successfulAdd" class="mt-2 text-gray-600">The user was added.</p>
@@ -32,13 +32,13 @@
         </div>
         <div class="justify-self-end flex w-full space-x-1 mt-8" v-if="modificationAllowed">
             <button type="button" @click="cancelChanges"
-                class="flex-1 bg-gray-400 text-white rounded-lg p-2">Cancel</button>
+                class="flex-1 bg-gray-400 text-white rounded-md p-2">Cancel</button>
             <button type="submit" @click="saveChanges"
-                class="flex-1 bg-emerald-600 text-white p-2 rounded-lg">Save</button>
+                class="flex-1 bg-emerald-600 text-white p-2 rounded-md">Save</button>
         </div>
         <div v-else>
             <button type="button" @click="closeForm"
-                class="bg-gray-400 text-white rounded-lg p-2 w-full">Back</button>
+                class="bg-gray-400 text-white rounded-md p-2 w-full">Back</button>
         </div>
     </div>
 </template>
@@ -48,7 +48,6 @@ import { defineComponent } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import userService from '@/services/userService';
 import unavailabilityService from '@/services/unavailabilityService';
-import resourceService from '@/services/resourceService';
 import { CalendarEvent } from '@/models/Event';
 
 export default defineComponent({
@@ -97,49 +96,43 @@ export default defineComponent({
             this.newParticipants.push({ username: this.yourself, email: this.yourEmail, status: 'accepted' });
         },
         async addParticipant() {
-            try{
+            try {
                 const userData = await userService.getUserBasicInfo(this.newUsername);
-            if (userData) {
-                console.log('user');
-                if (!this.userAlreadyAdded(userData.username)) {
-                    if(this.event){
-                        // event case: check if user is available
-                        const unavailabilities = await unavailabilityService.getOverlappingUnavailabilities(userData.username, this.event);
-                        if(unavailabilities.length > 0){
-                            this.onUnavailableUser();
+                if (userData) {
+                    if (userData.isResource) {
+                        if (this.event) {
+                            this.newParticipants.push({ username: userData.username, status: 'pending' });
+                            this.onAddSuccess();
                         }
-                        else{
-                            this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
+                        else {
+                            // resources can only be added to events
+                            this.onResourceActivityError();
+                        }
+                    }
+                    else {
+                        if (this.event) {
+                            // event case: check if user is available
+                            const unavailabilities = await unavailabilityService.getOverlappingUnavailabilities(userData.username, this.event);
+                            if (unavailabilities.length > 0) {
+                                this.onUnavailableUser();
+                            }
+                            else {
+                                this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending' });
+                                this.onAddSuccess();
+                            }
+                        }
+                        else {
+                            // activity case: add user
+                            this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending' });
                             this.onAddSuccess();
                         }
                     }
-                    else{
-                        // activity case: add user
-                        this.newParticipants.push({ username: userData.username, email: userData.email, status: userData.username == this.yourself ? 'accepted' : 'pending'});
-                        this.onAddSuccess();
-                    }
-                }
-                else
-                    this.onAddSuccess();
-            } 
-            else if(this.event){
-                console.log('resource');
-                //check if user is a resource
-                const resource = await resourceService.getResource(this.newUsername);
-                if(resource){
-                    this.newParticipants.push({ username: resource.username, status: 'pending'});
-                    this.onAddSuccess();
                 }
                 else {
                     this.onUserNotExisting();
                 }
             }
-            else {
-                this.onUserNotExisting();
-            }
-            }
-            catch(error){
-                console.error(error);
+            catch (error) {
                 this.onUserAddError();
             }
             this.newUsername = '';
@@ -165,6 +158,10 @@ export default defineComponent({
         },
         onUserAddError() {
             this.failureText = `An error occurred while adding ${this.newUsername}.`;
+            this.onAddFailure();
+        },
+        onResourceActivityError() {
+            this.failureText = `Resources can only be added to events.`;
             this.onAddFailure();
         },
         onAddFailure() {

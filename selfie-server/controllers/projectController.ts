@@ -1,13 +1,15 @@
 import Project, {ActivityStatus, IProject} from "../models/Project";
 import User from "../models/User";
-import Activity, { IActivity } from "../models/Activity";
+import Activity, {IActivity} from "../models/Activity";
 import notificationController from "./notificationController";
 import {createActivity, deleteActivityById} from "./activityController";
 
 const formatProject = async (project: IProject) => {
+    // convert to object to manipulate it without the constraints of a Model
     project = project.toObject();
     for (const phase of project.phases) {
         for (const activity of phase.activities) {
+            // get and send all activities with the project
             activity.activity = await Activity.findById(activity.activityId);
         }
     }
@@ -92,7 +94,7 @@ const addProjectIdToActivities = async (project: any) => {
 const addEmailsToParticipants = async (activity: IActivity) => {
     if (activity && activity.participants) {
         for (const participant of activity.participants) {
-            const user = await User.findOne({ username: participant.username });
+            const user = await User.findOne({username: participant.username});
             if (user) {
                 participant.email = user.email;
             }
@@ -171,7 +173,7 @@ export const modifyStatus = async (req: any, res: any) => {
             }
 
             // update activity
-            if(status === ActivityStatus.Concluded) {
+            if (status === ActivityStatus.Concluded) {
                 activity.done = true;
                 await activity.save();
             }
@@ -179,7 +181,7 @@ export const modifyStatus = async (req: any, res: any) => {
             // update project
             phaseActivity.status = status;
             phaseActivity.output = output;
-            if (phaseActivity.linkedActivityId == "")
+            if (!phaseActivity.linkedActivityId)
                 phaseActivity.input = input;
             await project.save();
             res.status(200).send(await formatProject(project));
@@ -301,6 +303,7 @@ export const leaveProject = async (req: any, res: any) => {
         return res.status(404).send({error: "Project doesn't exist!"});
     }
     project.actors = project.actors.filter((actor: string) => actor !== req.user.username);
+    // remove actor from participants as well
     project.phases.map((phase: any) => {
         phase.activities.map((activity: any) => {
             Activity.findById(activity.activityId).then((act) => {

@@ -21,11 +21,11 @@ const InviteSchema = new Schema({
     },
     eventId: {
         type: Schema.Types.ObjectId,
-        ref: 'Event',
+        ref: 'Event'
     },
     activityId: {
         type: Schema.Types.ObjectId,
-        ref: 'Activity',
+        ref: 'Activity'
     },
     answerDate: {
         type: Date,

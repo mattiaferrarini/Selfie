@@ -29,22 +29,16 @@ const subscribe = async (req: any, res: any) => {
 }
 
 const unsubscribe = async (req: any, res: any) => {
-    const { endpoint } = req.body;
+    const {endpoint} = req.body;
     const userId = req.user?._id;
 
     try {
-        await User.findByIdAndUpdate(userId, { $pull: { pushSubscriptions: { endpoint } } });
-        res.status(200).json({ message: "Subscription removed successfully." });
+        await User.findByIdAndUpdate(userId, {$pull: {pushSubscriptions: {endpoint}}});
+        res.status(200).json({message: "Subscription removed successfully."});
     } catch (error) {
         console.error("Error removing subscription:", error);
-        res.status(500).json({ message: "Failed to remove subscription." });
+        res.status(500).json({message: "Failed to remove subscription."});
     }
-}
-
-// TODO: remove testing function
-const sendNotificationTest = async (req: any, res: any) => {
-    const { text } = req.body;
-    req.user?.pushSubscriptions.forEach((e: any) => pushNotificationService.sendNotification(e, {title: 'News', body: text}));
 }
 
 const sendNotificationToUsername = async (username: string, payload: any) => {
@@ -58,7 +52,6 @@ const sendNotification = async (user: IUser, payload: any) => {
         user.pushSubscriptions.forEach((pushSubscription: any) => pushNotificationService.sendNotification(pushSubscription, payload));
     if (user.preferences.notificationType === "email" || user.preferences.notificationType === "both")
         await sendEmail(user.email, payload.title, payload.body);
-    // TODO check compatibility email and push
 }
 
 const sendPushNotification = async (user: IUser, payload: any) => {
@@ -66,10 +59,9 @@ const sendPushNotification = async (user: IUser, payload: any) => {
 }
 
 const sendEmailNotification = async (to: string, subject: string, body: string) => {
-    try{
+    try {
         await sendEmail(to, subject, body);
-    }
-    catch (error){
+    } catch (error) {
         console.error('Failed to send email:', error);
     }
 }
@@ -77,7 +69,6 @@ const sendEmailNotification = async (to: string, subject: string, body: string) 
 export default {
     subscribe,
     unsubscribe,
-    sendNotificationTest,
     sendNotificationToUsername,
     sendNotification,
     sendPushNotification,

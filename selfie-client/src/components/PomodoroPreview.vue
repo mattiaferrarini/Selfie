@@ -6,7 +6,7 @@
       <p>Work duration: {{ settings.workDuration }} minutes</p>
       <p>Pause duration: {{ settings.pauseDuration }} minutes</p>
       <p>Completed cycles: {{ settings.numberOfCycles }}</p>
-      <router-link to="/pomodoro" class="text-blue-500">Edit</router-link>
+      <router-link class="text-blue-500" :to="{name: 'pomodoro'}">Edit</router-link>
     </div>
     <div v-else>
       <h4 class="font-semibold text-gray-800">Stats</h4>

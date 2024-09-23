@@ -20,7 +20,7 @@
                             <ul>
                                 <li v-for="event in eventsForDay(date)" :key="event.id" class="clickable-item">
                                     <hr>
-                                    <div class="flex align-center justify-between py-1.5" @click="modifyEvent(event[0])">
+                                    <div class="flex align-center justify-between py-1.5" @click.stop="modifyEvent(event[0])">
                                         <h5>{{ event[0].title }}</h5>
                                         <p>{{ event[1] }}</p>
                                     </div>
@@ -37,17 +37,17 @@
                                     <hr>
                                     <div class="flex align-center justify-between py-1.5"
                                         :class="{ late: isLateActivity(activity, date) }"
-                                        @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                                        @click.stop="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                                         <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
                                         <div class="flex flex-wrap justify-end space-x-4">
                                             <span>{{ activity.pomodoro ? activity.pomodoro.completedCycles[username] +
                                                 '/' +
                                                 activity.pomodoro.options.numberOfCycles + ' cycles' : '' }}</span>
-                                            <button v-if="activity.pomodoro" @click="modifyActivity(activity)"
-                                                @click.stop><v-icon name="md-modeeditoutline"></v-icon></button>
-                                            <button v-if="!activity.done" @click="markAsDone(activity)"
-                                                @click.stop><v-icon name="md-done"></v-icon></button>
-                                            <button v-else @click="undoActivity(activity)" @click.stop><v-icon
+                                            <button v-if="activity.pomodoro" @click.stop="modifyActivity(activity)">
+                                                <v-icon name="md-modeeditoutline"></v-icon></button>
+                                            <button v-if="!activity.done" @click.stop="markAsDone(activity)">
+                                                <v-icon name="md-done"></v-icon></button>
+                                            <button v-else @click.stop="undoActivity(activity)"><v-icon
                                                     name="fa-undo"></v-icon></button>
                                         </div>
                                     </div>
@@ -62,11 +62,11 @@
                                 <li v-for="activity in projectActivitiesForTheDay(date)" :key="activity.id"
                                     class="clickable-item">
                                     <hr>
-                                    <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity, date) }" @click="modifyActivity(activity)">
+                                    <div class="flex align-center gap-2 py-1.5" :class="{ late: isLateActivity(activity, date) }" @click.stop="modifyActivity(activity)">
                                         <div v-if="activity.start && timeMethods.sameDate(activity.start, date)" class="bg-blue-500 px-1 rounded-md text-white">
                                             Start
                                         </div>
-                                        <div v-else class="bg-orange-500 px-1 rounded-md text-white">
+                                        <div v-else class="bg-orange-400 px-1 rounded-md text-white">
                                             Deadline
                                         </div>
                                         <h5 :class="{ done: activity.done }">{{ activity.title }}</h5>
@@ -83,7 +83,7 @@
                                     class="clickable-item">
                                     <hr>
                                     <div class="flex align-center justify-between py-1.5"
-                                        @click="modifyUnavailability(unav[0])">
+                                        @click.stop="modifyUnavailability(unav[0])">
                                         <h5>{{ unav[0].title }}</h5>
                                         <p>{{ unav[1] }}</p>
                                     </div>
@@ -173,7 +173,7 @@ export default defineComponent({
             let start = eventStart <= startOfDay ? startOfDay : eventStart;
             let end = eventEnd >= endOfDay ? endOfDay : eventEnd;
 
-            if (start === startOfDay && endOfDay.getTime() - end.getTime() < 1000)
+            if ( Math.abs(start.getTime() - startOfDay.getTime()) < 1000 && Math.abs(endOfDay.getTime() - end.getTime()) < 1000)
                 return "All day";
             else
                 return `${start.getHours().toString()}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString()}:${end.getMinutes().toString().padStart(2, '0')}`;
@@ -241,12 +241,12 @@ export default defineComponent({
             // remove repetitions that are not on the date
             const startOfDay = timeMethods.getStartOfDay(date);
             const endOfDay = timeMethods.getEndOfDay(date);
-            let inRange = withDates.filter((event: any) => {
+            let inRange = withDates.filter((event: {event: any, dates: {start: Date, end: Date}}) => {
                 return event.dates.start <= endOfDay && event.dates.end >= startOfDay;
             });
 
             // remove repetitions that are not valid
-            let valid = inRange.filter((event: any) => {
+            let valid = inRange.filter((event: {event: any, dates: {start: Date, end: Date}}) => {
                 return this.isValidRepetition(event.event, event.dates.start, event.dates.end);
             });
 
@@ -279,8 +279,7 @@ export default defineComponent({
             return eventRecurrenceService.isValidRepetition(event, repStart, repEnd);
         },
         isLateActivity(activity: Activity, date: Date): boolean {
-            const startOfDay = timeMethods.getStartOfDay(date);
-            return !activity.done && activity.deadline < timeMethods.getEndOfDay(this.today);
+            return !activity.done && activity.deadline < timeMethods.getStartOfDay(this.today);
         }
     },
     computed: {

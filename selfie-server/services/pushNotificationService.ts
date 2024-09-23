@@ -1,6 +1,7 @@
-import PushNotifications, { Settings } from "node-pushnotifications";
+import PushNotifications, {Settings} from "node-pushnotifications";
 import dotenv from "dotenv";
-dotenv.config({ path: './.env.local' });
+
+dotenv.config({path: './.env.local'});
 
 class PushNotificationService {
     private pushService: PushNotifications;

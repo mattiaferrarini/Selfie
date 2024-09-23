@@ -1,14 +1,14 @@
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
-    <form @submit.stop="login"
-          class="animate-fade-in w-full max-w-xs p-5 sm:p-10 pt-1 sm:pt-2 rounded shadow-2xl shadow-emerald-600 z-10 relative bg-[#fdfefd]">
-      <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie"/>
+    <form class="animate-fade-in w-full max-w-xs p-5 sm:p-10 pt-1 sm:pt-2 rounded shadow-2xl shadow-emerald-600 z-10 relative bg-[#fdfefd]"
+          @submit.stop="login">
+      <img alt="bradipo che si fa un selfie" src="@/assets/selfie.jpeg"/>
       <input v-model="username" aria-label="Username"
-             class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" required/>
-      <input type="password" aria-label="Password" v-model="password"
-             class="w-full px-3 py-2 mb-3 border rounded" placeholder="Password" required/>
-      <input type="submit" value="Login" aria-label="Login"
-             class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded cursor-pointer">
+             class="w-full px-3 py-2 mb-3 border rounded" placeholder="Username" required autocomplete="username"/>
+      <input v-model="password" aria-label="Password" class="w-full px-3 py-2 mb-3 border rounded"
+             placeholder="Password" required type="password" autocomplete="current-password"/>
+      <input aria-label="Login" class="w-full px-3 py-2 text-white bg-emerald-500 mb-3 rounded cursor-pointer" type="submit"
+             value="Login">
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
         <router-link :to="{name: 'register'}" class="text-emerald-500">Not yet registered? Click here!</router-link>

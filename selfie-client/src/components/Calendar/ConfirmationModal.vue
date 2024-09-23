@@ -5,8 +5,8 @@
             <p class="my-2">{{ message }}</p>
             <p>This action cannot be undone.</p>
             <div class="flex mt-8 gap-x-2">
-                <button @click="cancel" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg">Cancel</button>
-                <button @click="confirm" class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg">Confirm</button>
+                <button @click.stop="cancel" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md">Cancel</button>
+                <button @click.stop="confirm" class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-md">Confirm</button>
             </div>
         </div>
     </div>

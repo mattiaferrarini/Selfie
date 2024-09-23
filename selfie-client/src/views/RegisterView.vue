@@ -1,25 +1,25 @@
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen p-3 bg-tropical">
     <form
-        @submit.stop="register"
-        class="animate-fade-in w-full max-w-xs p-5 sm:p-10 pt-1 sm:pt-2 rounded shadow-2xl shadow-emerald-600 bg-[#fdfefd]">
-      <img src="@/assets/selfie.jpeg" alt="bradipo che si fa un selfie"/>
+        class="animate-fade-in w-full max-w-xs p-5 sm:p-10 pt-1 sm:pt-2 rounded shadow-2xl shadow-emerald-600 bg-[#fdfefd]"
+        @submit.stop="register">
+      <img alt="bradipo che si fa un selfie" src="@/assets/selfie.jpeg"/>
       <input v-model="username" aria-label="username" class="w-full px-3 py-2 mb-3 border rounded"
              placeholder="Username" required/>
       <input v-model="realName" aria-label="real name" class="w-full px-3 py-2 mb-3 border rounded"
              placeholder="Real Name" required/>
-      <input v-model="email" aria-label="email" type="email" class="w-full px-3 py-2 mb-3 border rounded"
-             placeholder="Email" required/>
-      <input type="password" aria-label="password" v-model="password" class="w-full px-3 py-2 mb-3 border rounded"
-             placeholder="Password" required/>
-      <label for="date" class="block text-sm font-medium text-gray-700">Birthday</label>
-      <input v-model="birthday" aria-label="birthday" type="date" id="date" class="w-full px-3 py-2 mb-3 border rounded"
-             :max="(new Date()).toISOString().substring(0,10)" min="1900-01-01" required/>
-      <input type="submit" class="w-full px-3 py-2 mb-3 text-white bg-emerald-500 rounded cursor-pointer"
+      <input v-model="email" aria-label="email" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Email"
+             required type="email"/>
+      <input v-model="password" aria-label="password" class="w-full px-3 py-2 mb-3 border rounded" placeholder="Password"
+             required type="password"/>
+      <label class="block text-sm font-medium text-gray-700" for="date">Birthday</label>
+      <input id="date" v-model="birthday" :max="(new Date()).toISOString().substring(0,10)" aria-label="birthday" class="w-full px-3 py-2 mb-3 border rounded"
+             min="1900-01-01" required type="date"/>
+      <input class="w-full px-3 py-2 mb-3 text-white bg-emerald-500 rounded cursor-pointer" type="submit"
              value="Register"/>
       <p v-if="errorMessage" class="mb-3 text-red-500">{{ errorMessage }}</p>
       <div class="text-center w-full">
-        <router-link to="/login" class="text-emerald-500">Already registered? Login</router-link>
+        <router-link class="text-emerald-500" :to="{name: 'login'}">Already registered? Login</router-link>
       </div>
     </form>
   </div>
@@ -40,7 +40,7 @@ export default defineComponent({
     const password = ref('');
     const errorMessage = ref('');
     const authStore = useAuthStore();
-    //TODO: password validation?
+
     const register = async () => {
       try {
         if (username.value.trim() == "" || password.value.trim() == "" || email.value.trim() == "" || realName.value.trim() == "" || birthday.value.trim() == "") {

@@ -18,7 +18,6 @@
                             <button type="submit" class="bg-emerald-600 text-white px-2 py-1 rounded-md">Add
                                 resource</button>
                         </div>
-                        <p v-if="errorText.length > 0" class="mt-2 text-red-600">{{ errorText }}</p>
                     </form>
                 </div>
                 <div class="bg-white rounded-lg shadow-lg p-4 flex-1 sm:overflow-scroll" style="max-height: 50vh;">
@@ -30,7 +29,7 @@
                                     {{ res.name }} -
                                     <i>{{ res.username }}</i>
                                 </div>
-                                <button @click="deleteResource(res)"><v-icon name="md-delete"
+                                <button @click="handleDeleteResourceRequest(res)"><v-icon name="md-delete"
                                         class="h-full"></v-icon></button>
                             </div>
                         </li>
@@ -50,13 +49,14 @@
                     </div>
                     <p v-else>No pending invites.</p>
                     <InvitesList class="mt-4" v-if="resources.length > 0" :username="selectedResourceUsername"
-                        :currentDate="currentDate" />
+                        :currentDate="currentDate" @error="displayError"/>
                 </div>
             </div>
         </div>
     </div>
-    <ConfirmationPanel v-if="confirmationMessage.length > 0" :message="confirmationMessage"
-        @cancel="cancelAction" @confirm="confirmAction" />
+    <ConfirmationModal v-if="confirmationMessage.length > 0" :message="confirmationMessage"
+        @cancel="cancelAction" @confirm="confirmResourceDeletion" />
+    <ErrorModal v-if="errorMessages.length > 0" :messages="errorMessages" @close="clearErrors" />
     </div>
 </template>
 
@@ -66,49 +66,55 @@ import { Resource } from '@/models/Resource';
 import resourceService from '@/services/resourceService';
 import InvitesList from '@/components/Calendar/InvitesList.vue';
 import { useDateStore } from '@/stores/dateStore';
-import ConfirmationPanel from '@/components/Calendar/ConfirmationPanel.vue';
+import ConfirmationModal from '@/components/Calendar/ConfirmationModal.vue';
+import ErrorModal from '@/components/ErrorModal.vue';
 
 export default defineComponent({
     components: {
         InvitesList,
-        ConfirmationPanel
+        ConfirmationModal,
+        ErrorModal
     },
     data() {
         return {
             resources: [] as Resource[],
             newName: '',
             newUsername: '',
-            errorText: '',
             selectedResourceName: '',
-            currentDate: useDateStore().currentDate,
             confirmationMessage: '',
-            resourceToDelete: {} as Resource
+            resourceToDelete: {} as Resource,
+            errorMessages: [] as string[]
         }
     },
     methods: {
         async fetchResources() {
-            this.resources = await resourceService.getAllResources();
+            try{
+                this.resources = await resourceService.getAllResources();
             this.updateSelectedResourceName();
+            }
+            catch {
+                this.displayError('Failed to fetch resources.');
+            }
         },
-        async deleteResource(resource: Resource) {
+        async handleDeleteResourceRequest(resource: Resource) {
             this.confirmationMessage = `Are you sure you want to delete ${resource.name}?`;
             this.resourceToDelete = resource;
         },
         cancelAction(){
             this.confirmationMessage = '';
         },
-        async confirmAction(){
+        async confirmResourceDeletion(){
             this.confirmationMessage = '';
             try {
                 await resourceService.deleteResource(this.resourceToDelete);
-            }
-            catch {
                 this.resources = this.resources.filter(res => res.id !== this.resourceToDelete.id);
-            }
-            this.resources = this.resources.filter(res => res.id !== this.resourceToDelete.id);
 
-            if (this.selectedResourceUsername === this.resourceToDelete.username) {
+                if (this.selectedResourceUsername === this.resourceToDelete.username) {
                 this.updateSelectedResourceName();
+            }
+            }
+            catch{
+                this.displayError('Failed to delete resource.');
             }
         },
         formatResourceName(resource: Resource) {
@@ -127,22 +133,25 @@ export default defineComponent({
                 }
             }
             catch (error: any) {
-                this.onAddFailure(error.error);
+                this.displayError('Failed to add resource.');
             }
-        },
-        onAddFailure(text: string) {
-            this.errorText = text;
-            setTimeout(() => {
-                this.errorText = '';
-            }, 2000);
         },
         updateSelectedResourceName() {
             this.selectedResourceName = this.resources[0]?.name || '';
+        },
+        displayError(message: string) {
+            this.errorMessages.push(message);
+        },
+        clearErrors() {
+            this.errorMessages = [];
         }
     },
     computed: {
         selectedResourceUsername(): string {
             return this.resources.find(res => res.name === this.selectedResourceName)?.username || '';
+        },
+        currentDate(): Date {
+            return useDateStore().getCurrentDate();
         }
     },
     mounted() {

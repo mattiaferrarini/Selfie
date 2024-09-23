@@ -1,10 +1,11 @@
-import Agenda, { Job } from "agenda";
-import Event, { IEvent } from "../models/Event";
-import Activity, { IActivity } from "../models/Activity";
+import Agenda, {Job} from "agenda";
+import Event, {IEvent} from "../models/Event";
+import Activity, {IActivity} from "../models/Activity";
 import jobSchedulerService from "../services/jobSchedulerService";
 import timeService from "../services/timeService";
 import notificationController from "../controllers/notificationController";
-import { getUserByUsername } from "../controllers/userController";
+import {getUserByUsername} from "../controllers/userController";
+import eventService from "../services/eventService";
 
 
 const eventNotificationStartJobName = 'event notification start';
@@ -33,8 +34,7 @@ const defineEventNotificationStart = async (agenda: Agenda) => {
             if (!event) {
                 // the event doesn't exist anymore: there's nothing to do
                 console.error('Event not found:', job.attrs.data.eventId);
-            }
-            else {
+            } else {
                 // notify participants now for the current repetition
                 await jobSchedulerService.notifyEventRepetition(event, eventRepStart, eventRepEnd);
 
@@ -44,8 +44,7 @@ const defineEventNotificationStart = async (agenda: Agenda) => {
 
             // remove the job as it has been executed
             await jobSchedulerService.removeJob(job);
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Failed to start notify event:', error);
         }
     });
@@ -60,8 +59,7 @@ const defineEventNotification = async (agenda: Agenda) => {
             if (!event) {
                 // the event doesn't exist anymore: remove the job
                 console.error('Event not found:', job.attrs.data.eventId);
-            }
-            else {
+            } else {
                 // send the notification
                 console.log('Notifying event now', event.title);
                 await sendNotificationsForEvent(event);
@@ -69,8 +67,7 @@ const defineEventNotification = async (agenda: Agenda) => {
 
             // removes the job as it has been executed
             await jobSchedulerService.removeJob(job);
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Failed to notify event:', error);
         }
     });
@@ -80,15 +77,15 @@ const defineEventNotification = async (agenda: Agenda) => {
 const sendNotificationsForEvent = async (event: IEvent) => {
 
     const title = `Event ${event.title} is starting soon!`;
-    const body = `You have an event at ${event.start}. Don't miss it!`;
+    const {start: repStart, end: repEnd} = eventService.getNextValidRepetition(event, timeService.getStartOfDay(new Date()));
+    const body = `You have an event at ${repStart}. Don't miss it!`;
 
     for (const participant of event.participants) {
         if (participant.status === 'accepted' && participant.email) {
             if (event.notification.method.includes('email')) {
                 try {
-                    notificationController.sendEmailNotification(participant.email, title, body);
-                }
-                catch (error) {
+                    await notificationController.sendEmailNotification(participant.email, title, body);
+                } catch (error) {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
             }
@@ -96,11 +93,10 @@ const sendNotificationsForEvent = async (event: IEvent) => {
                 try {
                     const user = await getUserByUsername(participant.username);
                     if (user)
-                        notificationController.sendPushNotification(user, { title: title, body: body });
+                        await notificationController.sendPushNotification(user, {title: title, body: body});
                     else
                         console.error(`Failed to send push notification to ${participant.email}: User not found`);
-                }
-                catch {
+                } catch {
                     console.error(`Failed to send push notification to ${participant.email}`);
                 }
             }
@@ -117,11 +113,9 @@ const defineActivityNotificationStart = async (agenda: Agenda) => {
 
             if (!activity) {
                 console.error('Activity not found', job.attrs.data.activityId);
-            }
-            else if(activity.done){
+            } else if (activity.done) {
                 console.log("Activity ", activity.title, "has already been completed => No notification sent");
-            }
-            else {
+            } else {
                 // start the notifications for the current day
                 await jobSchedulerService.notifyActivityToday(activity);
 
@@ -132,8 +126,7 @@ const defineActivityNotificationStart = async (agenda: Agenda) => {
 
             // remove the job as it has been executed
             await jobSchedulerService.removeJob(job);
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Failed to start notify activity:', error);
         }
     });
@@ -147,11 +140,9 @@ const defineActivityNotification = async (agenda: Agenda) => {
 
             if (!activity) {
                 console.error('Activity not found', job.attrs.data.activityId);
-            }
-            else if(activity.done){
+            } else if (activity.done) {
                 console.log("Activity ", activity.title, "has already been completed => No notification sent");
-            }
-            else {
+            } else {
                 // send notifications to participants
                 console.log("Notifying activity now", activity.title);
                 await sendNotificationsForActivity(activity);
@@ -159,8 +150,7 @@ const defineActivityNotification = async (agenda: Agenda) => {
 
             // remove the job as it has been executed
             await jobSchedulerService.removeJob(job);
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Failed to notify activity:', error);
         }
     });
@@ -170,15 +160,14 @@ const defineActivityNotification = async (agenda: Agenda) => {
 const sendNotificationsForActivity = async (activity: IActivity) => {
 
     const title = `Activity ${activity.title} is late!`;
-    const body = `You should have completed this activity by ${activity.deadline.toISOString().substring(0,10)}. Complete it now!`;
+    const body = `You should have completed this activity by ${activity.deadline.toISOString().substring(0, 10)}. Complete it now!`;
 
     for (const participant of activity.participants) {
         if (participant.status === 'accepted') {
             if (activity.notification.method.includes('email')) {
                 try {
-                    notificationController.sendEmailNotification(participant.email, title, body);
-                }
-                catch (error) {
+                    await notificationController.sendEmailNotification(participant.email, title, body);
+                } catch (error) {
                     console.error(`Failed to send email to ${participant.email}:`, error);
                 }
             }
@@ -186,11 +175,10 @@ const sendNotificationsForActivity = async (activity: IActivity) => {
                 try {
                     const user = await getUserByUsername(participant.username);
                     if (user)
-                        notificationController.sendPushNotification(user, { title: title, body: body });
+                        await notificationController.sendPushNotification(user, {title: title, body: body});
                     else
                         console.error(`Failed to send push notification to ${participant.email}: User not found`);
-                }
-                catch (error) {
+                } catch (error) {
                     console.error(`Failed to send push notification to ${participant.email}:`, error);
                 }
             }

@@ -35,7 +35,7 @@
             @click="goToCalendarActivity(pair.activity)">
             <div class="flex gap-2">
               <div v-if="pair.type === 'start'" class="bg-blue-500 px-1 rounded-md text-white">Start</div>
-              <div v-else class="bg-orange-500 px-1 rounded-md text-white">Deadline</div>
+              <div v-else class="bg-orange-400 px-1 rounded-md text-white">Deadline</div>
               <p :class="{ 'text-red-500': isLateActivity(pair.activity), 'text-gray-600': !isLateActivity(pair.activity) }">
                 {{ pair.activity.title }}
               </p>
@@ -118,8 +118,6 @@ export default defineComponent({
   },
   methods: {
     async fetchData() {
-      console.log(this.date);
-
       this.startOfDay = timeService.getStartOfDay(this.date);
       this.endOfDay = timeService.getEndOfDay(this.date);
       this.endOfEndOfWeek = timeService.getEndOfDay(timeService.getLastDayOfWeek(this.date));
@@ -133,19 +131,15 @@ export default defineComponent({
       this.computeEventsWithDates();
       this.computeSortedActivities();
       this.computeSortedProjectActivities();
-
-      console.log(this.activities);
-      console.log(this.sortedProjectActivities);
-      console.log(this.projectActivitiesInPeriod);
     }, 
     computeEventsWithDates() {
-      let withDates = this.events.map((event: any) => {
+      let withDates = this.events.map((event: CalendarEvent) => {
         return { event: event, dates: eventRecurrenceService.getNextRepetition(event, this.startOfDay) };
       });
-      let inRange = withDates.filter((event: any) => {
+      let inRange = withDates.filter((event: {event: CalendarEvent, dates: {start: Date, end: Date}}) => {
         return event.dates.start <= this.endOfEndOfWeek && event.dates.end >= this.startOfDay;
       });
-      let valid = inRange.filter((event: any) => {
+      let valid = inRange.filter((event: {event: CalendarEvent, dates: {start: Date, end: Date}}) => {
         return eventRecurrenceService.isValidRepetition(event.event, event.dates.start, event.dates.end);
       });
       valid.sort((a, b) => a.dates.start.getTime() - b.dates.start.getTime());
@@ -188,7 +182,6 @@ export default defineComponent({
       return !activity.done && activity.deadline < this.startOfDay;
     },
     getProjectActivitiesForPeriod(start: Date, end: Date): { activity: Activity, type: string }[] {
-      console.log(start, end);
       return this.sortedProjectActivities.filter((pair: { activity: Activity, type: string }) => {
         if (pair.type === 'start' && pair.activity.start) {
           return pair.activity.start <= end && pair.activity.start >= start;

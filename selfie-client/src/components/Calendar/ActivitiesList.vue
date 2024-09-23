@@ -10,17 +10,17 @@
                     <li v-for="activity in sortedActivities" :key="activity.id" class="clickable-item">
                         <hr>
                         <div class="flex align-center justify-between py-1.5" :class="{ late: isLateActivity(activity) }"
-                            @click="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
+                            @click.stop="activity.pomodoro ? goPomodoro(activity) : modifyActivity(activity)">
                             <h4 :class="{ done: activity.done }">{{ activity.title }}</h4>
                             <div class="flex gap-4">
                                 {{ activity.pomodoro ? activity.pomodoro.completedCycles[username] + '/' +
                                     activity.pomodoro.options.numberOfCycles + ' cicli' : '' }}
-                                <button v-if="activity.pomodoro" @click="modifyActivity(activity)" @click.stop><v-icon
+                                <button v-if="activity.pomodoro" @click.stop="modifyActivity(activity)"><v-icon
                                         name="md-modeeditoutline"></v-icon></button>
-                                {{ timeMethods.formatDayMonth(activity.deadline) }}
-                                <button v-if="!activity.done" @click="markAsDone(activity)" @click.stop><v-icon
+                                {{ formatDayMonth(activity.deadline) }}
+                                <button v-if="!activity.done" @click.stop="markAsDone(activity)"><v-icon
                                         name="md-done"></v-icon></button>
-                                <button v-else @click="undoActivity(activity)" @click.stop><v-icon
+                                <button v-else @click.stop="undoActivity(activity)"><v-icon
                                         name="fa-undo"></v-icon></button>
                             </div>
                         </div>
@@ -38,11 +38,11 @@
                 <ul class="my-4" v-if="sortedProjectActivities.length > 0">
                     <li v-for="activity in sortedProjectActivities" :key="activity.activity.id" class="clickable-item">
                         <hr>
-                        <div class="flex align-center justify-between gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click="modifyActivity(activity.activity)">
+                        <div class="flex align-center justify-between gap-2 py-1.5" :class="{ late: isLateActivity(activity.activity) }" @click.stop="modifyActivity(activity.activity)">
                             <div v-if="activity.type=='start'" class="bg-blue-500 px-1 rounded-md text-white">
                                 Start
                             </div>
-                            <div v-else class="bg-orange-500 px-1 rounded-md text-white">
+                            <div v-else class="bg-orange-400 px-1 rounded-md text-white">
                                 Deadline
                             </div>
                             <h5 :class="{ done: activity.activity.done }">{{ activity.activity.title }}</h5>
@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import timeMethods from '../../services/timeService';
+import timeService from '../../services/timeService';
 import router from "@/router";
 import { useAuthStore } from "@/stores/authStore";
 import { Activity } from '@/models/Activity';
@@ -86,6 +86,11 @@ export default defineComponent({
             required: true,
         }
     },
+    data() {
+        return {
+            username: useAuthStore().user.username
+        }
+    },
     emits: ['modifyActivity', 'markAsDone', 'undoActivity'],
     methods: {
         goPomodoro(activity: Activity) {
@@ -101,16 +106,19 @@ export default defineComponent({
             this.$emit('undoActivity', activity);
         },
         isLateActivity(activity: Activity): boolean {
-            return !activity.done && activity.deadline < timeMethods.getStartOfDay(new Date());
+            return !activity.done && activity.deadline < timeService.getStartOfDay(new Date());
         },
         getActivitiesInPeriod(currentDate: Date, view: string): Activity[] {
-            const startOfPeriod = timeMethods.getStartOfCurrentPeriod(currentDate, view);
-            const endOfPeriod = timeMethods.getEndOfCurrentPeriod(currentDate, view);
+            const startOfPeriod = timeService.getStartOfCurrentPeriod(currentDate, view);
+            const endOfPeriod = timeService.getEndOfCurrentPeriod(currentDate, view);
             return this.activities.filter((activity: Activity) => {
                 return (activity.deadline >= startOfPeriod && activity.deadline <= endOfPeriod) || 
-                    (!activity.done && activity.deadline < startOfPeriod && timeMethods.sameDate(timeMethods.getEndOfCurrentPeriod(new Date, view), endOfPeriod)) ||
+                    (!activity.done && activity.deadline < startOfPeriod && timeService.sameDate(timeService.getEndOfCurrentPeriod(new Date, view), endOfPeriod)) ||
                     (activity.projectId && activity.start && activity.start >= startOfPeriod && activity.start <= endOfPeriod);
             });
+        },
+        formatDayMonth(date: Date): string {
+            return timeService.formatDayMonth(date);
         }
     },
     computed: {
@@ -141,10 +149,10 @@ export default defineComponent({
 
             let inPeriod = startEnds.filter((pair) => {
                 if(pair.type === 'start' && pair.activity.start) {
-                    return pair.activity.start >= timeMethods.getStartOfCurrentPeriod(this.currentDate, this.view) && pair.activity.start <= timeMethods.getEndOfCurrentPeriod(this.currentDate, this.view);
+                    return pair.activity.start >= timeService.getStartOfCurrentPeriod(this.currentDate, this.view) && pair.activity.start <= timeService.getEndOfCurrentPeriod(this.currentDate, this.view);
                 } 
                 else if(pair.type === 'deadline' && pair.activity.deadline) {
-                    return pair.activity.deadline >= timeMethods.getStartOfCurrentPeriod(this.currentDate, this.view) && pair.activity.deadline <= timeMethods.getEndOfCurrentPeriod(this.currentDate, this.view);
+                    return pair.activity.deadline >= timeService.getStartOfCurrentPeriod(this.currentDate, this.view) && pair.activity.deadline <= timeService.getEndOfCurrentPeriod(this.currentDate, this.view);
                 }
                 else
                     return false;
@@ -162,13 +170,6 @@ export default defineComponent({
 
             return sorted;
         }
-    },
-    // Add the timeMethods property
-    data() {
-        return {
-            timeMethods: timeMethods,
-            username: useAuthStore().user.username
-        };
     }
 });
 </script>

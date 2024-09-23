@@ -21,7 +21,7 @@ const subscribe = async () => {
             });
         }
 
-        const response = await axios.post(`${API_URL}/subscribe`, subscription, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/subscribe`, subscription, {withCredentials: true});
         return response.data;
     } catch (error: any) {
         console.log(error);
@@ -33,7 +33,7 @@ const unsubscribe = async () => {
         const registration = await navigator.serviceWorker.getRegistration();
         const subscription = await registration?.pushManager.getSubscription();
         await registration?.unregister();
-        const response = await axios.post(`${API_URL}/unsubscribe`, { endpoint: subscription?.endpoint }, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/unsubscribe`, {endpoint: subscription?.endpoint}, {withCredentials: true});
         return response.data;
     } catch (error: any) {
         throw error.response.data;

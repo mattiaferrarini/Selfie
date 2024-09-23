@@ -4,11 +4,15 @@ import ical from 'node-ical';
 import { sendEmailWithAttachments } from '../services/mailerService';
 import eventService from '../services/eventService';
 import * as inviteController from './inviteController';
-import timeService from '../services/timeService';
+import { isResource } from './resourceController';
+import * as resourceController from './resourceController';
+import * as unavailabilityController from './unavailabilityController';
 import jobSchedulerService from '../services/jobSchedulerService';
 import notificationController from './notificationController';
+import { getUserByUsername } from './userController';
 import _ from 'lodash';
 
+// Format an event for response
 const formatEvent = (event: any) => {
     return {
         id: event._id,
@@ -25,10 +29,16 @@ const formatEvent = (event: any) => {
     };
 }
 
-// Function to get all events with a specified user as a participant
+// Get all events with a specified user as a participant
 export const getEventsByUser = async (req: any, res: any) => {
     const { username } = req.params;
     const { start, end } = req.query;
+
+    const authUsername = req.user.username;
+
+    // Check if the user is allowed to view the events
+    if(!authUsername || authUsername !== username && !isResource(username))
+        return res.status(403).send({ error: "You are not allowed to view this user's events!" });
     
     try {
         let startDate = start ? new Date(start) : undefined;
@@ -37,22 +47,15 @@ export const getEventsByUser = async (req: any, res: any) => {
         let events = await getEventsByUserAndDate(username, startDate, endDate);
         let formattedEvents = events.map((event: any) => formatEvent(event));
         res.status(200).send(formattedEvents);
-        //res.status(200).send(events);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving events' });
     }
 }
 
+// Get all events with a specified user as a participant within a specified date range
 export const getEventsByUserAndDate = async (username: string, start?: Date, end?: Date) => {
     try {
-        let events = await Event.find({
-            participants: {
-                $elemMatch: {
-                    username: username,
-                    status: 'accepted'
-                }
-            }
-        });
+        let events = await getAcceptedEventsByUser(username);
 
         if (start && end) {
             events = events.filter((event: any) => eventService.eventInRange(event, start, end));
@@ -64,8 +67,30 @@ export const getEventsByUserAndDate = async (username: string, start?: Date, end
     }
 }
 
+// Get all events with a specified user as an accepted participant
+export const getAcceptedEventsByUser = async (username: string) => {
+    try {
+        let events = await Event.find({
+            participants: {
+                $elemMatch: {
+                    username: username,
+                    status: 'accepted'
+                }
+            }
+        });
+        return events;
+    } catch (error) {
+        throw new Error('Error retrieving events');
+    }
+}
+
+// Get an event by ID
 export const getEventById = async (req: any, res: any) => {
     const { id } = req.params;
+
+    if(!req.user.username || !await accessAllowed(id, req.user.username))
+        return res.status(403).send({ error: "You are not allowed to view this event!" });
+
     try {
         const event = await Event.findById(id);
         res.status(200).send(formatEvent(event));
@@ -74,9 +99,13 @@ export const getEventById = async (req: any, res: any) => {
     }
 }
 
-// Function to delete an event by ID
+// Delete an event
 export const deleteEvent = async (req: any, res: any) => {
     const { id } = req.params;
+
+    if(!req.user.username || !await modificationAllowed(id, req.user.username, req.user.isAdmin))
+        return res.status(403).send({ error: "You are not allowed to delete this event!" });
+
     try {
         const event = await Event.findById(id);
 
@@ -92,23 +121,24 @@ export const deleteEvent = async (req: any, res: any) => {
     }
 }
 
-// Function to add a new event
+// Add a new event
 export const addEvent = async (req: any, res: any) => {
-    const newEvent = new Event({
-        allDay: req.body.allDay,
-        owner: req.body.owner,
-        title: req.body.title,
-        start: req.body.start,
-        end: req.body.end,
-        timezone: req.body.timezone,
-        repetition: req.body.repetition,
-        location: req.body.location,
-        notification: req.body.notification,
-        participants: req.body.participants
-    });
-
     try {
+        const newEvent = new Event({
+            allDay: req.body.allDay,
+            owner: req.body.owner,
+            title: req.body.title,
+            start: req.body.start,
+            end: req.body.end,
+            timezone: req.body.timezone,
+            repetition: req.body.repetition,
+            location: req.body.location,
+            notification: req.body.notification,
+            participants: req.body.participants
+        });
+
         await newEvent.save();
+        await automaticallyAnswerInvites(newEvent);
         await inviteController.createInvitesForEvent(newEvent);
         await jobSchedulerService.scheduleEventNotification(newEvent);
 
@@ -118,9 +148,15 @@ export const addEvent = async (req: any, res: any) => {
     }
 }
 
-// Function to modify an existing event by ID
+// Modify an event
 export const modifyEvent = async (req: any, res: any) => {
     const { id } = req.params;
+    const authUsername = req.user.username;
+
+    // check permissions
+    if(!authUsername || !await modificationAllowed(id, authUsername, req.user.isAdmin))
+        return res.status(403).send({ error: "You are not allowed to modify this event!" });
+
     try {
         const event = await Event.findById(id);
 
@@ -144,9 +180,10 @@ export const modifyEvent = async (req: any, res: any) => {
             await event.save();
 
             if(!_.isEqual(originalEvent, event.toObject())){
+                await automaticallyAnswerInvites(event);
                 await inviteController.createInvitesForEvent(event);
                 await inviteController.deleteEventParticipantsInvites(id, removedUsernames);
-                await notifyOfChanges(event);
+                await notifyOfChanges(event, authUsername);
                 await jobSchedulerService.updateUpcomingEventNotification(event);
             }
             res.status(200).send(formatEvent(event));
@@ -158,29 +195,50 @@ export const modifyEvent = async (req: any, res: any) => {
     }
 }
 
-const notifyOfChanges = async(event: IEvent) => {
+// Automatically add participant if it's a free resource
+// Automatically decline if it's an unavailable user
+const automaticallyAnswerInvites = async (event: IEvent) => {
+    const participants = event.participants;
+    for(let i = 0; i < participants.length; i++){
+        const participant = participants[i];
+        if(participant.status === 'pending'){
+            if(await resourceController.isResource(participant.username)){
+                try{
+                    if (!await otherEventsOverlap(participant.username, event))
+                        participant.status = 'accepted';
+                }
+                catch{
+                    participant.status = 'pending';
+                }
+            }
+            else if(await getUserByUsername(participant.username)){
+                try{
+                    if (!await unavailabilityController.isUserFreeForEvent(participant.username, event))
+                        participant.status = 'declined';
+                }
+                catch{
+                    participant.status = 'pending';
+                }
+            }
+            else{
+                // username doesn't exist
+                participant.status = 'declined';
+            }
+        }
+    }
+    await event.save();
+}
+
+// Notify all participants of an event that it has been updated
+const notifyOfChanges = async(event: IEvent, committer: string) => {
     event.participants.forEach((participant: any) => {
-        if(participant.status === 'accepted'){
+        if(participant.status === 'accepted' && participant.username !== committer){
             notificationController.sendNotificationToUsername(participant.username, {title: 'Event updated', body: `Event ${event.title} has been updated.`});
         }
     });
 }
 
-export const getOverlappingEvents = async (req: any, res: any) => {
-    const { username } = req.params;
-    const { event } = req.body;
-
-    try {
-        let events = await Event.find({ username: username });
-        events = events.filter((e: any) => eventService.eventsOverlap(e, event));
-        const formattedEvents = events.map((e: any) => formatEvent(e));
-        
-        res.status(200).send(formattedEvents);
-    } catch (error) {
-        res.status(500).send({ error: 'Error retrieving events' });
-    }
-}
-
+// Import an iCalendar file
 export const importICalendar = async (req: any, res: any) => {
     const { icalStr } = req.body;
     try {
@@ -191,6 +249,7 @@ export const importICalendar = async (req: any, res: any) => {
     }
 }
 
+// Send all event export data via email
 export const sendExportViaEmail = async (req: any, res: any) => {
     const file = req.file;
     const {to, eventName, yahooLink, googleLink, outlookLink} = req.body;
@@ -213,6 +272,7 @@ export const sendExportViaEmail = async (req: any, res: any) => {
     }
 }
 
+// Change the status of a participant in an event
 export const changeParticipantStatus = async (id: string, username:string, newStatus: string) => {
     try {
         const event = await Event.findById(id);
@@ -220,7 +280,6 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
             event.participants.forEach((participant: any) => {
                 if (participant.username === username) {
                     participant.status = newStatus;
-                    console.log("Participant status changed");
                 }
             });
             await event.save();
@@ -233,25 +292,57 @@ export const changeParticipantStatus = async (id: string, username:string, newSt
     }
 }
 
+// Check if an event overlaps with other events of a user
 export const otherEventsOverlap = async (username: string, event: IEvent) => {
     try{
-        let events = await Event.find({ username: username });
+        let events = await getAcceptedEventsByUser(username);
         events = events.filter((e: any) => eventService.eventsOverlap(e, event));
         return events.length > 0;
     }
     catch{
-        return false; // TODO: handle error
+        throw new Error("Error checking for overlapping events");
     }
 }
 
+// Remove a participant from an event
 export const removeParticipant = async (req: any, res: any) => {
     const { id } = req.params;
-    const username = req.body.username;
+    const authUsername = req.user.username;
 
     try {
-        await changeParticipantStatus(id, username, 'declined');
+        await changeParticipantStatus(id, authUsername, 'declined');
         res.status(200).send('Participant removed');
     } catch (error) {
         res.status(500).send({ error: 'Error removing participant' });
+    }
+}
+
+// Return true if the user is allowed to access the event, false otherwise
+const accessAllowed = async (id: string, authUsername: string) => {
+    try {
+        const event = await Event.findById(id);
+        if(event)
+            return event.owner === authUsername || 
+                event.participants.some((participant: any) => participant.username === authUsername || isResource(participant.username));
+        else
+            return false;
+    } 
+    catch (error) {
+        return false;
+    }
+}
+
+// Return true if the user is allowed to modify the event, false otherwise
+const modificationAllowed = async (id: string, authUsername: string, isAdmin: boolean) => {
+    try {
+        const event = await Event.findById(id);
+        if(event)
+            return event.owner === authUsername || 
+                (isAdmin && event.participants.some((participant: any) => isResource(participant.username)));
+        else
+            return false;
+    } 
+    catch (error) {
+        return false;
     }
 }
