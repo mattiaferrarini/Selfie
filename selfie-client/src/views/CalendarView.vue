@@ -414,12 +414,12 @@ export default defineComponent({
     <nav class="text-gray-700 py-4 px-2 sm:px-4">
       <div class="flex justify-between items-center h-full">
         <div class="h-full flex gap-0.5 flex-wrap">
-          <select id="view" name="view" v-model="view" class="mr-0.5 px-1 py-2 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onViewChange">
+          <select id="view" name="view" v-model="view" class="mr-0.5 p-1 sm:p-2 h-full bg-gray-200 text-gray-600 rounded-md" @change="onViewChange">
             <option value="day">Day</option>
             <option value="week">Week</option>
             <option value="month">Month</option>
           </select>
-          <select id="content" name="content" v-model="content" class="px-1 py-2 sm:py-2 sm:px-4 h-full bg-gray-200 text-gray-600 rounded-md" @change="onContentChange">
+          <select id="content" name="content" v-model="content" class="p-1 sm:p-2 h-full bg-gray-200 text-gray-600 rounded-md" @change="onContentChange">
             <option value="appointments">Appointments</option>
             <option value="events">Events</option>
             <option value="activities">Activities</option>
@@ -444,7 +444,7 @@ export default defineComponent({
       </div>
       <div v-if="content === 'resources'" class="mt-1">
         <select v-if="allResources.length > 0" id="resource" name="resource" v-model="selectedResourceName"
-          class="mr-2 p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
+          class="mr-2 p-1 sm:p-2 h-full rounded bg-gray-200 text-gray-600" @change="onResourceChange">
           <option v-for="res in allResources" :key="res.id" :value="res.name">{{ res.name }}</option>
         </select>
         <p v-else>No resources available.</p>
