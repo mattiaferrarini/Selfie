@@ -8,6 +8,7 @@ A website to help students manage their private, social and academic life.
   - [Backend](#backend)
 - [Choice of Technology](#choice-of-technology)
 - [Use of AI](#use-of-ai)
+- [Contributors](#contributors)
 - [Project Setup](#project-setup)
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
@@ -130,6 +131,16 @@ Github Copilot was used as as an assistant for the project. It helped with the c
 It wasn't used on all the functions that required knowledge of the project or data structures, such as the scheduling of the tasks, as it would not have been able to understand the logic behind the scheduling.
 We also did not use it for any graphic task, as graphic design is not its strong suit.  
 This documentation, especially the "Project Structure" part, was partly generated with AI for best clarity.
+
+
+## Contributors
+- Mattia Ferrarini, mattia.ferrarini3@studio.unibo.it;
+  - Calendar, Admin View, Job Scheduling, Time Machine, Home View, Projects
+- Fabio Murer, fabio.murer@studio.unibo.it;
+  - Notes, Gantt, Deploy, Home View, Database, Tasks
+- Matteo Fornaini, matteo.fornaini@studio.unibo.it;
+  - Projects, Chat, Home View, Profile, Pomodoro, Notifications
+
 
 ## Project Setup
 
