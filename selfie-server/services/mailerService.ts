@@ -1,7 +1,10 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
-dotenv.config({path: './.env.local'});
+const dotenv_path = path.join(__dirname, '../.env.local');
+dotenv.config({path: dotenv_path});
+
+consol.log('EMAIL_USER:', process.env.EMAIL_USER);
 
 // Create a transporter for nodemailer
 const transporter = nodemailer.createTransport({
