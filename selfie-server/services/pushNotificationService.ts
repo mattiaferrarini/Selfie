@@ -1,7 +1,9 @@
 import PushNotifications, {Settings} from "node-pushnotifications";
 import dotenv from "dotenv";
 
-dotenv.config({path: './.env.local'});
+const path = require('path');
+const dotenv_path = path.join(__dirname, '../.env.local');
+dotenv.config({path: dotenv_path});
 
 class PushNotificationService {
     private pushService: PushNotifications;
