@@ -61,8 +61,6 @@ mongoose.connect(mongouri)
 // Session configuration
 const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'secret',
-    resave: false,
-    saveUninitialized: false,
 });
 app.use(sessionMiddleware);
 
