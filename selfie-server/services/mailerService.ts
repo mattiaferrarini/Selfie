@@ -5,8 +5,6 @@ const path = require('path');
 const dotenv_path = path.join(__dirname, '../.env.local');
 dotenv.config({path: dotenv_path});
 
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-
 // Create a transporter for nodemailer
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -29,6 +27,7 @@ export async function sendEmail(to: string, subject: string, text: string) {
     };
 
     try {
+        console.log('EMAIL_USER:', process.env.EMAIL_USER);
         await transporter.sendMail(mailOptions);
     } catch (error) {
         console.error('Failed to send email:', error);
