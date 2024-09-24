@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
+const path = require('path');
 const dotenv_path = path.join(__dirname, '../.env.local');
 dotenv.config({path: dotenv_path});
 
