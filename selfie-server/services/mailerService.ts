@@ -27,7 +27,6 @@ export async function sendEmail(to: string, subject: string, text: string) {
     };
 
     try {
-        console.log('EMAIL_USER:', process.env.EMAIL_USER);
         await transporter.sendMail(mailOptions);
     } catch (error) {
         console.error('Failed to send email:', error);
