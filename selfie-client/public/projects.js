@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <label><input type="checkbox" class="isMilestone"> Milestone</label>
             <label>Status:
                 <select class="status p-2 border border-gray-300 rounded-md" required>
-                    <option value="NotStarted" selected>Not Started</option>
+                    <option value="NotStarted">Not Started</option>
                     <option value="Started">Started</option>
                     <option value="Concluded">Concluded</option>
                     <option value="Rejected">Rejected</option>
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <input type="hidden" class="hidden" value="${activity.localId}"/>
                 `;
-                //activityDiv.querySelector('.status').value = activity.status;
+                activityDiv.querySelector('.status').value = activity.status;
 
                 addLinkedActivityEventListener(activityDiv);
 
