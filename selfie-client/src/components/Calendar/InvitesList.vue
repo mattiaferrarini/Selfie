@@ -64,6 +64,12 @@ export default defineComponent({
             return description.replace(/\n/g, '<br>');
         },
         async fetchInviteInfos() {
+
+            if (this.username === '') {
+                this.$emit('no-invites');
+                return;
+            }
+
             try {
                 const invites = await inviteService.getPendingInvitesByUser(this.username, this.currentDate);
                 let newInfos = [] as { invite: Invite, title: string, description: string }[];

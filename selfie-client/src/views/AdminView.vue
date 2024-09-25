@@ -109,9 +109,9 @@ export default defineComponent({
                 await resourceService.deleteResource(this.resourceToDelete);
                 this.resources = this.resources.filter(res => res.id !== this.resourceToDelete.id);
 
-                if (this.selectedResourceUsername === this.resourceToDelete.username) {
-                this.updateSelectedResourceName();
-            }
+                if (this.selectedResourceName === this.resourceToDelete.name) {
+                    this.updateSelectedResourceName();
+                }
             }
             catch{
                 this.displayError('Failed to delete resource.');

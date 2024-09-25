@@ -18,7 +18,8 @@ enum NotificationType {
 enum CalendarContent {
     ALL = "all",
     EVENTS = "events",
-    ACTIVITIES = "activities"
+    ACTIVITIES = "activities",
+    PROJECTS = "projects"
 }
 
 enum PomodoroType {

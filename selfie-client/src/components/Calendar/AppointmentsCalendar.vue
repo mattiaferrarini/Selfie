@@ -318,9 +318,6 @@ export default defineComponent({
                 return [];
             }
         },
-        windowWidth(): number {
-            return window.innerWidth;
-        },
         datesToDisplayWithPlaceholders(): any[] {
             if (this.view !== 'month') {
                 return this.datesToDisplay;
