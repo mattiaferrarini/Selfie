@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <label><input type="checkbox" class="isMilestone"> Milestone</label>
             <label>Status:
                 <select class="status p-2 border border-gray-300 rounded-md" required>
-                    <option value="NotStarted" selected>Not Started</option>
+                    <option value="NotStarted">Not Started</option>
                     <option value="Started">Started</option>
                     <option value="Concluded">Concluded</option>
                     <option value="Rejected">Rejected</option>
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <input type="hidden" class="hidden" value="${activity.localId}"/>
                 `;
-                //activityDiv.querySelector('.status').value = activity.status;
+                activityDiv.querySelector('.status').value = activity.status;
 
                 addLinkedActivityEventListener(activityDiv);
 
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!project) // no project exists
             return;
-
+      
         const activities = project.phases.flatMap(phase =>
             phase.activities.map(activity => ({
                 ...activity,
@@ -804,7 +804,8 @@ document.addEventListener('DOMContentLoaded', () => {
             output: editOutput.value,
             status: editStatus.value
         };
-        let project = projects.find(project => project._id === projectId);
+        let project_index = projects.findIndex(project => project._id === projectId);
+        let project = projects[project_index];
         fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
             method: 'POST',
             headers: {
@@ -816,6 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editErrorMessage.innerText = data.error;
             else {
                 project = formatProject(data);
+                projects[project_index] = project;
                 displayProject(project);
             }
         });
