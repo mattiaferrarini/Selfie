@@ -305,8 +305,10 @@ const accessAllowed = async (activityId: string, authUsername: string) => {
 const modificationAllowed = async (activityId: string, authUsername: string) => {
     try {
         const activity = await Activity.findById(activityId);
-        if(activity)
-            return activity.owners.includes(authUsername);
+        if(activity){
+            return activity.owners.includes(authUsername) ||
+                activity.pomodoro && activity.participants.some((participant: any) => participant.username === authUsername && participant.status === 'accepted');
+        }
         else
             return false;
     }

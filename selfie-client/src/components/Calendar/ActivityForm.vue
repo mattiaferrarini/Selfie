@@ -482,7 +482,14 @@ export default defineComponent({
             return event;
         },
         modificationAllowed(): boolean {
-            return this.newActivity.owners.includes(this.authStore.user.username) && !this.activity.projectId;
+            return (
+                this.newActivity &&
+                this.authStore.user &&
+                (
+                    (this.newActivity.owners.includes(this.authStore.user.username) && !this.activity.projectId) ||
+                    (this.newActivity.pomodoro && this.newActivity.participants && this.newActivity.participants.some((p) => p.username === this.authStore.user.username && p.status === 'accepted'))
+                )
+            ) || false;
         }
     }
 });
