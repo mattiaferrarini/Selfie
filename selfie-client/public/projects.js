@@ -804,7 +804,8 @@ document.addEventListener('DOMContentLoaded', () => {
             output: editOutput.value,
             status: editStatus.value
         };
-        let project = projects.find(project => project._id === projectId);
+        let project_index = projects.findIndex(project => project._id === projectId);
+        let project = projects[project_index];
         fetchWithMiddleware(`${API_URL}/project/${project._id}/status`, {
             method: 'POST',
             headers: {
@@ -816,6 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editErrorMessage.innerText = data.error;
             else {
                 project = formatProject(data);
+                projects[project_index] = project;
                 displayProject(project);
             }
         });
