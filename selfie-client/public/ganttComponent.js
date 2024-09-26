@@ -109,7 +109,7 @@ class GanttComponent extends HTMLElement {
         return `
         <div>
             
-            <div style="display: grid; grid-template-columns: auto 1fr; background: #e2e8f0; border-radius: 0.375rem; overflow: hidden; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            <div style="display: grid; grid-template-columns: auto 1fr; background: #e2e8f0; border-radius: 0.375rem; overflow-x: auto; overflow-y: hidden; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
                 <div class="infogrid" style="grid-column: 1;">
                     <div style="display: grid; grid-template-columns: repeat(${this.INFO_COLS}, auto);">
                         <div style="grid-row: 1;"></div>
@@ -118,7 +118,7 @@ class GanttComponent extends HTMLElement {
                         ${info}
                     </div>
                 </div>
-                <div style="grid-column: 2; overflow-x: auto;" class="mb-3">
+                <div style="grid-column: 2; min-width: max-content; overflow-x: auto;" class="mb-3">
                     <div class="gantt">
                         <!-- bar -->
                         ${bar}
